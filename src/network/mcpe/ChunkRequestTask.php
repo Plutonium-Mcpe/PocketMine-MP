@@ -76,7 +76,7 @@ class ChunkRequestTask extends AsyncTask{
 		$chunk = FastChunkSerializer::deserializeTerrain($this->chunk);
 		$dimensionId = $this->dimensionId;
 
-		$subCount = ChunkSerializer::getSubChunkCount($chunk, $dimensionId);
+		$subCount = ChunkSerializer::getSubChunkCount($chunk, $dimensionId) + ChunkSerializer::LOWER_PADDING_SIZE;
 		$encoderContext = new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary());
 		$payload = ChunkSerializer::serializeFullChunk($chunk, $dimensionId, RuntimeBlockMapping::getInstance(), $encoderContext, $this->tiles);
 
