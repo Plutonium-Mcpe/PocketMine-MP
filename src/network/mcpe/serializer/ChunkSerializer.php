@@ -31,6 +31,7 @@ use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 use pocketmine\network\mcpe\protocol\serializer\NetworkNbtSerializer;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializerContext;
+use pocketmine\network\mcpe\protocol\types\DimensionIds;
 use pocketmine\utils\Binary;
 use pocketmine\utils\BinaryStream;
 use pocketmine\world\format\Chunk;
@@ -48,11 +49,31 @@ final class ChunkSerializer{
 	}
 
 	/**
+	 * Returns the min/max subchunk index expected in the protocol.
+	 * This has no relation to the world height supported by PM.
+	 *
+	 * @phpstan-param DimensionIds::* $dimensionId
+	 * @return int[]
+	 * @phpstan-return array{int, int}
+	 */
+	public static function getDimensionChunkBounds(int $dimensionId) : array{
+		return match($dimensionId){
+			DimensionIds::OVERWORLD => [0, 15],
+			DimensionIds::NETHER => [0, 7],
+			DimensionIds::THE_END => [0, 15],
+			default => throw new \InvalidArgumentException("Unknown dimension ID $dimensionId"),
+		};
+	}
+
+	/**
 	 * Returns the number of subchunks that will be sent from the given chunk.
 	 * Chunks are sent in a stack, so every chunk below the top non-empty one must be sent.
+	 *
+	 * @phpstan-param DimensionIds::* $dimensionId
 	 */
-	public static function getSubChunkCount(Chunk $chunk) : int{
-		for($y = Chunk::MAX_SUBCHUNK_INDEX, $count = count($chunk->getSubChunks()); $y >= Chunk::MIN_SUBCHUNK_INDEX; --$y, --$count){
+	public static function getSubChunkCount(Chunk $chunk, int $dimensionId) : int{
+		[$minSubChunkIndex, $maxSubChunkIndex] = self::getDimensionChunkBounds($dimensionId);
+		for($y = $maxSubChunkIndex, $count = count($chunk->getSubChunks()); $y >= $minSubChunkIndex; --$y, --$count){
 			if($chunk->getSubChunk($y)->isEmptyFast()){
 				continue;
 			}
@@ -62,7 +83,10 @@ final class ChunkSerializer{
 		return 0;
 	}
 
-	public static function serializeFullChunk(Chunk $chunk, RuntimeBlockMapping $blockMapper, PacketSerializerContext $encoderContext, ?string $tiles = null) : string{
+	/**
+	 * @phpstan-param DimensionIds::* $dimensionId
+	 */
+	public static function serializeFullChunk(Chunk $chunk, int $dimensionId, RuntimeBlockMapping $blockMapper, PacketSerializerContext $encoderContext, ?string $tiles = null) : string{
 		$stream = PacketSerializer::encoder($encoderContext);
 
 		//TODO: HACK! fill in fake subchunks to make up for the new negative space client-side
@@ -71,13 +95,15 @@ final class ChunkSerializer{
 			$stream->putByte(0); //0 layers - client will treat this as all-air
 		}
 
-		$subChunkCount = self::getSubChunkCount($chunk);
-		for($y = Chunk::MIN_SUBCHUNK_INDEX, $writtenCount = 0; $writtenCount < $subChunkCount; ++$y, ++$writtenCount){
+		$subChunkCount = self::getSubChunkCount($chunk, $dimensionId);
+		$writtenCount = 0;
+		[$minSubChunkIndex, $maxSubChunkIndex] = self::getDimensionChunkBounds($dimensionId);
+		for($y = $minSubChunkIndex; $writtenCount < $subChunkCount; ++$y, ++$writtenCount){
 			self::serializeSubChunk($chunk->getSubChunk($y), $blockMapper, $stream, false);
 		}
 
 		//TODO: right now we don't support 3D natively, so we just 3Dify our 2D biomes so they fill the column
-		$encodedBiomePalette = self::serializeBiomesAsPalette($chunk);
+		$encodedBiomePalette = self::serializeBiomesAsPalette($chunk, $dimensionId);
 		$stream->put(str_repeat($encodedBiomePalette, 24));
 
 		$stream->putByte(0); //border block array count
@@ -134,7 +160,8 @@ final class ChunkSerializer{
 		return $stream->getBuffer();
 	}
 
-	private static function serializeBiomesAsPalette(Chunk $chunk) : string{
+	private static function serializeBiomesAsPalette(Chunk $chunk, int $dimensionId) : string{
+		[$minSubChunkIndex, $maxSubChunkIndex] = self::getDimensionChunkBounds($dimensionId);
 		$biomeIdMap = LegacyBiomeIdToStringIdMap::getInstance();
 		$biomePalette = new PalettedBlockArray($chunk->getBiomeId(0, 0));
 		for($x = 0; $x < 16; ++$x){
@@ -144,7 +171,7 @@ final class ChunkSerializer{
 					//make sure we aren't sending bogus biomes - the 1.18.0 client crashes if we do this
 					$biomeId = BiomeIds::OCEAN;
 				}
-				for($y = 0; $y < 16; ++$y){
+				for($y = $minSubChunkIndex; $y <= $maxSubChunkIndex; ++$y){
 					$biomePalette->set($x, $y, $z, $biomeId);
 				}
 			}

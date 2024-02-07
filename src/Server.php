@@ -63,6 +63,7 @@ use pocketmine\network\mcpe\protocol\ClientboundPacket;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\network\mcpe\protocol\serializer\PacketBatch;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializerContext;
+use pocketmine\network\mcpe\protocol\types\CompressionAlgorithm;
 use pocketmine\network\mcpe\raklib\RakLibInterface;
 use pocketmine\network\mcpe\StandardEntityEventBroadcaster;
 use pocketmine\network\mcpe\StandardPacketBroadcaster;
@@ -1381,18 +1382,28 @@ class Server{
 
 			$buffer = $stream->getBuffer();
 
-			if($sync === null){
-				$threshold = $compressor->getCompressionThreshold();
-				$sync = !$this->networkCompressionAsync || $threshold === null || strlen($stream->getBuffer()) < $threshold;
+			$threshold = $compressor->getCompressionThreshold();
+			if($threshold === null || strlen($buffer) < $compressor->getCompressionThreshold()){
+				$compressionType = CompressionAlgorithm::NONE;
+				$compressed = $buffer;
+
+			}else{
+				$sync ??= !$this->networkCompressionAsync;
+
+				if(!$sync && strlen($buffer) >= $this->networkCompressionAsyncThreshold){
+					$promise = new CompressBatchPromise();
+					$task = new CompressBatchTask($buffer, $promise, $compressor);
+					$this->asyncPool->submitTask($task);
+
+					return $promise;
+				}
+
+				$compressionType = $compressor->getNetworkId();
+				$compressed = $compressor->compress($buffer);
 			}
 
 			$promise = new CompressBatchPromise();
-			if(!$sync && strlen($buffer) >= $this->networkCompressionAsyncThreshold){
-				$task = new CompressBatchTask($buffer, $promise, $compressor);
-				$this->asyncPool->submitTask($task);
-			}else{
-				$promise->resolve($compressor->compress($buffer));
-			}
+			$promise->resolve(chr($compressionType) . $compressed);
 
 			return $promise;
 		}finally{
