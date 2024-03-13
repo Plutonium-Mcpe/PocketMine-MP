@@ -30,7 +30,6 @@ use pocketmine\nbt\TreeRoot;
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 use pocketmine\network\mcpe\protocol\serializer\NetworkNbtSerializer;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
-use pocketmine\network\mcpe\protocol\serializer\PacketSerializerContext;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
 use pocketmine\utils\Binary;
 use pocketmine\utils\BinaryStream;
@@ -86,8 +85,8 @@ final class ChunkSerializer{
 	/**
 	 * @phpstan-param DimensionIds::* $dimensionId
 	 */
-	public static function serializeFullChunk(Chunk $chunk, int $dimensionId, RuntimeBlockMapping $blockMapper, PacketSerializerContext $encoderContext, ?string $tiles = null) : string{
-		$stream = PacketSerializer::encoder($encoderContext);
+	public static function serializeFullChunk(Chunk $chunk, int $dimensionId, RuntimeBlockMapping $blockMapper, ?string $tiles = null) : string{
+		$stream = PacketSerializer::encoder();
 
 		//TODO: HACK! fill in fake subchunks to make up for the new negative space client-side
 		for($y = 0; $y < self::LOWER_PADDING_SIZE; $y++){
