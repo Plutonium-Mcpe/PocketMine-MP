@@ -29,6 +29,8 @@ use pocketmine\event\world\WorldLoadEvent;
 use pocketmine\event\world\WorldUnloadEvent;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\player\ChunkSelector;
+use pocketmine\promise\Promise;
+use pocketmine\promise\PromiseResolver;
 use pocketmine\Server;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\exception\CorruptedWorldException;
@@ -356,9 +358,17 @@ class WorldManager{
 			$this->autoSaveTicker = 0;
 			$this->server->getLogger()->debug("[Auto Save] Saving worlds...");
 			$start = microtime(true);
-			$this->doAutoSave();
-			$time = microtime(true) - $start;
-			$this->server->getLogger()->debug("[Auto Save] Save completed in " . ($time >= 1 ? round($time, 3) . "s" : round($time * 1000) . "ms"));
+			$this->doAutoSave()->onCompletion(
+				function () use ($start) : void{
+					$time = microtime(true) - $start;
+					$this->server->getLogger()->debug("[Auto Save] Save completed in " . ($time >= 1 ? round($time, 3) . "s" : round($time * 1000) . "ms"));
+				},
+				function () use ($start) : void{
+					$this->server->getLogger()->error("[Auto Save] Save failed" );
+					$time = microtime(true) - $start;
+					$this->server->getLogger()->debug("[Auto Save] Save completed in " . ($time >= 1 ? round($time, 3) . "s" : round($time * 1000) . "ms"));
+				}
+			);
 		}
 	}
 
@@ -387,14 +397,32 @@ class WorldManager{
 		$this->autoSaveTicks = $autoSaveTicks;
 	}
 
-	private function doAutoSave() : void{
+	/**
+	 * @return Promise<null>
+	 */
+	private function doAutoSave() : Promise{
+		$promises = [];
 		foreach($this->worlds as $world){
 			foreach($world->getPlayers() as $player){
 				if($player->spawned){
-					$player->save();
+					$promises[] = $player->saveAsync();
 				}
 			}
 			$world->save(false);
 		}
+
+		$resolver = new PromiseResolver();
+
+		if(count($promises) === 0){
+			$resolver->resolve(null);
+		} else {
+			Promise::all($promises)
+				->onCompletion(
+					fn() => $resolver->resolve(null),
+					fn() => $resolver->reject()
+				);
+		}
+
+		return $resolver->getPromise();
 	}
 }

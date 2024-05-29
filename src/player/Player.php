@@ -118,6 +118,7 @@ use pocketmine\permission\DefaultPermissions;
 use pocketmine\permission\PermissibleBase;
 use pocketmine\permission\PermissibleDelegateTrait;
 use pocketmine\player\chat\StandardChatFormatter;
+use pocketmine\promise\Promise;
 use pocketmine\Server;
 use pocketmine\ServerProperties;
 use pocketmine\timings\Timings;
@@ -2343,6 +2344,13 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer{
 	 */
 	public function save() : void{
 		$this->server->saveOfflinePlayerData($this->username, $this->getSaveData());
+	}
+
+	/**
+	 * @return Promise<null>
+	 */
+	public function saveAsync() : Promise {
+		return $this->server->saveOfflinePlayerDataAsync($this->username, $this->getSaveData());
 	}
 
 	protected function onDeath() : void{

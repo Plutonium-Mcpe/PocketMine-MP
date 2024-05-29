@@ -150,6 +150,12 @@ abstract class AsyncEvent{
 	private function waitForPromises() : Promise{
 		$array = $this->promises->toArray();
 		$this->promises->clear();
+		if(count($array) === 0){
+			$resolver = new PromiseResolver();
+			$resolver->resolve([]);
+
+			return $resolver->getPromise();
+		}
 
 		return Promise::all($array);
 	}
