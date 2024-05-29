@@ -27,6 +27,8 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
+use pocketmine\promise\Promise;
+use pocketmine\promise\PromiseResolver;
 use function microtime;
 use function round;
 
@@ -44,15 +46,32 @@ class SaveCommand extends VanillaCommand{
 		Command::broadcastCommandMessage($sender, KnownTranslationFactory::pocketmine_save_start());
 		$start = microtime(true);
 
+		$promises = [];
 		foreach($sender->getServer()->getOnlinePlayers() as $player){
-			$player->save();
+			$promises[] = $player->saveAsync();
 		}
 
-		foreach($sender->getServer()->getWorldManager()->getWorlds() as $world){
-			$world->save(true);
+		$resolver = new PromiseResolver();
+
+		if(count($promises) === 0){
+			$resolver->resolve(null);
+		} else {
+			Promise::all($promises)->onCompletion(
+				fn () => $resolver->resolve(null),
+				fn () => $resolver->reject()
+			);
 		}
 
-		Command::broadcastCommandMessage($sender, KnownTranslationFactory::pocketmine_save_success((string) round(microtime(true) - $start, 3)));
+		$resolver->getPromise()->onCompletion(
+			function () use ($sender, $start) : void {
+				foreach($sender->getServer()->getWorldManager()->getWorlds() as $world){
+					$world->save(true);
+				}
+
+				Command::broadcastCommandMessage($sender, KnownTranslationFactory::pocketmine_save_success((string) round(microtime(true) - $start, 3)));
+			},
+			fn() => Command::broadcastCommandMessage($sender, "§cUnable to save the server")
+		);
 
 		return true;
 	}

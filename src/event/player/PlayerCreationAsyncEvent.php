@@ -1,0 +1,89 @@
+<?php
+
+namespace pocketmine\event\player;
+
+use pocketmine\event\AsyncEvent;
+use pocketmine\network\mcpe\NetworkSession;
+use pocketmine\player\Player;
+use pocketmine\utils\Utils;
+
+/**
+ * Allows the use of custom Player classes. This enables overriding built-in Player methods to change behaviour that is
+ * not possible to alter any other way.
+ *
+ * You probably don't need this event, and found your way here because you looked at some code in an old plugin that
+ * abused it (very common). Instead of using custom player classes, you should consider making session classes instead.
+ *
+ * @see https://github.com/pmmp/SessionsDemo
+ *
+ * This event is a power-user feature, and multiple plugins using it at the same time will conflict and break unless
+ * they've been designed to work together. This means that it's only usually useful in private plugins.
+ *
+ * WARNING: This should NOT be used for adding extra functions or properties. This is intended for **overriding existing
+ * core behaviour**, and should only be used if you know EXACTLY what you're doing.
+ * Custom player classes may break in any update without warning. This event isn't much more than glorified reflection.
+ */
+class PlayerCreationAsyncEvent extends AsyncEvent{
+	/** @phpstan-var class-string<Player> */
+	private string $baseClass = Player::class;
+	/** @phpstan-var class-string<Player> */
+	private string $playerClass = Player::class;
+
+	public function __construct(private NetworkSession $session){}
+
+	public function getNetworkSession() : NetworkSession{
+		return $this->session;
+	}
+
+	public function getAddress() : string{
+		return $this->session->getIp();
+	}
+
+	public function getPort() : int{
+		return $this->session->getPort();
+	}
+
+	/**
+	 * Returns the base class that the final player class must extend.
+	 *
+	 * @phpstan-return class-string<Player>
+	 */
+	public function getBaseClass() : string{
+		return $this->baseClass;
+	}
+
+	/**
+	 * Sets the class that the final player class must extend.
+	 * The new base class must be a subclass of the current base class.
+	 * This can (perhaps) be used to limit the options for custom player classes provided by other plugins.
+	 *
+	 * @phpstan-param class-string<Player> $class
+	 */
+	public function setBaseClass(string $class) : void{
+		if(!is_a($class, $this->baseClass, true)){
+			throw new \RuntimeException("Base class $class must extend " . $this->baseClass);
+		}
+
+		$this->baseClass = $class;
+	}
+
+	/**
+	 * Returns the class that will be instantiated to create the player after the event.
+	 *
+	 * @phpstan-return class-string<Player>
+	 */
+	public function getPlayerClass() : string{
+		return $this->playerClass;
+	}
+
+	/**
+	 * Sets the class that will be instantiated to create the player after the event. The class must not be abstract,
+	 * and must be an instance of the base class.
+	 *
+	 * @phpstan-param class-string<Player> $class
+	 */
+	public function setPlayerClass(string $class) : void{
+		Utils::testValidInstance($class, $this->baseClass);
+		$this->playerClass = $class;
+	}
+}
