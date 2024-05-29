@@ -38,8 +38,11 @@ use pocketmine\crash\CrashDump;
 use pocketmine\crash\CrashDumpRenderer;
 use pocketmine\entity\EntityDataHelper;
 use pocketmine\entity\Location;
+use pocketmine\event\AsyncEvent;
 use pocketmine\event\HandlerListManager;
+use pocketmine\event\player\PlayerCreationAsyncEvent;
 use pocketmine\event\player\PlayerCreationEvent;
+use pocketmine\event\player\PlayerDataSaveAsyncEvent;
 use pocketmine\event\player\PlayerDataSaveEvent;
 use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\event\server\CommandEvent;
@@ -530,6 +533,31 @@ class Server{
 		});
 	}
 
+	/**
+	 * @return Promise<null>
+	 */
+	public function saveOfflinePlayerDataAsync(string $name, CompoundTag $nbtTag) : Promise{
+		$ev = new PlayerDataSaveAsyncEvent($nbtTag, $name, $this->getPlayerExact($name));
+		if(!$this->shouldSavePlayerData()){
+			$ev->cancel();
+		}
+		$resolver = new PromiseResolver();
+
+		$ev->call()->onCompletion(
+			function (PlayerDataSaveAsyncEvent $event) use ($name, $resolver) : void{
+				if($event->isCancelled()){
+					$resolver->reject();
+					return;
+				}
+				$this->saveOfflinePlayerData($name, $event->getSaveData());
+				$resolver->resolve(null);
+			},
+			fn() => $this->logger->debug("Cancelled saving player data for $name")
+		);
+
+		return $resolver->getPromise();
+	}
+
 	public function saveOfflinePlayerData(string $name, CompoundTag $nbtTag) : void{
 		$ev = new PlayerDataSaveEvent($nbtTag, $name, $this->getPlayerExact($name));
 		if(!$this->shouldSavePlayerData()){
@@ -554,7 +582,29 @@ class Server{
 	 * @phpstan-return Promise<Player>
 	 */
 	public function createPlayer(NetworkSession $session, PlayerInfo $playerInfo, bool $authenticated, ?CompoundTag $offlinePlayerData) : Promise{
+		$globalResolver = new PromiseResolver();
+
+		$evAsync = new PlayerCreationAsyncEvent($session);
+		$evAsync->call()->onCompletion(
+			fn(PlayerCreationAsyncEvent $event) =>
+				$this->onCreatePlayer($event, $playerInfo, $authenticated, $offlinePlayerData)->onCompletion(
+					fn(Player $player) => $globalResolver->resolve($player),
+					fn() => $globalResolver->reject()
+				),
+			fn() => $globalResolver->reject()
+		);
+
+		return $globalResolver->getPromise();
+	}
+
+	/**
+	 * @phpstan-return Promise<Player>
+	 */
+	private function onCreatePlayer(PlayerCreationAsyncEvent $event, PlayerInfo $playerInfo, bool $authenticated, ?CompoundTag $offlinePlayerData) : Promise{
+		$session = $event->getNetworkSession();
 		$ev = new PlayerCreationEvent($session);
+		$ev->setBaseClass($event->getBaseClass());
+		$ev->setPlayerClass($event->getPlayerClass());
 		$ev->call();
 		$class = $ev->getPlayerClass();
 
