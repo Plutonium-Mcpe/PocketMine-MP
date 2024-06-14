@@ -23,6 +23,8 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\compression;
 
+use pocketmine\network\mcpe\protocol\types\CompressionAlgorithm;
+
 interface Compressor{
 	/**
 	 * @throws DecompressionException
@@ -35,7 +37,7 @@ interface Compressor{
 	 * Returns the canonical ID of this compressor, used to tell the remote end how to decompress a packet compressed
 	 * with this compressor.
 	 *
-	 * @return CompressionAlgorithm::*
+	 * @phpstan-return CompressionAlgorithm::*
 	 */
 	public function getNetworkId() : int;
 

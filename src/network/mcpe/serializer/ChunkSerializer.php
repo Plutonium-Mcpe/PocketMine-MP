@@ -159,6 +159,9 @@ final class ChunkSerializer{
 		return $stream->getBuffer();
 	}
 
+	/**
+	 * @phpstan-param DimensionIds::* $dimensionId
+	 */
 	private static function serializeBiomesAsPalette(Chunk $chunk, int $dimensionId) : string{
 		[$minSubChunkIndex, $maxSubChunkIndex] = self::getDimensionChunkBounds($dimensionId);
 		$biomeIdMap = LegacyBiomeIdToStringIdMap::getInstance();

@@ -70,6 +70,7 @@ use const PHP_DEBUG;
 use const PHP_EOL;
 use const PHP_INT_SIZE;
 use const PHP_VERSION;
+use const PTHREADS_INHERIT_NONE;
 
 	require_once __DIR__ . '/VersionInfo.php';
 
