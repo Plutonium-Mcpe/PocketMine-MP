@@ -146,7 +146,7 @@ class HandlerList{
 		$listenersByPriority = array_merge_recursive($listeners, $asyncListeners, $exclusiveAsyncListeners);
 
 		//TODO: why on earth do the priorities have higher values for lower priority?
-		krsort($listenersByPriority, SORT_NUMERIC);
+		ksort($listenersByPriority, SORT_NUMERIC);
 
 		return $this->handlerCache->list = array_merge(...$listenersByPriority);
 	}
