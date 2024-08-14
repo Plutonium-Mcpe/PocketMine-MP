@@ -633,7 +633,7 @@ class NetworkSession{
 	public function disconnect(string $reason, bool $notify = true) : void{
 		$this->tryDisconnect(function() use ($reason, $notify) : void{
 			if($notify){
-				$this->sendDataPacket(DisconnectPacket::create(0, $reason));
+				$this->sendDataPacket(DisconnectPacket::create(0, $reason, ""));
 			}
 			if($this->player !== null){
 				$this->player->onPostDisconnect($reason, null);
@@ -658,7 +658,7 @@ class NetworkSession{
 	 */
 	public function onPlayerDestroyed(string $reason) : void{
 		$this->tryDisconnect(function() use ($reason) : void{
-			$this->sendDataPacket(DisconnectPacket::create(0, $reason));
+			$this->sendDataPacket(DisconnectPacket::create(0, $reason, ""));
 		}, $reason);
 	}
 

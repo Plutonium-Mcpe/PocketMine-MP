@@ -33,10 +33,10 @@
       "composer-runtime-api": "^2.0",
       "adhocore/json-comment": "~1.2.0",
       "fgrosse/phpasn1": "~2.5.0",
-      "pocketmine/bedrock-block-upgrade-schema": "~4.2.0+bedrock-1.21.0",
-      "pocketmine/bedrock-data": "~2.11.0+bedrock-1.21.0",
-      "pocketmine/bedrock-item-upgrade-schema": "~1.10.0+bedrock-1.21.0",
-      "pocketmine/bedrock-protocol": "~32.1.0+bedrock-1.21.2",
+      "pocketmine/bedrock-block-upgrade-schema": "~4.3.0+bedrock-1.21.20",
+      "pocketmine/bedrock-data": "dev-feature/1.21.20",
+      "pocketmine/bedrock-item-upgrade-schema": "~1.11.0+bedrock-1.21.20",
+      "pocketmine/bedrock-protocol": "dev-master",
       "pocketmine/binaryutils": "^0.2.1",
       "pocketmine/callback-validator": "^1.0.2",
       "pocketmine/classloader": "^0.2.0",
@@ -93,5 +93,9 @@
       "update-translation-apis": [
          "@php build/generate-known-translation-apis.php"
       ]
-   }
+   },
+   "repositories": [{
+      "type": "vcs",
+      "url": "git@github.com:dries-c/BedrockProtocol.git"
+   }]
 }
