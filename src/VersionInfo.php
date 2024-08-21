@@ -31,8 +31,8 @@ use function str_repeat;
 
 final class VersionInfo{
 	public const NAME = "PocketMine-MP";
-	public const BASE_VERSION = "5.103.0";
-	public const IS_DEVELOPMENT_BUILD = false;
+	public const BASE_VERSION = "5.103.1";
+	public const IS_DEVELOPMENT_BUILD = true;
 	public const BUILD_CHANNEL = "stable";
 
 	/**
@@ -48,7 +48,7 @@ final class VersionInfo{
 	/**
 	 * Name of the NBT tag used to store the world data version.
 	 */
-	public const TAG_WORLD_DATA_VERSION = "PMMPDataVersion"; // TAG_Long
+	public const TAG_WORLD_DATA_VERSION = "PMMPDataVersion"; //TAG_Long
 
 	private function __construct(){
 		//NOOP
