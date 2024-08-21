@@ -48,7 +48,7 @@ final class VersionInfo{
 	/**
 	 * Name of the NBT tag used to store the world data version.
 	 */
-	public const TAG_WORLD_DATA_VERSION = "PMMPDataVersion"; //TAG_Long
+	public const TAG_WORLD_DATA_VERSION = "PMMPDataVersion"; // TAG_Long
 
 	private function __construct(){
 		//NOOP
