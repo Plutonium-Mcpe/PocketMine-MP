@@ -148,6 +148,6 @@ class HandlerList{
 		//TODO: why on earth do the priorities have higher values for lower priority?
 		ksort($listenersByPriority, SORT_NUMERIC);
 
-		return $this->handlerCache->list = array_merge(...$listenersByPriority);
+		return $this->handlerCache->list = array_reverse(array_merge(...$listenersByPriority));
 	}
 }
