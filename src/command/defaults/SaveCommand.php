@@ -29,6 +29,7 @@ use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\promise\Promise;
 use pocketmine\promise\PromiseResolver;
+use function count;
 use function microtime;
 use function round;
 

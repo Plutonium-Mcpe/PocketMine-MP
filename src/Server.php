@@ -38,7 +38,6 @@ use pocketmine\crash\CrashDump;
 use pocketmine\crash\CrashDumpRenderer;
 use pocketmine\entity\EntityDataHelper;
 use pocketmine\entity\Location;
-use pocketmine\event\AsyncEvent;
 use pocketmine\event\HandlerListManager;
 use pocketmine\event\player\PlayerCreationAsyncEvent;
 use pocketmine\event\player\PlayerCreationEvent;

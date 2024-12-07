@@ -26,7 +26,8 @@ namespace pocketmine\event;
 use pocketmine\plugin\Plugin;
 use function array_merge;
 use function array_merge_recursive;
-use function krsort;
+use function array_reverse;
+use function ksort;
 use function spl_object_id;
 use const SORT_NUMERIC;
 
