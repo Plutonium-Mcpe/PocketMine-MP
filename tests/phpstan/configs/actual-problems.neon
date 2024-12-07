@@ -786,11 +786,6 @@ parameters:
 			path: ../../../src/resourcepacks/ZippedResourcePack.php
 
 		-
-			message: "#^Parameter \\#2 \\$length of function fread expects int\\<0, max\\>, int given\\.$#"
-			count: 1
-			path: ../../../src/resourcepacks/ZippedResourcePack.php
-
-		-
 			message: "#^Property pocketmine\\\\resourcepacks\\\\ZippedResourcePack\\:\\:\\$fileResource \\(resource\\) does not accept resource\\|false\\.$#"
 			count: 1
 			path: ../../../src/resourcepacks/ZippedResourcePack.php
@@ -806,7 +801,7 @@ parameters:
 			path: ../../../src/scheduler/BulkCurlTask.php
 
 		-
-			message: "#^Cannot call method getNextRun\\(\\) on array\\<string, int\\|pocketmine\\\\scheduler\\\\TaskHandler\\>\\|int\\|pocketmine\\\\scheduler\\\\TaskHandler\\.$#"
+			message: "#^Cannot call method getNextRun\\(\\) on array\\<string, int\\|pocketmine\\\\scheduler\\\\TaskHandler\\<covariant pocketmine\\\\scheduler\\\\Task\\>\\>\\|int\\|pocketmine\\\\scheduler\\\\TaskHandler\\<covariant pocketmine\\\\scheduler\\\\Task\\>\\.$#"
 			count: 1
 			path: ../../../src/scheduler/TaskScheduler.php
 
@@ -842,11 +837,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$path of static method pocketmine\\\\utils\\\\Filesystem\\:\\:cleanPath\\(\\) expects string, mixed given\\.$#"
-			count: 1
-			path: ../../../src/utils/Utils.php
-
-		-
-			message: "#^Parameter \\#1 \\$trace of static method pocketmine\\\\utils\\\\Utils\\:\\:printableTrace\\(\\) expects array\\<int, array\\<string, mixed\\>\\>, array given\\.$#"
 			count: 1
 			path: ../../../src/utils/Utils.php
 
@@ -1036,11 +1026,6 @@ parameters:
 			path: ../../../src/world/format/io/region/RegionLoader.php
 
 		-
-			message: "#^Parameter \\#2 \\$length of function fread expects int\\<0, max\\>, int given\\.$#"
-			count: 1
-			path: ../../../src/world/format/io/region/RegionLoader.php
-
-		-
 			message: "#^Parameter \\#2 \\$size of function ftruncate expects int\\<0, max\\>, int given\\.$#"
 			count: 1
 			path: ../../../src/world/format/io/region/RegionLoader.php
@@ -1191,21 +1176,6 @@ parameters:
 			path: ../../../src/world/light/SkyLightUpdate.php
 
 		-
-			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../../phpunit/block/BlockTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../../phpunit/block/regenerate_consistency_check.php
-
-		-
-			message: "#^Parameter \\#1 \\$logFile of class pocketmine\\\\utils\\\\MainLogger constructor expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../../phpunit/scheduler/AsyncPoolTest.php
-
-		-
 			message: "#^Right side of && is always true\\.$#"
 			count: 1
 			path: ../../../src/promise/Promise.php
@@ -1225,3 +1195,12 @@ parameters:
 			count: 1
 			path: ../../../src/plugin/PluginManager.php
 
+		-
+			message: "#^Parameter \\#1 \\$onSuccess of method pocketmine\\\\promise\\\\Promise\\<pocketmine\\\\event\\\\AsyncEvent\\>\\:\\:onCompletion\\(\\) expects Closure\\(pocketmine\\\\event\\\\AsyncEvent\\)\\: void, Closure\\(pocketmine\\\\event\\\\player\\\\PlayerCreationAsyncEvent\\)\\: void given\\.$#"
+			count: 1
+			path: ../../../src/Server.php
+
+		-
+			message: "#^Parameter \\#1 \\$onSuccess of method pocketmine\\\\promise\\\\Promise\\<pocketmine\\\\event\\\\AsyncEvent\\>\\:\\:onCompletion\\(\\) expects Closure\\(pocketmine\\\\event\\\\AsyncEvent\\)\\: void, Closure\\(pocketmine\\\\event\\\\player\\\\PlayerDataSaveAsyncEvent\\)\\: void given\\.$#"
+			count: 1
+			path: ../../../src/Server.php
