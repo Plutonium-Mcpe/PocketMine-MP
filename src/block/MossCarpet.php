@@ -21,26 +21,27 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\utils;
+namespace pocketmine\block;
 
-/**
- * @phpstan-template TPriority of numeric
- * @phpstan-template TValue
- * @phpstan-extends \SplPriorityQueue<TPriority, TValue>
- */
-class ReversePriorityQueue extends \SplPriorityQueue{
+use pocketmine\block\utils\StaticSupportTrait;
+use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Facing;
+
+class MossCarpet extends Flowable{
+	use StaticSupportTrait;
+
+	public function isSolid() : bool{
+		return true;
+	}
 
 	/**
-	 * @param mixed $priority1
-	 * @param mixed $priority2
-	 * @phpstan-param TPriority $priority1
-	 * @phpstan-param TPriority $priority2
-	 *
-	 * @return int
+	 * @return AxisAlignedBB[]
 	 */
-	#[\ReturnTypeWillChange]
-	public function compare($priority1, $priority2){
-		//TODO: this will crash if non-numeric priorities are used
-		return (int) -($priority1 - $priority2);
+	protected function recalculateCollisionBoxes() : array{
+		return [AxisAlignedBB::one()->trim(Facing::UP, 15 / 16)];
+	}
+
+	private function canBeSupportedAt(Block $block) : bool{
+		return $block->getSide(Facing::DOWN)->getTypeId() !== BlockTypeIds::AIR;
 	}
 }

@@ -69,6 +69,10 @@ class BlockBreakInfo{
 		return new self($hardness, BlockToolType::AXE, $toolTier?->getHarvestLevel() ?? 0, $blastResistance);
 	}
 
+	public static function hoe(float $hardness, ?ToolTier $toolTier = null, ?float $blastResistance = null) : self{
+		return new self($hardness, BlockToolType::HOE, $toolTier?->getHarvestLevel() ?? 0, $blastResistance);
+	}
+
 	public static function instant(int $toolType = BlockToolType::NONE, int $toolHarvestLevel = 0) : self{
 		return new self(0.0, $toolType, $toolHarvestLevel, 0.0);
 	}
@@ -95,7 +99,7 @@ class BlockBreakInfo{
 	 * Returns whether this block can be instantly broken.
 	 */
 	public function breaksInstantly() : bool{
-		return $this->hardness == 0.0;
+		return $this->hardness === 0.0;
 	}
 
 	/**
