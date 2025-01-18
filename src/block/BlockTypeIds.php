@@ -788,8 +788,10 @@ final class BlockTypeIds{
 	public const CHISELED_RESIN_BRICKS = 10758;
 	public const MOSS_BLOCK = 10759;
 	public const MOSS_CARPET = 10760;
+	public const DRIPSTONE = 10761;
+	public const POINTED_DRIPSTONE = 10762;
 
-	public const FIRST_UNUSED_BLOCK_ID = 10761;
+	public const FIRST_UNUSED_BLOCK_ID = 10763;
 
 	private static int $nextDynamicId = self::FIRST_UNUSED_BLOCK_ID;
 

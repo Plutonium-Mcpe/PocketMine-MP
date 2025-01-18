@@ -302,6 +302,7 @@ use function strtolower;
  * @method static DoubleTallGrass DOUBLE_TALLGRASS()
  * @method static DragonEgg DRAGON_EGG()
  * @method static DriedKelp DRIED_KELP()
+ * @method static Opaque DRIPSTONE()
  * @method static DyedCandle DYED_CANDLE()
  * @method static DyedShulkerBox DYED_SHULKER_BOX()
  * @method static Element ELEMENT_ACTINIUM()
@@ -549,6 +550,8 @@ use function strtolower;
  * @method static Slab MOSSY_STONE_BRICK_SLAB()
  * @method static Stair MOSSY_STONE_BRICK_STAIRS()
  * @method static Wall MOSSY_STONE_BRICK_WALL()
+ * @method static Opaque MOSS_BLOCK()
+ * @method static MossCarpet MOSS_CARPET()
  * @method static Opaque MUD()
  * @method static SimplePillar MUDDY_MANGROVE_ROOTS()
  * @method static Opaque MUD_BRICKS()
@@ -611,6 +614,7 @@ use function strtolower;
  * @method static PitcherCrop PITCHER_CROP()
  * @method static DoublePlant PITCHER_PLANT()
  * @method static Podzol PODZOL()
+ * @method static PointedDripstone POINTED_DRIPSTONE()
  * @method static Opaque POLISHED_ANDESITE()
  * @method static Slab POLISHED_ANDESITE_SLAB()
  * @method static Stair POLISHED_ANDESITE_STAIRS()
@@ -1330,6 +1334,9 @@ final class VanillaBlocks{
 				return [];
 			}
 		});
+
+		self::register("pointed_dripstone", fn(BID $id) => new PointedDripstone($id, "Pointed Dripstone", new Info(BlockBreakInfo::instant())));
+		self::register("dripstone", fn(BID $id) => new Opaque($id, "Dripstone Block", new Info(BlockBreakInfo::pickaxe(3.0, ToolTier::WOOD, 30.0))));
 
 		self::registerBlocksR13();
 		self::registerBlocksR14();

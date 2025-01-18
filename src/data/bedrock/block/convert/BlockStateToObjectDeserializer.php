@@ -42,17 +42,21 @@ use pocketmine\block\utils\CopperOxidation;
 use pocketmine\block\utils\CoralType;
 use pocketmine\block\utils\DirtType;
 use pocketmine\block\utils\DripleafState;
+use pocketmine\block\utils\DripstoneThickness;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\utils\FroglightType;
 use pocketmine\block\utils\LeverFacing;
 use pocketmine\block\utils\MobHeadType;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\block\VanillaBlocks as Blocks;
 use pocketmine\block\Wood;
 use pocketmine\data\bedrock\block\BlockLegacyMetadata;
 use pocketmine\data\bedrock\block\BlockStateData;
 use pocketmine\data\bedrock\block\BlockStateDeserializeException;
 use pocketmine\data\bedrock\block\BlockStateDeserializer;
+use pocketmine\data\bedrock\block\BlockStateNames;
 use pocketmine\data\bedrock\block\BlockStateNames as StateNames;
+use pocketmine\data\bedrock\block\BlockStateStringValues;
 use pocketmine\data\bedrock\block\BlockStateStringValues as StringValues;
 use pocketmine\data\bedrock\block\BlockTypeNames as Ids;
 use pocketmine\data\bedrock\block\convert\BlockStateDeserializerHelper as Helper;
@@ -1808,6 +1812,20 @@ final class BlockStateToObjectDeserializer implements BlockStateDeserializer{
 				->setAge($in->readBoundedInt(StateNames::WEEPING_VINES_AGE, 0, 25));
 		});
 		$this->map(Ids::WHEAT, fn(Reader $in) => Helper::decodeCrops(Blocks::WHEAT(), $in));
+
+		$this->map(Ids::POINTED_DRIPSTONE, function(Reader $reader): Block {
+			return VanillaBlocks::POINTED_DRIPSTONE()
+				->setHanging($reader->readBool(BlockStateNames::HANGING))
+				->setThickness(match ($reader->readString(BlockStateNames::DRIPSTONE_THICKNESS)) {
+					BlockStateStringValues::DRIPSTONE_THICKNESS_BASE => DripstoneThickness::BASE,
+					BlockStateStringValues::DRIPSTONE_THICKNESS_FRUSTUM => DripstoneThickness::FRUSTUM,
+					BlockStateStringValues::DRIPSTONE_THICKNESS_MERGE => DripstoneThickness::MERGE,
+					BlockStateStringValues::DRIPSTONE_THICKNESS_MIDDLE => DripstoneThickness::MIDDLE,
+					BlockStateStringValues::DRIPSTONE_THICKNESS_TIP => DripstoneThickness::TIP,
+					default => throw $reader->badValueException(BlockStateNames::DRIPSTONE_THICKNESS, $reader->readString(BlockStateNames::DRIPSTONE_THICKNESS))
+				});
+		});
+		$this->mapSimple(Ids::DRIPSTONE_BLOCK, fn(Reader $in) => VanillaBlocks::DRIPSTONE());
 	}
 
 	/** @throws BlockStateDeserializeException */

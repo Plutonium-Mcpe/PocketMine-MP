@@ -110,6 +110,7 @@ use pocketmine\block\NetherVines;
 use pocketmine\block\NetherWartPlant;
 use pocketmine\block\PinkPetals;
 use pocketmine\block\PitcherCrop;
+use pocketmine\block\PointedDripstone;
 use pocketmine\block\Potato;
 use pocketmine\block\PoweredRail;
 use pocketmine\block\PumpkinStem;
@@ -178,6 +179,7 @@ use pocketmine\block\WoodenTrapdoor;
 use pocketmine\block\Wool;
 use pocketmine\data\bedrock\block\BlockLegacyMetadata;
 use pocketmine\data\bedrock\block\BlockStateData;
+use pocketmine\data\bedrock\block\BlockStateNames;
 use pocketmine\data\bedrock\block\BlockStateNames as StateNames;
 use pocketmine\data\bedrock\block\BlockStateSerializeException;
 use pocketmine\data\bedrock\block\BlockStateSerializer;
@@ -1876,5 +1878,11 @@ final class BlockObjectToStateSerializer implements BlockStateSerializer{
 				->writeInt(StateNames::REDSTONE_SIGNAL, $block->getOutputSignalStrength());
 		});
 		$this->map(Blocks::WHEAT(), fn(Wheat $block) => Helper::encodeCrops($block, new Writer(Ids::WHEAT)));
+		$this->mapSimple(Blocks::DRIPSTONE(), Ids::DRIPSTONE_BLOCK);
+		$this->map(Blocks::POINTED_DRIPSTONE(), function (PointedDripstone $block) : Writer {
+			return Writer::create(Ids::POINTED_DRIPSTONE)
+				->writeBool(BlockStateNames::HANGING, $block->isHanging())
+				->writeString(BlockStateNames::DRIPSTONE_THICKNESS, strtolower($block->getThickness()->name));
+		});
 	}
 }

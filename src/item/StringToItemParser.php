@@ -1201,6 +1201,8 @@ final class StringToItemParser extends StringToTParser{
 		$result->registerBlock("workbench", fn() => Blocks::CRAFTING_TABLE());
 		$result->registerBlock("yellow_flower", fn() => Blocks::DANDELION());
 		$result->registerBlock("zombie_head", fn() => Blocks::MOB_HEAD()->setMobHeadType(MobHeadType::ZOMBIE));
+		$result->registerBlock("dripstone", fn() => Blocks::DRIPSTONE());
+		$result->registerBlock("pointed_dripstone", fn() => Blocks::POINTED_DRIPSTONE());
 	}
 
 	private static function registerDynamicItems(self $result) : void{
