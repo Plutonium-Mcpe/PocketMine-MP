@@ -25,7 +25,9 @@ namespace pocketmine\inventory;
 
 use pocketmine\item\Durable;
 use pocketmine\item\Item;
+use pocketmine\utils\DestructorCallbackTrait;
 use pocketmine\utils\Filesystem;
+use pocketmine\utils\ObjectSet;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\Utils;
 use Symfony\Component\Filesystem\Path;
@@ -33,11 +35,17 @@ use function json_decode;
 
 final class CreativeInventory{
 	use SingletonTrait;
+	use DestructorCallbackTrait;
 
 	/** @var Item[] */
 	private array $creative = [];
 
+	/** @phpstan-var ObjectSet<\Closure() : void> */
+	private ObjectSet $contentChangedCallbacks;
+
 	private function __construct(){
+		$this->contentChangedCallbacks = new ObjectSet();
+
 		$creativeItems = json_decode(Filesystem::fileGetContents(Path::join(\pocketmine\RESOURCE_PATH, "legacy_creativeitems.json")), true);
 
 		foreach($creativeItems as $data){
@@ -99,5 +107,10 @@ final class CreativeInventory{
 
 	public function contains(Item $item) : bool{
 		return $this->getItemIndex($item) !== -1;
+	}
+
+	/** @phpstan-return ObjectSet<\Closure() : void> */
+	public function getContentChangedCallbacks() : ObjectSet{
+		return $this->contentChangedCallbacks;
 	}
 }
