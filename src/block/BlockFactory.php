@@ -106,13 +106,13 @@ class BlockFactory{
 	public \SplFixedArray $blastResistance;
 
 	public function __construct(){
-		$this->fullList = new \SplFixedArray(2048 << Block::INTERNAL_METADATA_BITS);
-		$this->mappedStateIds = new \SplFixedArray(2048 << Block::INTERNAL_METADATA_BITS);
+		$this->fullList = new \SplFixedArray(1024 << Block::INTERNAL_METADATA_BITS);
+		$this->mappedStateIds = new \SplFixedArray(1024 << Block::INTERNAL_METADATA_BITS);
 
-		$this->light = \SplFixedArray::fromArray(array_fill(0, 2048 << Block::INTERNAL_METADATA_BITS, 0));
-		$this->lightFilter = \SplFixedArray::fromArray(array_fill(0, 2048 << Block::INTERNAL_METADATA_BITS, 1));
-		$this->blocksDirectSkyLight = \SplFixedArray::fromArray(array_fill(0, 2048 << Block::INTERNAL_METADATA_BITS, false));
-		$this->blastResistance = \SplFixedArray::fromArray(array_fill(0, 2048 << Block::INTERNAL_METADATA_BITS, 0.0));
+		$this->light = \SplFixedArray::fromArray(array_fill(0, 1024 << Block::INTERNAL_METADATA_BITS, 0));
+		$this->lightFilter = \SplFixedArray::fromArray(array_fill(0, 1024 << Block::INTERNAL_METADATA_BITS, 1));
+		$this->blocksDirectSkyLight = \SplFixedArray::fromArray(array_fill(0, 1024 << Block::INTERNAL_METADATA_BITS, false));
+		$this->blastResistance = \SplFixedArray::fromArray(array_fill(0, 1024 << Block::INTERNAL_METADATA_BITS, 0.0));
 
 		$railBreakInfo = new BreakInfo(0.7);
 		$this->registerAllMeta(new ActivatorRail(new BID(Ids::ACTIVATOR_RAIL, 0), "Activator Rail", $railBreakInfo));
