@@ -27,6 +27,7 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\inventory\CreativeCategory;
 use pocketmine\inventory\CreativeInventory;
 use pocketmine\item\Item;
+use pocketmine\item\VanillaItems;
 use pocketmine\lang\Translatable;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\convert\ItemTranslator;
@@ -80,9 +81,10 @@ final class CreativeInventoryCache{
 		$groupIndexes = [];
 		$itemGroupIndexes = [];
 
-		foreach($inventory->getAll() as $k => $item){
-			$group = null;
-			$category = CreativeCategory::CONSTRUCTION;
+
+		foreach($inventory->getAllEntries() as $k => $entry){
+			$group = $entry->getGroup();
+			$category = $entry->getCategory();
 			if($group === null){
 				$groupId = PHP_INT_MIN;
 			}else{
@@ -101,16 +103,49 @@ final class CreativeInventoryCache{
 
 		//creative inventory may have holes if items were unregistered - ensure network IDs used are always consistent
 		$items = [];
-		foreach($inventory->getAll() as $k => $item){
+		foreach($inventory->getAllEntries() as $k => $entry){
 			$items[] = new CreativeItemEntry(
 				$k,
-				$typeConverter->coreItemStackToNet($item),
+				$typeConverter->coreItemStackToNet($entry->getItem()),
 				$itemGroupIndexes[$k]
 			);
 		}
 
 		return new CreativeInventoryCacheEntry($categories, $groups, $items);
 	}
+
+	/*
+	 * hardcoded packet:
+	 *
+	 * {
+  "category": "construction",
+  "name": "itemGroup.name.planks",
+  "icon_item": {
+    "network_id": 5,
+    "count": 1,
+    "metadata": 0,
+    "block_runtime_id": 13764,
+    "extra": {
+      "has_nbt": true,
+      "nbt": {
+        "version": 1,
+        "nbt": {
+          "type": "compound",
+          "name": "",
+          "value": {
+            "___GroupBugWorkaround___": {
+              "type": "int",
+              "value": 0
+            }
+          }
+        }
+      },
+      "can_place_on": [],
+      "can_destroy": []
+    }
+  }
+}
+	 */
 
 	public function buildPacket(CreativeInventory $inventory, NetworkSession $session) : CreativeContentPacket{
 		$player = $session->getPlayer() ?? throw new \LogicException("Cannot prepare creative data for a session without a player");
@@ -125,6 +160,10 @@ final class CreativeInventoryCache{
 			}
 			return $message;
 		};
+
+		//var_dump($cachedEntry->categories);
+		//var_dump($cachedEntry->items);
+
 
 		$groupEntries = [];
 		foreach($cachedEntry->categories as $index => $category){
@@ -142,6 +181,10 @@ final class CreativeInventoryCache{
 				//TODO: HACK! In 1.21.60, Workaround glitchy behaviour when an item is used as an icon for a group it
 				//doesn't belong to. Without this hack, both instances of the item will show a +, but neither of them
 				//will actually expand the group work correctly.
+
+				//var_dump($groupIcon);
+
+
 				$groupIcon->getNamedTag()->setInt("___GroupBugWorkaround___", $index);
 				$groupName = $group->getName();
 				$groupEntries[] = new CreativeGroupEntry(
