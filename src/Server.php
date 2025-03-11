@@ -544,6 +544,7 @@ class Server{
 		if(!$this->shouldSavePlayerData()){
 			$ev->cancel();
 		}
+		/** @var PromiseResolver<null> $resolver */
 		$resolver = new PromiseResolver();
 
 		$ev->call()->onCompletion(
@@ -585,6 +586,7 @@ class Server{
 	 * @phpstan-return Promise<Player>
 	 */
 	public function createPlayer(NetworkSession $session, PlayerInfo $playerInfo, bool $authenticated, ?CompoundTag $offlinePlayerData) : Promise{
+		/** @var PromiseResolver<Player> $globalResolver */
 		$globalResolver = new PromiseResolver();
 
 		$evAsync = new PlayerCreationAsyncEvent($session);

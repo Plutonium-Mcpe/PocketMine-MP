@@ -1421,3 +1421,15 @@ parameters:
 			message: "#^Parameter \\#1 \\$onSuccess of method pocketmine\\\\promise\\\\Promise\\<pocketmine\\\\event\\\\AsyncEvent\\>\\:\\:onCompletion\\(\\) expects Closure\\(pocketmine\\\\event\\\\AsyncEvent\\)\\: void, Closure\\(pocketmine\\\\event\\\\player\\\\PlayerDataSaveAsyncEvent\\)\\: void given\\.$#"
 			count: 1
 			path: ../../../src/Server.php
+
+		-
+			message: '#^Method pocketmine\\event\\HandlerList\:\:getListenerList\(\) should return list\<pocketmine\\event\\RegisteredListener\> but returns array\<pocketmine\\event\\RegisteredListener\>\.$#'
+			identifier: return.type
+			count: 1
+			path: ../../../src/event/HandlerList.php
+
+		-
+			message: '#^Property pocketmine\\event\\RegisteredListenerCache\:\:\$list \(list\<pocketmine\\event\\RegisteredListener\>\|null\) does not accept array\<pocketmine\\event\\RegisteredListener\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: ../../../src/event/HandlerList.php

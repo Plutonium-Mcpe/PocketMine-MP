@@ -151,6 +151,7 @@ abstract class AsyncEvent{
 		$array = $this->promises->toArray();
 		$this->promises->clear();
 		if(count($array) === 0){
+			/** @var PromiseResolver<array<int, null>> $resolver */
 			$resolver = new PromiseResolver();
 			$resolver->resolve([]);
 

@@ -146,6 +146,7 @@ class HandlerList{
 				}
 			}
 		}
+		/** @var RegisteredListener[][] $listenersByPriority */
 		$listenersByPriority = array_merge_recursive($listeners, $asyncListeners, $exclusiveAsyncListeners);
 
 		//TODO: why on earth do the priorities have higher values for lower priority?
