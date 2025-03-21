@@ -705,6 +705,9 @@ use function strtolower;
  * @method static Stair SANDSTONE_STAIRS()
  * @method static Wall SANDSTONE_WALL()
  * @method static Sculk SCULK()
+ * @method static SculkSensor SCULK_SENSOR()
+ * @method static SculkShrieker SCULK_SHRIEKER()
+ * @method static SculkVein SCULK_VEIN()
  * @method static SeaLantern SEA_LANTERN()
  * @method static SeaPickle SEA_PICKLE()
  * @method static Opaque SHROOMLIGHT()
@@ -1329,6 +1332,9 @@ final class VanillaBlocks{
 		self::register("muddy_mangrove_roots", fn(BID $id) => new SimplePillar($id, "Muddy Mangrove Roots", new Info(BreakInfo::shovel(0.7), [Tags::MUD])));
 		self::register("froglight", fn(BID $id) => new Froglight($id, "Froglight", new Info(new BreakInfo(0.3))));
 		self::register("sculk", fn(BID $id) => new Sculk($id, "Sculk", new Info(new BreakInfo(0.6, ToolType::HOE))));
+		self::register("sculk_sensor", fn(BID $id) => new SculkSensor($id, "Sculk Sensor", new Info(BreakInfo::instant())));
+		self::register("sculk_shrieker", fn(BID $id) => new SculkShrieker($id, "Sculk Shrieker", new Info(BreakInfo::instant())));
+		self::register("sculk_vein", fn(BID $id) => new SculkVein($id, "Sculk Vein", new Info(BreakInfo::instant())));
 		self::register("reinforced_deepslate", fn(BID $id) => new class($id, "Reinforced Deepslate", new Info(new BreakInfo(55.0, ToolType::NONE, 0, 3600.0))) extends Opaque{
 			public function getDropsForCompatibleTool(Item $item) : array{
 				return [];

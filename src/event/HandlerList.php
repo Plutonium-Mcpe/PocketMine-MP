@@ -26,7 +26,6 @@ namespace pocketmine\event;
 use pocketmine\plugin\Plugin;
 use function array_merge;
 use function array_merge_recursive;
-use function array_reverse;
 use function ksort;
 use function spl_object_id;
 use const SORT_NUMERIC;
@@ -147,11 +146,12 @@ class HandlerList{
 				}
 			}
 		}
+		/** @var RegisteredListener[][] $listenersByPriority */
 		$listenersByPriority = array_merge_recursive($listeners, $asyncListeners, $exclusiveAsyncListeners);
 
 		//TODO: why on earth do the priorities have higher values for lower priority?
 		ksort($listenersByPriority, SORT_NUMERIC);
 
-		return $this->handlerCache->list = array_reverse(array_merge(...$listenersByPriority));
+		return $this->handlerCache->list = array_merge(...$listenersByPriority);
 	}
 }

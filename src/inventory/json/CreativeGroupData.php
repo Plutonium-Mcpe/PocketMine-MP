@@ -21,24 +21,18 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block\utils;
+namespace pocketmine\inventory\json;
 
-/**
- * Represents copper blocks that have oxidized and waxed variations.
- */
-interface CopperMaterial{
+use pocketmine\crafting\json\ItemStackData;
 
-	public function getOxidation() : CopperOxidation;
-
+final class CreativeGroupData{
+	/** @required */
+	public string $group_name;
+	/** @required */
+	public ?ItemStackData $group_icon;
 	/**
-	 * @return $this
+	 * @var \pocketmine\crafting\json\ItemStackData[]
+	 * @required
 	 */
-	public function setOxidation(CopperOxidation $oxidation) : CopperMaterial;
-
-	public function isWaxed() : bool;
-
-	/**
-	 * @return $this
-	 */
-	public function setWaxed(bool $waxed) : CopperMaterial;
+	public array $items;
 }

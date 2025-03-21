@@ -984,6 +984,12 @@ final class BlockStateToObjectDeserializer implements BlockStateDeserializer{
 		$this->mapSimple(Ids::SAND, fn() => Blocks::SAND());
 		$this->mapSimple(Ids::SANDSTONE, fn() => Blocks::SANDSTONE());
 		$this->mapSimple(Ids::SCULK, fn() => Blocks::SCULK());
+		$this->map(Ids::SCULK_SENSOR, fn(Reader $in) => Blocks::SCULK_SENSOR()->setPhase($in->readBoundedInt(BlockStateNames::SCULK_SENSOR_PHASE, 0, 2)));
+		$this->map(Ids::SCULK_SHRIEKER, fn(Reader $in) => Blocks::SCULK_SHRIEKER()
+			->setActive($in->readBool(BlockStateNames::ACTIVE))
+			->setCanSummon($in->readBool(BlockStateNames::CAN_SUMMON))
+		);
+		$this->map(Ids::SCULK_VEIN, fn(Reader $in) => Blocks::SCULK_VEIN()->setFaces($in->readFacingFlags()));
 		$this->mapSimple(Ids::SEA_LANTERN, fn() => Blocks::SEA_LANTERN());
 		$this->mapSimple(Ids::SHORT_GRASS, fn() => Blocks::TALL_GRASS()); //no, this is not a typo - tall_grass is now the double block, just to be confusing :(
 		$this->mapSimple(Ids::SHROOMLIGHT, fn() => Blocks::SHROOMLIGHT());

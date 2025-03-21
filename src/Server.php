@@ -36,6 +36,7 @@ use pocketmine\crafting\CraftingManager;
 use pocketmine\crafting\CraftingManagerFromDataHelper;
 use pocketmine\crash\CrashDump;
 use pocketmine\crash\CrashDumpRenderer;
+use pocketmine\data\bedrock\BedrockDataFiles;
 use pocketmine\entity\EntityDataHelper;
 use pocketmine\entity\Location;
 use pocketmine\event\HandlerListManager;
@@ -543,6 +544,7 @@ class Server{
 		if(!$this->shouldSavePlayerData()){
 			$ev->cancel();
 		}
+		/** @var PromiseResolver<null> $resolver */
 		$resolver = new PromiseResolver();
 
 		$ev->call()->onCompletion(
@@ -584,6 +586,7 @@ class Server{
 	 * @phpstan-return Promise<Player>
 	 */
 	public function createPlayer(NetworkSession $session, PlayerInfo $playerInfo, bool $authenticated, ?CompoundTag $offlinePlayerData) : Promise{
+		/** @var PromiseResolver<Player> $globalResolver */
 		$globalResolver = new PromiseResolver();
 
 		$evAsync = new PlayerCreationAsyncEvent($session);
@@ -747,7 +750,7 @@ class Server{
 
 	public function removeOp(string $name) : void{
 		$lowercaseName = strtolower($name);
-		foreach($this->operators->getAll() as $operatorName => $_){
+		foreach(Utils::promoteKeys($this->operators->getAll()) as $operatorName => $_){
 			$operatorName = (string) $operatorName;
 			if($lowercaseName === strtolower($operatorName)){
 				$this->operators->remove($operatorName);
@@ -1054,7 +1057,7 @@ class Server{
 
 			$this->commandMap = new SimpleCommandMap($this);
 
-			$this->craftingManager = CraftingManagerFromDataHelper::make(Path::join(\pocketmine\BEDROCK_DATA_PATH, "recipes"));
+			$this->craftingManager = CraftingManagerFromDataHelper::make(BedrockDataFiles::RECIPES);
 
 			$this->resourceManager = new ResourcePackManager(Path::join($this->dataPath, "resource_packs"), $this->logger);
 

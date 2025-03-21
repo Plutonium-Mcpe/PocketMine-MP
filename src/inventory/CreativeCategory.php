@@ -21,24 +21,14 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block\utils;
+namespace pocketmine\inventory;
 
 /**
- * Represents copper blocks that have oxidized and waxed variations.
+ * Available tabs in the creative inventory that an item can be displayed in.
  */
-interface CopperMaterial{
-
-	public function getOxidation() : CopperOxidation;
-
-	/**
-	 * @return $this
-	 */
-	public function setOxidation(CopperOxidation $oxidation) : CopperMaterial;
-
-	public function isWaxed() : bool;
-
-	/**
-	 * @return $this
-	 */
-	public function setWaxed(bool $waxed) : CopperMaterial;
+enum CreativeCategory{
+	case CONSTRUCTION;
+	case NATURE;
+	case EQUIPMENT;
+	case ITEMS;
 }

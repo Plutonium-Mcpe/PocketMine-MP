@@ -415,6 +415,7 @@ class WorldManager{
 			$world->save(false);
 		}
 
+		/** @var PromiseResolver<null> $resolver */
 		$resolver = new PromiseResolver();
 
 		if(count($promises) === 0){

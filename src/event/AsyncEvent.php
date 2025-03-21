@@ -40,32 +40,18 @@ use function count;
 abstract class AsyncEvent{
 	/** @phpstan-var ObjectSet<Promise<null>> $promises */
 	private ObjectSet $promises;
-	/** @var array<class-string<AsyncEvent>, int> $delegatesCallDepth */
-	private static array $delegatesCallDepth = [];
-	private const MAX_EVENT_CALL_DEPTH = 50;
 
 	/**
 	 * @phpstan-return Promise<self>
 	 */
 	final public function call() : Promise{
 		$this->promises = new ObjectSet();
-		if(!isset(self::$delegatesCallDepth[$class = static::class])){
-			self::$delegatesCallDepth[$class] = 0;
-		}
-
-		if(self::$delegatesCallDepth[$class] >= self::MAX_EVENT_CALL_DEPTH){
-			//this exception will be caught by the parent event call if all else fails
-			throw new \RuntimeException("Recursive event call detected (reached max depth of " . self::MAX_EVENT_CALL_DEPTH . " calls)");
-		}
 
 		$timings = Timings::getAsyncEventTimings($this);
 		$timings->startTiming();
-
-		++self::$delegatesCallDepth[$class];
 		try{
 			return $this->callAsyncDepth();
 		}finally{
-			--self::$delegatesCallDepth[$class];
 			$timings->stopTiming();
 		}
 	}
@@ -151,6 +137,7 @@ abstract class AsyncEvent{
 		$array = $this->promises->toArray();
 		$this->promises->clear();
 		if(count($array) === 0){
+			/** @var PromiseResolver<array<int, null>> $resolver */
 			$resolver = new PromiseResolver();
 			$resolver->resolve([]);
 

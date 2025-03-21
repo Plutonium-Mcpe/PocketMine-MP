@@ -23,25 +23,39 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\block\utils\StaticSupportTrait;
-use pocketmine\math\AxisAlignedBB;
-use pocketmine\math\Facing;
+use pocketmine\block\utils\SupportType;
+use pocketmine\data\runtime\RuntimeDataDescriber;
 
-class MossCarpet extends Flowable{
-	use StaticSupportTrait;
+class SculkShrieker extends Transparent{
+	protected bool $active = false;
+	protected bool $canSummon = false;
 
-	public function isSolid() : bool{
-		return true;
+	public  function isActive() : bool{
+		return $this->active;
 	}
 
-	/**
-	 * @return list<AxisAlignedBB>
-	 */
-	protected function recalculateCollisionBoxes() : array{
-		return [AxisAlignedBB::one()->trim(Facing::UP, 15 / 16)];
+	public  function setActive(bool $active) : self {
+		$this->active = $active;
+
+		return $this;
 	}
 
-	private function canBeSupportedAt(Block $block) : bool{
-		return $block->getSide(Facing::DOWN)->getTypeId() !== BlockTypeIds::AIR;
+	public function canSummon() : bool{
+		return $this->canSummon;
+	}
+
+	public  function setCanSummon(bool $canSummon) : self {
+		$this->canSummon = $canSummon;
+
+		return $this;
+	}
+
+	protected function describeBlockOnlyState(RuntimeDataDescriber $w) : void{
+		$w->bool($this->active);
+		$w->bool($this->canSummon);
+	}
+
+	public function getSupportType(int $facing) : SupportType{
+		return SupportType::NONE;
 	}
 }

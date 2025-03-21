@@ -125,6 +125,9 @@ use pocketmine\block\RedstoneWire;
 use pocketmine\block\ResinClump;
 use pocketmine\block\RuntimeBlockStateRegistry;
 use pocketmine\block\Sapling;
+use pocketmine\block\SculkSensor;
+use pocketmine\block\SculkShrieker;
+use pocketmine\block\SculkVein;
 use pocketmine\block\SeaPickle;
 use pocketmine\block\SimplePillar;
 use pocketmine\block\SimplePressurePlate;
@@ -1062,6 +1065,19 @@ final class BlockObjectToStateSerializer implements BlockStateSerializer{
 		$this->mapSimple(Blocks::SAND(), Ids::SAND);
 		$this->mapSimple(Blocks::SANDSTONE(), Ids::SANDSTONE);
 		$this->mapSimple(Blocks::SCULK(), Ids::SCULK);
+		$this->map(Blocks::SCULK_SENSOR(), function(SculkSensor $block) : Writer{
+			return Writer::create(Ids::SCULK_SENSOR)
+				->writeInt(BlockStateNames::SCULK_SENSOR_PHASE, $block->getPhase());
+		});
+		$this->map(Blocks::SCULK_SHRIEKER(), function(SculkShrieker $block) : Writer{
+			return Writer::create(Ids::SCULK_SHRIEKER)
+				->writeBool(BlockStateNames::ACTIVE, $block->isActive())
+				->writeBool(BlockStateNames::CAN_SUMMON, $block->canSummon());
+		});
+		$this->map(Blocks::SCULK_VEIN(), function(SculkVein $block) : Writer{
+			return Writer::create(Ids::SCULK_VEIN)
+				->writeFacingFlags($block->getFaces());
+		});
 		$this->mapSimple(Blocks::SEA_LANTERN(), Ids::SEA_LANTERN);
 		$this->mapSimple(Blocks::SHROOMLIGHT(), Ids::SHROOMLIGHT);
 		$this->mapSimple(Blocks::SHULKER_BOX(), Ids::UNDYED_SHULKER_BOX);

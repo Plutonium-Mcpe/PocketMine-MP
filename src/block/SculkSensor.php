@@ -21,24 +21,36 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block\utils;
+namespace pocketmine\block;
 
-/**
- * Represents copper blocks that have oxidized and waxed variations.
- */
-interface CopperMaterial{
+use pocketmine\block\utils\SupportType;
+use pocketmine\data\runtime\RuntimeDataDescriber;
 
-	public function getOxidation() : CopperOxidation;
+class SculkSensor extends Transparent{
+	protected int $phase = 0;
 
-	/**
-	 * @return $this
-	 */
-	public function setOxidation(CopperOxidation $oxidation) : CopperMaterial;
+	public  function getPhase() : int{
+		return $this->phase;
+	}
 
-	public function isWaxed() : bool;
+	public  function setPhase(int $phase) : self {
+		if($phase < 0 || $phase > 2){
+			throw new \InvalidArgumentException("Phase must be between 0 and 2, got $phase");
+		}
+		$this->phase = $phase;
 
-	/**
-	 * @return $this
-	 */
-	public function setWaxed(bool $waxed) : CopperMaterial;
+		return $this;
+	}
+
+	protected function describeBlockOnlyState(RuntimeDataDescriber $w) : void{
+		$w->boundedIntAuto(0, 2, $this->phase);
+	}
+
+	public function getSupportType(int $facing) : SupportType{
+		return SupportType::NONE;
+	}
+
+	public function getLightLevel() : int{
+		return 1;
+	}
 }

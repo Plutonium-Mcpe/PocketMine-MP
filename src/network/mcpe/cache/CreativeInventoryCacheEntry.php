@@ -21,24 +21,28 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block\utils;
+namespace pocketmine\network\mcpe\cache;
 
-/**
- * Represents copper blocks that have oxidized and waxed variations.
- */
-interface CopperMaterial{
+use pocketmine\inventory\CreativeCategory;
+use pocketmine\inventory\CreativeGroup;
+use pocketmine\network\mcpe\protocol\types\inventory\CreativeItemEntry;
 
-	public function getOxidation() : CopperOxidation;
-
-	/**
-	 * @return $this
-	 */
-	public function setOxidation(CopperOxidation $oxidation) : CopperMaterial;
-
-	public function isWaxed() : bool;
+final class CreativeInventoryCacheEntry{
 
 	/**
-	 * @return $this
+	 * @param CreativeCategory[]     $categories
+	 * @param CreativeGroup[]|null[] $groups
+	 * @param CreativeItemEntry[]    $items
+	 *
+	 * @phpstan-param list<CreativeCategory>   $categories
+	 * @phpstan-param list<CreativeGroup|null> $groups
+	 * @phpstan-param list<CreativeItemEntry>  $items
 	 */
-	public function setWaxed(bool $waxed) : CopperMaterial;
+	public function __construct(
+		public readonly array $categories,
+		public readonly array $groups,
+		public readonly array $items,
+	){
+		//NOOP
+	}
 }
