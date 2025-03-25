@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\world\sound;
 
+use pocketmine\entity\Entity;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\network\mcpe\protocol\types\LevelSoundEvent;
@@ -31,7 +32,6 @@ use pocketmine\network\mcpe\protocol\types\LevelSoundEvent;
  * Played when a player attacks a mob, dealing damage.
  */
 class EntityAttackSound implements Sound{
-
 	public function encode(Vector3 $pos) : array{
 		return [LevelSoundEventPacket::create(
 			LevelSoundEvent::ATTACK_STRONG, //TODO: seems like ATTACK is dysfunctional
@@ -39,7 +39,8 @@ class EntityAttackSound implements Sound{
 			-1,
 			"minecraft:player",
 			false,
-			false
+			false,
+			-1
 		)];
 	}
 }

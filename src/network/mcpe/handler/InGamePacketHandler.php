@@ -295,10 +295,6 @@ class InGamePacketHandler extends PacketHandler{
 		return $packetHandled;
 	}
 
-	public function handleLevelSoundEventPacketV1(LevelSoundEventPacketV1 $packet) : bool{
-		return true; //useless leftover from 1.8
-	}
-
 	public function handleActorEvent(ActorEventPacket $packet) : bool{
 		if($packet->actorRuntimeId !== $this->player->getId()){
 			//TODO HACK: EATING_ITEM is sent back to the server when the server sends it for other players (1.14 bug, maybe earlier)
