@@ -30,7 +30,7 @@ use function is_int;
 use function str_repeat;
 
 final class VersionInfo{
-	public const NAME = "PocketMine-MP";
+	public const NAME = "PocketMine-MPP";
 	public const BASE_VERSION = "4.39.0";
 	public const IS_DEVELOPMENT_BUILD = false;
 	public const BUILD_CHANNEL = "stable";
