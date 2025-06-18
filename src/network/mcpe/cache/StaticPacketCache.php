@@ -43,7 +43,7 @@ class StaticPacketCache{
 
 	private static function make() : self{
 		return new self(
-			BiomeDefinitionListPacket::create([]),
+			BiomeDefinitionListPacket::create([], []),
 			AvailableActorIdentifiersPacket::create(self::loadCompoundFromFile(BedrockDataFiles::ENTITY_IDENTIFIERS_NBT))
 		);
 	}
