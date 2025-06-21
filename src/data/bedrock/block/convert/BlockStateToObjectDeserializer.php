@@ -1887,7 +1887,7 @@ final class BlockStateToObjectDeserializer implements BlockStateDeserializer{
 		});
 		$this->map(Ids::WHEAT, fn(Reader $in) => Helper::decodeCrops(Blocks::WHEAT(), $in));
 
-		$this->map(Ids::POINTED_DRIPSTONE, function(Reader $reader): Block {
+		$this->map(Ids::POINTED_DRIPSTONE, function(Reader $reader) : Block {
 			return VanillaBlocks::POINTED_DRIPSTONE()
 				->setHanging($reader->readBool(BlockStateNames::HANGING))
 				->setThickness(match ($reader->readString(BlockStateNames::DRIPSTONE_THICKNESS)) {
