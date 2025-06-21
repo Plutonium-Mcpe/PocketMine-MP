@@ -1899,7 +1899,7 @@ final class BlockStateToObjectDeserializer implements BlockStateDeserializer{
 					default => throw $reader->badValueException(BlockStateNames::DRIPSTONE_THICKNESS, $reader->readString(BlockStateNames::DRIPSTONE_THICKNESS))
 				});
 		});
-		$this->mapSimple(Ids::DRIPSTONE_BLOCK, fn(Reader $in) => VanillaBlocks::DRIPSTONE());
+		$this->mapSimple(Ids::DRIPSTONE_BLOCK, fn() => VanillaBlocks::DRIPSTONE());
 	}
 
 	/** @throws BlockStateDeserializeException */
