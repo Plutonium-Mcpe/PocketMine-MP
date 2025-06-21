@@ -1349,7 +1349,7 @@ final class VanillaBlocks{
 		});
 
 		self::register("pointed_dripstone", fn(BID $id) => new PointedDripstone($id, "Pointed Dripstone", new Info(new BreakInfo(1.5, blastResistance: 15))));
-		self::register("dripstone", fn(BID $id) => new Opaque($id, "Dripstone Block", new Info(BlockBreakInfo::pickaxe(1.5, ToolTier::WOOD, 5))));
+		self::register("dripstone", fn(BID $id) => new Opaque($id, "Dripstone Block", new Info(BreakInfo::pickaxe(1.5, ToolTier::WOOD, 5))));
 
 		self::registerBlocksR13();
 		self::registerBlocksR14();
