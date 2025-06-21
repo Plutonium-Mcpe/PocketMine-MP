@@ -1342,14 +1342,14 @@ final class VanillaBlocks{
 		self::register("sculk_sensor", fn(BID $id) => new SculkSensor($id, "Sculk Sensor", new Info(new BreakInfo(1.5))));
 		self::register("sculk_shrieker", fn(BID $id) => new SculkShrieker($id, "Sculk Shrieker", new Info(new BreakInfo(3))));
 		self::register("sculk_vein", fn(BID $id) => new SculkVein($id, "Sculk Vein", new Info(new BreakInfo(0.2))));
-		self::register("reinforced_deepslate", fn(BID $id) => new class($id, "Reinforced Deepslate", new Info(new BreakInfo(55.0, ToolType::NONE, 0, 3600.0))) extends Opaque{
+		self::register("reinforced_deepslate", fn(BID $id) => new class($id, "Reinforced Deepslate", new Info(new BreakInfo(55.0, ToolType::NONE, 0, 6000.0))) extends Opaque{
 			public function getDropsForCompatibleTool(Item $item) : array{
 				return [];
 			}
 		});
 
-		self::register("pointed_dripstone", fn(BID $id) => new PointedDripstone($id, "Pointed Dripstone", new Info(new BreakInfo(1.5))));
-		self::register("dripstone", fn(BID $id) => new Opaque($id, "Dripstone Block", new Info(BlockBreakInfo::pickaxe(1.5, ToolTier::WOOD, 30.0))));
+		self::register("pointed_dripstone", fn(BID $id) => new PointedDripstone($id, "Pointed Dripstone", new Info(new BreakInfo(1.5, blastResistance: 15))));
+		self::register("dripstone", fn(BID $id) => new Opaque($id, "Dripstone Block", new Info(BlockBreakInfo::pickaxe(1.5, ToolTier::WOOD, 5))));
 
 		self::registerBlocksR13();
 		self::registerBlocksR14();
