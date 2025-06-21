@@ -793,8 +793,9 @@ final class BlockTypeIds{
 	public const SCULK_VEIN = 10763;
 	public const SCULK_SENSOR = 10764;
 	public const SCULK_SHRIEKER = 10765;
+	public const RESPAWN_ANCHOR = 10766;
 
-	public const FIRST_UNUSED_BLOCK_ID = 10766;
+	public const FIRST_UNUSED_BLOCK_ID = 10767;
 
 	private static int $nextDynamicId = self::FIRST_UNUSED_BLOCK_ID;
 
