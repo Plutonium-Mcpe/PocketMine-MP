@@ -36,7 +36,7 @@ final class VersionInfo{
 	public const BUILD_CHANNEL = "stable";
 
 	private function __construct(){
-		//NOOP
+		//NOOPP
 	}
 
 	private static ?string $gitHash = null;
