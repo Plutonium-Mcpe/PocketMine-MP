@@ -141,6 +141,8 @@ class InGamePacketHandler extends PacketHandler{
 	protected ?float $lastPlayerAuthInputPitch = null;
 	protected ?BitSet $lastPlayerAuthInputFlags = null;
 
+	protected ?BlockPosition $lastBlockAttacked = null;
+
 	/** @var bool */
 	public $forceMoveSync = false;
 
@@ -667,18 +669,30 @@ class InGamePacketHandler extends PacketHandler{
 	private function handlePlayerActionFromData(int $action, BlockPosition $blockPosition, int $face) : bool{
 		$pos = new Vector3($blockPosition->getX(), $blockPosition->getY(), $blockPosition->getZ());
 
+		$this->session->getLogger()->debug("PlayerAction $action on $pos (face: $face)");
 		switch($action){
 			case PlayerAction::START_BREAK:
+			case PlayerAction::CONTINUE_DESTROY_BLOCK: //destroy the next block while holding down left click
 				self::validateFacing($face);
-				if(!$this->player->attackBlock($pos, $face)){
-					$this->onFailedBlockAction($pos, $face);
+				if($this->lastBlockAttacked !== null && $blockPosition->equals($this->lastBlockAttacked)){
+					//the client will send CONTINUE_DESTROY_BLOCK for the currently targeted block directly before it
+					//sends PREDICT_DESTROY_BLOCK, but also when it starts to break the block
+					//this seems like a bug in the client and would cause spurious left-click events if we allowed it to
+					//be delivered to the player
+					$this->session->getLogger()->debug("Ignoring PlayerAction $action on $pos because we were already destroying this block");
+					$this->syncBlocksNearby($pos, $face);
+					break;
 				}
-
+				if(!$this->player->attackBlock($pos, $face)){
+					$this->syncBlocksNearby($pos, $face);
+				}
+				$this->lastBlockAttacked = $blockPosition;
 				break;
 
 			case PlayerAction::ABORT_BREAK:
 			case PlayerAction::STOP_BREAK:
 				$this->player->stopBreakBlock($pos);
+				$this->lastBlockAttacked = null;
 				break;
 			case PlayerAction::START_SLEEPING:
 				//unused
@@ -689,11 +703,68 @@ class InGamePacketHandler extends PacketHandler{
 			case PlayerAction::CRACK_BREAK:
 				self::validateFacing($face);
 				$this->player->continueBreakBlock($pos, $face);
+				$this->lastBlockAttacked = $blockPosition;
 				break;
 			case PlayerAction::INTERACT_BLOCK: //TODO: ignored (for now)
 				break;
 			case PlayerAction::CREATIVE_PLAYER_DESTROY_BLOCK:
-				//TODO: do we need to handle this?
+				if(!$this->player->isCreative()) {
+					$this->player->getNetworkSession()->getLogger()->debug("Ignoring PlayerAction $action on $pos because player isnt in creative");
+					$this->onFailedBlockAction($pos, $face);
+					break;
+				}
+
+				if(!$this->player->breakBlock($pos)){
+					$this->onFailedBlockAction($pos, $face);
+				}
+				break;
+			case PlayerAction::PREDICT_DESTROY_BLOCK:
+				if($this->player->isCreative()) {
+					$this->session->getLogger()->debug("Ignoring PlayerAction $action on $pos because player is in creative mode");
+					break;
+				}
+
+				if($this->lastBlockAttacked === null){
+					//the client will send this when it starts to break a block, but also when it continues to break the
+					//currently targeted block, so we need to ignore it if we don't have a block that we're currently
+					$this->session->getLogger()->debug("Ignoring PlayerAction $action on $pos because we have no block being broken");
+					$this->onFailedBlockAction($pos, $face);
+					break;
+				}
+
+				if($pos->distanceSquared($this->player->getLocation()) > 10000){
+					$this->session->getLogger()->debug("Ignoring PlayerAction $action on $pos because it is too far away from the player");
+					break;
+				}
+
+				$target = $this->player->getWorld()->getBlock($pos);
+				$breakHandler = $this->player->getBlockBreakHandler();
+				if($breakHandler === null && !$target->getBreakInfo()->breaksInstantly()){
+					//the client will send this when it starts to break a block, but also when it continues to break the
+					//currently targeted block, so we need to ignore it if the player has no BlockBreakHandler
+					//this is a hack to prevent the client from spamming this packet when it starts to break a block
+					//this is also sent when the player is not in creative mode, so we need to check that too
+					$this->session->getLogger()->debug("Ignoring PlayerAction $action on $pos because player has no BlockBreakHandler");
+					$this->onFailedBlockAction($pos, $face);
+					break;
+				} else if($breakHandler !== null && !$target->getBreakInfo()->breaksInstantly()) {
+					$breakHandler->update(); // 1 tick compensation for the client sending this packet before the block break progress is updated
+
+					$this->session->getLogger()->debug("PlayerAction $action on $pos with break progress " . $breakHandler->getBreakProgress() . " (face: $face)");
+					if($breakHandler->getBreakProgress() < 1) {
+						//the client will send this when it starts to break a block, but also when it continues to break the
+						//currently targeted block, so we need to ignore it if the break progress is less than 1
+						//this is a hack to prevent the client from spamming this packet when it starts to break a block
+						$this->session->getLogger()->debug("Ignoring PlayerAction $action on $pos because break progress is less than 1");
+						$this->onFailedBlockAction($pos, $face);
+						break;
+					}
+				}
+
+				if(!$this->player->breakBlock($pos)){
+					$this->onFailedBlockAction($pos, $face);
+				}
+				$this->lastBlockAttacked = null;
 				break;
 			case PlayerAction::START_ITEM_USE_ON:
 			case PlayerAction::STOP_ITEM_USE_ON:

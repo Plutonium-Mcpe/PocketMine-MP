@@ -100,7 +100,7 @@ class PreSpawnPacketHandler extends PacketHandler{
 				$this->server->getMotd(),
 				"",
 				false,
-				new PlayerMovementSettings(0, false),
+				new PlayerMovementSettings(0, true),
 				0,
 				0,
 				"",

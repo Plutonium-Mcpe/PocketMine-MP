@@ -331,6 +331,13 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer{
 		parent::__construct($spawnLocation, $this->playerInfo->getSkin(), $namedtag);
 	}
 
+	/**
+	 * @return SurvivalBlockBreakHandler|null
+	 */
+	public function getBlockBreakHandler() : ?SurvivalBlockBreakHandler{
+		return $this->blockBreakHandler;
+	}
+
 	protected function initHumanData(CompoundTag $nbt) : void{
 		$this->setNameTag($this->username);
 	}
@@ -1444,8 +1451,14 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer{
 				Timings::$playerCheckNearEntities->stopTiming();
 			}
 
-			if($this->blockBreakHandler !== null && !$this->blockBreakHandler->update()){
-				$this->blockBreakHandler = null;
+			if($this->blockBreakHandler !== null){
+				$this->blockBreakHandler->update();
+				if($this->blockBreakHandler->getBreakProgress() >= 1) {
+					// If the block break progress is 100% we break the block
+					// This is a hack for custom block
+					$this->breakBlock($this->blockBreakHandler->getBlockPos());
+					$this->blockBreakHandler = null;
+				}
 			}
 		}
 
