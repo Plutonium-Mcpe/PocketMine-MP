@@ -491,9 +491,7 @@ class InGamePacketHandler extends PacketHandler{
 			case UseItemTransactionData::ACTION_BREAK_BLOCK:
 				$blockPos = $data->getBlockPosition();
 				$vBlockPos = new Vector3($blockPos->getX(), $blockPos->getY(), $blockPos->getZ());
-				if(!$this->player->breakBlock($vBlockPos)){
-					$this->onFailedBlockAction($vBlockPos, null);
-				}
+				$this->onFailedBlockAction($vBlockPos, null);
 				return true;
 			case UseItemTransactionData::ACTION_CLICK_AIR:
 				if($this->player->isUsingItem()){
