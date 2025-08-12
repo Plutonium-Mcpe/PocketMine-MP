@@ -680,11 +680,10 @@ class InGamePacketHandler extends PacketHandler{
 					//this seems like a bug in the client and would cause spurious left-click events if we allowed it to
 					//be delivered to the player
 					$this->session->getLogger()->debug("Ignoring PlayerAction $action on $pos because we were already destroying this block");
-					$this->syncBlocksNearby($pos, $face);
 					break;
 				}
 				if(!$this->player->attackBlock($pos, $face)){
-					$this->syncBlocksNearby($pos, $face);
+					$this->onFailedBlockAction($pos, $face);
 				}
 				$this->lastBlockAttacked = $blockPosition;
 				break;
