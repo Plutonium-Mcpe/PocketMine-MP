@@ -112,6 +112,7 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataCollection;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataProperties;
 use pocketmine\network\mcpe\protocol\types\entity\PlayerMetadataFlags;
+use pocketmine\network\PacketHandlingException;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\permission\DefaultPermissions;
 use pocketmine\permission\PermissibleBase;
@@ -162,6 +163,8 @@ use const PHP_INT_MAX;
  */
 class Player extends Human implements CommandSender, ChunkListener, IPlayer{
 	use PermissibleDelegateTrait;
+
+	private const MAX_FORM_RESPONSE_DEPTH = 2; //modal/simple will be 1, custom forms 2 - they will never contain anything other than string|int|float|bool|null
 
 	private const MOVES_PER_TICK = 2;
 	private const MOVE_BACKLOG_SIZE = 100 * self::MOVES_PER_TICK; //100 ticks backlog (5 seconds)
@@ -2102,12 +2105,21 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer{
 	}
 
 	/**
-	 * @param mixed $responseData
+	 * @param int         $formId
+	 * @param string|null $data
+	 *
+	 * @return bool
 	 */
-	public function onFormSubmit(int $formId, $responseData) : bool{
+	public function onFormSubmit(int $formId, ?string $data) : bool{
 		if(!isset($this->forms[$formId])){
 			$this->logger->debug("Got unexpected response for form $formId");
 			return false;
+		}
+
+		try{
+			$responseData = json_decode($data, true, self::MAX_FORM_RESPONSE_DEPTH, JSON_THROW_ON_ERROR);
+		}catch(\JsonException $e){
+			throw PacketHandlingException::wrap($e, "Failed to decode form response data");
 		}
 
 		try{
@@ -2115,6 +2127,8 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer{
 		}catch(FormValidationException $e){
 			$this->logger->critical("Failed to validate form " . get_class($this->forms[$formId]) . ": " . $e->getMessage());
 			$this->logger->logException($e);
+		} catch(\Exception $exception) {
+			throw PacketHandlingException::wrap($exception, "Failed to handle form response for form " . get_class($this->forms[$formId]) . " with ID $formId");
 		}finally{
 			unset($this->forms[$formId]);
 		}
