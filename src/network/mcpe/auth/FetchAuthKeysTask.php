@@ -74,21 +74,21 @@ class FetchAuthKeysTask extends AsyncTask{
 			$openIdConfig = $this->getOpenIdConfiguration($authServiceUri);
 			$jwksUri = $openIdConfig->jwks_uri;
 
-			$this->issuer = $openIdConfig->issuer;
+			$issuer = $openIdConfig->issuer;
 		} catch (\RuntimeException $e) {
 			$errors[] = $e->getMessage();
 			$jwksUri = $authServiceUri . self::AUTHORIZATION_SERVICE_KEYS_PATH;
 
-			$this->issuer = $authServiceUri;
+			$issuer = $authServiceUri;
 		}
 
 		try{
-			$this->keys = $this->getKeys($jwksUri);
+			$keys = $this->getKeys($jwksUri);
 		}catch(\RuntimeException $e){
 			$errors[] = $e->getMessage();
 		}
 
-		$this->errors = $errors === [] ? null : $errors;
+		$this->setResult(igbinary_serialize([$keys, $issuer, $errors === [] ? null : $errors]) ?? throw new \RuntimeException("This should never fail"));
 	}
 
 	private function getAuthServiceURI() : string{
@@ -198,11 +198,13 @@ class FetchAuthKeysTask extends AsyncTask{
 	}
 
 	public function onCompletion() : void{
+		[$keys, $issuer, $errors] = igbinary_unserialize($this->getResult());
+
 		/**
 		 * @var \Closure $callback
 		 * @phpstan-var \Closure(?AuthServiceKey[] $keys, string $issuer, ?string[] $errors) : void $callback
 		 */
 		$callback = $this->fetchLocal(self::KEYS_ON_COMPLETION);
-		$callback($this->keys, $this->issuer ?? "", $this->errors);
+		$callback($keys, $issuer, $errors);
 	}
 }
