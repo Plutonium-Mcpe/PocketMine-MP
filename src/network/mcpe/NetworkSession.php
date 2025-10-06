@@ -495,7 +495,7 @@ class NetworkSession{
 		$timings->startTiming();
 		try{
 			$packet->encode($serializer);
-			return $serializer->getBuffer();
+			return $serializer->getData();
 		}finally{
 			$timings->stopTiming();
 		}
@@ -523,10 +523,10 @@ class NetworkSession{
 				PacketBatch::encodeRaw($stream, $this->sendBuffer);
 
 				if($this->enableCompression){
-					$promise = $this->server->prepareBatch($stream->getBuffer(), $this->compressor, $syncMode, Timings::$playerNetworkSendCompressSessionBuffer);
+					$promise = $this->server->prepareBatch($stream->getData(), $this->compressor, $syncMode, Timings::$playerNetworkSendCompressSessionBuffer);
 				}else{
 					$promise = new CompressBatchPromise();
-					$promise->resolve($stream->getBuffer());
+					$promise->resolve($stream->getData());
 				}
 				$this->sendBuffer = [];
 				$this->queueCompressedNoBufferFlush($promise, $immediate);

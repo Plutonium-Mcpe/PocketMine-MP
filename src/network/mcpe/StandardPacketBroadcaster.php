@@ -78,9 +78,9 @@ final class StandardPacketBroadcaster implements PacketBroadcaster{
 			$threshold = $compressor->getCompressionThreshold();
 			if(count($compressorTargets) > 1 && $threshold !== null && $totalLength >= $threshold){
 				//do not prepare shared batch unless we're sure it will be compressed
-				$stream = new BinaryStream();
+				$stream = new ByteBufferWriter();
 				PacketBatch::encodeRaw($stream, $packetBuffers);
-				$batchBuffer = $stream->getBuffer();
+				$batchBuffer = $stream->getData();
 
 				$promise = $this->server->prepareBatch($batchBuffer, $compressor, timings: Timings::$playerNetworkSendCompressBroadcast);
 				foreach($compressorTargets as $target){

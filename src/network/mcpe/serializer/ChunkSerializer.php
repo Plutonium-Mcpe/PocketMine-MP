@@ -115,7 +115,7 @@ final class ChunkSerializer{
 		}else{
 			$stream->writeByteArray(self::serializeTiles($chunk));
 		}
-		return $stream->getBuffer();
+		return $stream->getData();
 	}
 
 	public static function serializeSubChunk(SubChunk $subChunk, RuntimeBlockMapping $blockMapper, ByteBufferWriter $stream, bool $persistentBlockStates) : void{
@@ -151,14 +151,14 @@ final class ChunkSerializer{
 	}
 
 	public static function serializeTiles(Chunk $chunk) : string{
-		$stream = new BinaryStream();
+		$stream = new ByteBufferWriter();
 		foreach($chunk->getTiles() as $tile){
 			if($tile instanceof Spawnable){
 				$stream->writeByteArray($tile->getSerializedSpawnCompound()->getEncodedNbt());
 			}
 		}
 
-		return $stream->getBuffer();
+		return $stream->getData();
 	}
 
 	/**
