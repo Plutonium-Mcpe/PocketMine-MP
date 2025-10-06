@@ -418,10 +418,12 @@ class NetworkSession{
 		$timings->startTiming();
 
 		try{
-			$ev = new DataPacketDecodeEvent($this, $packet->pid(), $buffer);
-			$ev->call();
-			if($ev->isCancelled()){
-				return;
+			if(DataPacketDecodeEvent::hasHandlers()){
+				$ev = new DataPacketDecodeEvent($this, $packet->pid(), $buffer);
+				$ev->call();
+				if($ev->isCancelled()){
+					return;
+				}
 			}
 
 			$decodeTimings = Timings::getDecodeDataPacketTimings($packet);
@@ -441,18 +443,21 @@ class NetworkSession{
 				$decodeTimings->stopTiming();
 			}
 
-			$ev = new DataPacketReceiveEvent($this, $packet);
-			$ev->call();
-			if(!$ev->isCancelled()){
-				$handlerTimings = Timings::getHandleDataPacketTimings($packet);
-				$handlerTimings->startTiming();
-				try{
-					if($this->handler === null || !$packet->handle($this->handler)){
-						$this->logger->debug("Unhandled " . $packet->getName() . ": " . base64_encode($stream->getBuffer()));
-					}
-				}finally{
-					$handlerTimings->stopTiming();
+			if(DataPacketReceiveEvent::hasHandlers()){
+				$ev = new DataPacketReceiveEvent($this, $packet);
+				$ev->call();
+				if($ev->isCancelled()){
+					return;
 				}
+			}
+			$handlerTimings = Timings::getHandleDataPacketTimings($packet);
+			$handlerTimings->startTiming();
+			try{
+				if($this->handler === null || !$packet->handle($this->handler)){
+					$this->logger->debug("Unhandled " . $packet->getName() . ": " . base64_encode($stream->getData()));
+				}
+			}finally{
+				$handlerTimings->stopTiming();
 			}
 		}finally{
 			$timings->stopTiming();
