@@ -135,7 +135,7 @@ final class ChunkSerializer{
 				//these LSHIFT by 1 uvarints are optimizations: the client expects zigzag varints here
 				//but since we know they are always unsigned, we can avoid the extra fcall overhead of
 				//zigzag and just shift directly.
-				VarInt::writeSignedInt($stream, count($palette) << 1); //yes, this is intentionally zigzag
+				VarInt::writeUnsignedInt($stream, count($palette) << 1); //yes, this is intentionally zigzag
 			}
 			if($persistentBlockStates){
 				$nbtSerializer = new NetworkNbtSerializer();
