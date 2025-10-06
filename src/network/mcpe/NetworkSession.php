@@ -433,8 +433,8 @@ class NetworkSession{
 				}catch(PacketDecodeException $e){
 					throw PacketHandlingException::wrap($e);
 				}
-				if(!$stream->feof()){
-					$remains = substr($stream->getBuffer(), $stream->getOffset());
+				if($stream->getUnreadLength() > 0){
+					$remains = substr($stream->getData(), $stream->getOffset());
 					$this->logger->debug("Still " . strlen($remains) . " bytes unread in " . $packet->getName() . ": " . bin2hex($remains));
 				}
 			}finally{
@@ -448,7 +448,7 @@ class NetworkSession{
 				$handlerTimings->startTiming();
 				try{
 					if($this->handler === null || !$packet->handle($this->handler)){
-						$this->logger->debug("Unhandled " . $packet->getName() . ": " . base64_encode($stream->getBuffer()));
+						$this->logger->debug("Unhandled " . $packet->getName() . ": " . base64_encode($stream->getData()));
 					}
 				}finally{
 					$handlerTimings->stopTiming();
