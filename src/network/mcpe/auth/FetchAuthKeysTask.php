@@ -28,7 +28,6 @@ use pocketmine\network\mcpe\protocol\types\login\openid\api\AuthServiceKey;
 use pocketmine\network\mcpe\protocol\types\login\openid\api\AuthServiceOpenIdConfiguration;
 use pocketmine\network\mcpe\protocol\types\login\openid\api\MinecraftServicesDiscovery;
 use pocketmine\scheduler\AsyncTask;
-use pocketmine\thread\NonThreadSafeValue;
 use pocketmine\utils\Internet;
 use function gettype;
 use function is_array;
@@ -44,12 +43,12 @@ class FetchAuthKeysTask extends AsyncTask{
 	private const AUTHORIZATION_SERVICE_OPENID_CONFIGURATION_PATH = "/.well-known/openid-configuration";
 	private const AUTHORIZATION_SERVICE_KEYS_PATH = "/.well-known/keys";
 
-	/** @phpstan-var ?NonThreadSafeValue<array<string, AuthServiceKey>> */
-	private ?NonThreadSafeValue $keys = null;
+	/** @phpstan-var ?array<string, AuthServiceKey> */
+	private ?array $keys = null;
 	private string $issuer;
 
-	/** @phpstan-var ?NonThreadSafeValue<non-empty-array<string>> */
-	private ?NonThreadSafeValue $errors = null;
+	/** @phpstan-var ?non-empty-array<string> */
+	private ?array $errors = null;
 
 	/**
 	 * @phpstan-param \Closure(?array<string, AuthServiceKey> $keys, string $issuer, ?string[] $errors) : void $onCompletion
@@ -84,12 +83,12 @@ class FetchAuthKeysTask extends AsyncTask{
 		}
 
 		try{
-			$this->keys = new NonThreadSafeValue($this->getKeys($jwksUri));
+			$this->keys = $this->getKeys($jwksUri);
 		}catch(\RuntimeException $e){
 			$errors[] = $e->getMessage();
 		}
 
-		$this->errors = $errors === [] ? null : new NonThreadSafeValue($errors);
+		$this->errors = $errors === [] ? null : $errors;
 	}
 
 	private function getAuthServiceURI() : string{
@@ -204,6 +203,6 @@ class FetchAuthKeysTask extends AsyncTask{
 		 * @phpstan-var \Closure(?AuthServiceKey[] $keys, string $issuer, ?string[] $errors) : void $callback
 		 */
 		$callback = $this->fetchLocal(self::KEYS_ON_COMPLETION);
-		$callback($this->keys?->deserialize(), $this->issuer, $this->errors?->deserialize());
+		$callback($this->keys, $this->issuer, $this->errors);
 	}
 }

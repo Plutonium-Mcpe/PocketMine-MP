@@ -24,7 +24,6 @@
       "ext-pcre": "*",
       "ext-phar": "*",
       "ext-pthreads": "^4.0",
-      "ext-pmmpthread": "^6.1.0",
       "ext-reflection": "*",
       "ext-simplexml": "*",
       "ext-sockets": "*",
