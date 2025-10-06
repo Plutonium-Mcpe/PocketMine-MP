@@ -23,16 +23,23 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\auth;
 
-use pocketmine\lang\Translatable;
+final class AuthKeyring{
 
-class VerifyLoginException extends \RuntimeException{
+	/**
+	 * @param string[] $keys
+	 * @phpstan-param array<string, string> $keys
+	 */
+	public function __construct(
+		private string $issuer,
+		private array $keys
+	){}
 
-	private Translatable|string $disconnectMessage;
+	public function getIssuer() : string{ return $this->issuer; }
 
-	public function __construct(string $message, Translatable|string|null $disconnectMessage = null, int $code = 0, ?\Throwable $previous = null){
-		parent::__construct($message, $code, $previous);
-		$this->disconnectMessage = $disconnectMessage ?? $message;
+	/**
+	 * Returns a (raw) DER public key associated with the given key ID
+	 */
+	public function getKey(string $keyId) : ?string{
+		return $this->keys[$keyId] ?? null;
 	}
-
-	public function getDisconnectMessage() : Translatable|string{ return $this->disconnectMessage; }
 }
