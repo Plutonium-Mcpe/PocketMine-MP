@@ -196,7 +196,7 @@ class TypeConverter{
 			$meta,
 			$itemStack->getCount(),
 			$blockRuntimeId,
-			$extraDataSerializer->getBuffer()
+			$extraDataSerializer->getData()
 		);
 	}
 

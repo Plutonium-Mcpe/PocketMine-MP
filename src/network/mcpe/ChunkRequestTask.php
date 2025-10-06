@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe;
 
+use pmmp\encoding\ByteBufferWriter;
 use pocketmine\network\mcpe\compression\CompressBatchPromise;
 use pocketmine\network\mcpe\compression\Compressor;
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
@@ -79,10 +80,10 @@ class ChunkRequestTask extends AsyncTask{
 		$subCount = ChunkSerializer::getSubChunkCount($chunk, $dimensionId) + ChunkSerializer::LOWER_PADDING_SIZE;
 		$payload = ChunkSerializer::serializeFullChunk($chunk, $dimensionId, RuntimeBlockMapping::getInstance(), $this->tiles);
 
-		$stream = new BinaryStream();
+		$stream = new ByteBufferWriter();
 		PacketBatch::encodePackets($stream, [LevelChunkPacket::create(new ChunkPosition($this->chunkX, $this->chunkZ), $dimensionId, $subCount, false, null, $payload)]);
-		$this->setResult($this->compressor->compress($stream->getBuffer()));
-		$this->setResult(chr($this->compressor->getNetworkId()) . $this->compressor->compress($stream->getBuffer()));
+		$this->setResult($this->compressor->compress($stream->getData()));
+		$this->setResult(chr($this->compressor->getNetworkId()) . $this->compressor->compress($stream->getData()));
 	}
 
 	public function onError() : void{
