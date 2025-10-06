@@ -203,6 +203,6 @@ class FetchAuthKeysTask extends AsyncTask{
 		 * @phpstan-var \Closure(?AuthServiceKey[] $keys, string $issuer, ?string[] $errors) : void $callback
 		 */
 		$callback = $this->fetchLocal(self::KEYS_ON_COMPLETION);
-		$callback($this->keys, $this->issuer, $this->errors);
+		$callback($this->keys, $issuer ?? "", $this->errors);
 	}
 }
