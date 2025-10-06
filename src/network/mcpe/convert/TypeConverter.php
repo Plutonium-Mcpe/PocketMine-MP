@@ -23,6 +23,8 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\convert;
 
+use pmmp\encoding\ByteBufferReader;
+use pmmp\encoding\ByteBufferWriter;
 use pocketmine\block\Block;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\item\Durable;
@@ -33,7 +35,6 @@ use pocketmine\item\VanillaItems;
 use pocketmine\nbt\NbtException;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
-use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 use pocketmine\network\mcpe\protocol\types\GameMode as ProtocolGameMode;
 use pocketmine\network\mcpe\protocol\types\inventory\ItemStack;
 use pocketmine\network\mcpe\protocol\types\inventory\ItemStackExtraData;
@@ -187,7 +188,7 @@ class TypeConverter{
 		$extraData = $id === $this->shieldRuntimeId ?
 			new ItemStackExtraDataShield($nbt, canPlaceOn: [], canDestroy: [], blockingTick: 0) :
 			new ItemStackExtraData($nbt, canPlaceOn: [], canDestroy: []);
-		$extraDataSerializer = PacketSerializer::encoder();
+		$extraDataSerializer = new ByteBufferWriter();
 		$extraData->write($extraDataSerializer);
 
 		return new ItemStack(
@@ -211,7 +212,7 @@ class TypeConverter{
 		if($itemStack->getId() === 0){
 			return VanillaItems::AIR();
 		}
-		$extraDataDeserializer = PacketSerializer::decoder($itemStack->getRawExtraData(), 0);
+		$extraDataDeserializer = new ByteBufferReader($itemStack->getRawExtraData());
 		$extraData = $itemStack->getId() === $this->shieldRuntimeId ?
 			ItemStackExtraDataShield::read($extraDataDeserializer) :
 			ItemStackExtraData::read($extraDataDeserializer);
