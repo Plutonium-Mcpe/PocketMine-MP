@@ -10,7 +10,7 @@ Small contributions (e.g. minor bug fixes) can be submitted as pull requests dir
 
 Larger contributions like feature additions should be preceded by a [Change Proposal](#rfcs--change-proposals) to allow maintainers and other people to discuss and decide if it's a good idea or not.
 
-## Useful documentation from github.com
+## Useful documentation from github.com 
 - [About pull requests](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests)
 - [About forks](https://docs.github.com/en/github/collaborating-with-pull-requests/working-with-forks/about-forks)
 - [Creating a pull request from a fork](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork)
