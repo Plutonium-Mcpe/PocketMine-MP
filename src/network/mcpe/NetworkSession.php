@@ -23,6 +23,9 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe;
 
+use pmmp\encoding\ByteBufferReader;
+use pmmp\encoding\ByteBufferWriter;
+use pmmp\encoding\DataDecodeException;
 use pocketmine\entity\effect\EffectInstance;
 use pocketmine\event\player\PlayerDuplicateLoginEvent;
 use pocketmine\event\server\DataPacketDecodeEvent;
@@ -68,7 +71,6 @@ use pocketmine\network\mcpe\protocol\PacketPool;
 use pocketmine\network\mcpe\protocol\PlayerListPacket;
 use pocketmine\network\mcpe\protocol\PlayStatusPacket;
 use pocketmine\network\mcpe\protocol\serializer\PacketBatch;
-use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 use pocketmine\network\mcpe\protocol\ServerboundPacket;
 use pocketmine\network\mcpe\protocol\ServerToClientHandshakePacket;
 use pocketmine\network\mcpe\protocol\SetDifficultyPacket;
@@ -375,7 +377,7 @@ class NetworkSession{
 			}
 
 			try{
-				$stream = new BinaryStream($decompressed);
+				$stream = new ByteBufferReader($decompressed);
 				$count = 0;
 				foreach(PacketBatch::decodeRaw($stream) as $buffer){
 					$this->gamePacketLimiter->decrement();
@@ -394,7 +396,7 @@ class NetworkSession{
 						throw PacketHandlingException::wrap($e, "Error processing " . $packet->getName());
 					}
 				}
-			}catch(PacketDecodeException|BinaryDataException $e){
+			}catch(PacketDecodeException|DataDecodeException $e){
 				$this->logger->logException($e);
 				throw PacketHandlingException::wrap($e, "Packet batch decode error");
 			}
@@ -424,14 +426,14 @@ class NetworkSession{
 			$decodeTimings = Timings::getDecodeDataPacketTimings($packet);
 			$decodeTimings->startTiming();
 			try{
-				$stream = PacketSerializer::decoder($buffer, 0);
+				$stream = new ByteBufferReader($buffer);
 				try{
 					$packet->decode($stream);
 				}catch(PacketDecodeException $e){
 					throw PacketHandlingException::wrap($e);
 				}
-				if(!$stream->feof()){
-					$remains = substr($stream->getBuffer(), $stream->getOffset());
+				if($stream->getUnreadLength() > 0){
+					$remains = substr($stream->getData(), $stream->getOffset());
 					$this->logger->debug("Still " . strlen($remains) . " bytes unread in " . $packet->getName() . ": " . bin2hex($remains));
 				}
 			}finally{
@@ -445,7 +447,7 @@ class NetworkSession{
 				$handlerTimings->startTiming();
 				try{
 					if($this->handler === null || !$packet->handle($this->handler)){
-						$this->logger->debug("Unhandled " . $packet->getName() . ": " . base64_encode($stream->getBuffer()));
+						$this->logger->debug("Unhandled " . $packet->getName() . ": " . base64_encode($stream->getData()));
 					}
 				}finally{
 					$handlerTimings->stopTiming();
@@ -474,7 +476,7 @@ class NetworkSession{
 				return false;
 			}
 
-			$this->addToSendBuffer(self::encodePacketTimed(PacketSerializer::encoder(), $packet));
+			$this->addToSendBuffer(self::encodePacketTimed(new ByteBufferWriter(), $packet));
 			if($immediate){
 				$this->flushSendBuffer(true);
 			}
@@ -488,12 +490,12 @@ class NetworkSession{
 	/**
 	 * @internal
 	 */
-	public static function encodePacketTimed(PacketSerializer $serializer, ClientboundPacket $packet) : string{
+	public static function encodePacketTimed(ByteBufferWriter $serializer, ClientboundPacket $packet) : string{
 		$timings = Timings::getEncodeDataPacketTimings($packet);
 		$timings->startTiming();
 		try{
 			$packet->encode($serializer);
-			return $serializer->getBuffer();
+			return $serializer->getData();
 		}finally{
 			$timings->stopTiming();
 		}
@@ -517,14 +519,14 @@ class NetworkSession{
 					$syncMode = false;
 				}
 
-				$stream = new BinaryStream();
+				$stream = new ByteBufferWriter();
 				PacketBatch::encodeRaw($stream, $this->sendBuffer);
 
 				if($this->enableCompression){
-					$promise = $this->server->prepareBatch($stream->getBuffer(), $this->compressor, $syncMode, Timings::$playerNetworkSendCompressSessionBuffer);
+					$promise = $this->server->prepareBatch($stream->getData(), $this->compressor, $syncMode, Timings::$playerNetworkSendCompressSessionBuffer);
 				}else{
 					$promise = new CompressBatchPromise();
-					$promise->resolve($stream->getBuffer());
+					$promise->resolve($stream->getData());
 				}
 				$this->sendBuffer = [];
 				$this->queueCompressedNoBufferFlush($promise, $immediate);
