@@ -26,7 +26,8 @@ namespace pocketmine\data\bedrock;
 use pocketmine\item\FireworkRocketType;
 use pocketmine\utils\SingletonTrait;
 
-final class FireworkRocketTypeIdMap{
+final class
+FireworkRocketTypeIdMap{
 	use SingletonTrait;
 	/** @phpstan-use IntSaveIdMapTrait<FireworkRocketType> */
 	use IntSaveIdMapTrait;
