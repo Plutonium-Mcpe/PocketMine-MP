@@ -589,7 +589,6 @@ class PluginManager{
 			return null;
 		}
 
-		/** @var \ReflectionClass<Event> $eventClass */
 		return $eventClass->getName();
 	}
 
