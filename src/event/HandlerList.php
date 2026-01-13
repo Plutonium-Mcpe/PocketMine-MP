@@ -25,23 +25,31 @@ namespace pocketmine\event;
 
 use pocketmine\plugin\Plugin;
 use function array_merge;
-use function array_merge_recursive;
-use function ksort;
+use function krsort;
 use function spl_object_id;
 use const SORT_NUMERIC;
 
+/**
+ * @phpstan-template TEvent of Event
+ */
 class HandlerList{
 	/**
 	 * @var RegisteredListener[][]
-	 * @phpstan-var array<int, array<int, RegisteredListener>>
+	 * @phpstan-var array<int, array<int, RegisteredListener<TEvent>>>
 	 */
 	private array $handlerSlots = [];
 
-	/** @var RegisteredListenerCache[] */
+	/**
+	 * @var RegisteredListenerCache[]
+	 * @phpstan-var array<int, RegisteredListenerCache<*>>
+	 */
 	private array $affectedHandlerCaches = [];
 
 	/**
-	 * @phpstan-param class-string<Event|AsyncEvent> $class
+	 * TODO: parentList should not participate in the inference of TEvent, but PHPStan doesn't currently have NoInfer features
+	 * @phpstan-param class-string<TEvent> $class
+	 * @phpstan-param ?HandlerList<contravariant TEvent> $parentList
+	 * @phpstan-param RegisteredListenerCache<TEvent> $handlerCache
 	 */
 	public function __construct(
 		private string $class,
@@ -54,7 +62,7 @@ class HandlerList{
 	}
 
 	/**
-	 * @throws \Exception
+	 * @phpstan-param RegisteredListener<TEvent> $listener
 	 */
 	public function register(RegisteredListener $listener) : void{
 		if(isset($this->handlerSlots[$listener->getPriority()][spl_object_id($listener)])){
@@ -66,6 +74,7 @@ class HandlerList{
 
 	/**
 	 * @param RegisteredListener[] $listeners
+	 * @phpstan-param array<RegisteredListener<TEvent>> $listeners
 	 */
 	public function registerAll(array $listeners) : void{
 		foreach($listeners as $listener){
@@ -74,6 +83,9 @@ class HandlerList{
 		$this->invalidateAffectedCaches();
 	}
 
+	/**
+	 * @phpstan-param RegisteredListener<*>|Plugin|Listener $object
+	 */
 	public function unregister(RegisteredListener|Plugin|Listener $object) : void{
 		if($object instanceof Plugin || $object instanceof Listener){
 			foreach($this->handlerSlots as $priority => $list){
@@ -98,11 +110,15 @@ class HandlerList{
 
 	/**
 	 * @return RegisteredListener[]
+	 * @phpstan-return array<int, RegisteredListener<TEvent>>
 	 */
 	public function getListenersByPriority(int $priority) : array{
 		return $this->handlerSlots[$priority] ?? [];
 	}
 
+	/**
+	 * @phpstan-return ?HandlerList<contravariant TEvent>
+	 */
 	public function getParent() : ?HandlerList{
 		return $this->parentList;
 	}
@@ -118,7 +134,7 @@ class HandlerList{
 
 	/**
 	 * @return RegisteredListener[]
-	 * @phpstan-return list<RegisteredListener>
+	 * @phpstan-return list<RegisteredListener<TEvent>>
 	 */
 	public function getListenerList() : array{
 		if($this->handlerCache->list !== null){
@@ -130,27 +146,15 @@ class HandlerList{
 			$handlerLists[] = $currentList;
 		}
 
-		$listeners = [];
-		$asyncListeners = [];
-		$exclusiveAsyncListeners = [];
+		$listenersByPriority = [];
 		foreach($handlerLists as $currentList){
-			foreach($currentList->handlerSlots as $priority => $listenersToSort){
-				foreach($listenersToSort as $listener){
-					if(!$listener instanceof RegisteredAsyncListener){
-						$listeners[$priority][] = $listener;
-					}elseif(!$listener->canBeCalledConcurrently()){
-						$asyncListeners[$priority][] = $listener;
-					}else{
-						$exclusiveAsyncListeners[$priority][] = $listener;
-					}
-				}
+			foreach($currentList->handlerSlots as $priority => $listeners){
+				$listenersByPriority[$priority] = array_merge($listenersByPriority[$priority] ?? [], $listeners);
 			}
 		}
-		/** @var RegisteredListener[][] $listenersByPriority */
-		$listenersByPriority = array_merge_recursive($listeners, $asyncListeners, $exclusiveAsyncListeners);
 
 		//TODO: why on earth do the priorities have higher values for lower priority?
-		ksort($listenersByPriority, SORT_NUMERIC);
+		krsort($listenersByPriority, SORT_NUMERIC);
 
 		return $this->handlerCache->list = array_merge(...$listenersByPriority);
 	}
