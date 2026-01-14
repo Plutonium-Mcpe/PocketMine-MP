@@ -17,11 +17,11 @@ on:
     tags:
       - "*"
 
-# --- CORRECTION 1 : PERMISSIONS ---
+# --- AJOUT IMPORTANT : PERMISSIONS ---
 permissions:
   contents: write
   pull-requests: write
-# ----------------------------------
+# -------------------------------------
 
 env:
   PHP_VERSION: "8.2"
@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      # --- CORRECTION 2 : VERSION v4 ---
+      # --- CORRECTION : v6 -> v4 ---
       - uses: actions/checkout@v4
         with:
           submodules: true
@@ -161,7 +161,7 @@ jobs:
       - name: Generate core permission doc for doc.pmmp.io
         run: php tools/generate-permission-doc.php rst
 
-      # --- CORRECTION 3 : VERSION v4 ---
+      # --- CORRECTION : v5 -> v4 ---
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
