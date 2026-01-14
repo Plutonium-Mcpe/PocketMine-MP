@@ -2,7 +2,7 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
+ * ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
  * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
  * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
@@ -28,105 +28,125 @@ use pocketmine\utils\Utils;
 
 class HandlerListManager{
 
-	private static ?self $globalInstance = null;
+    private static ?self $globalInstance = null;
 
-	public static function global() : self{
-		return self::$globalInstance ?? (self::$globalInstance = new self());
-	}
+    public static function global() : self{
+        return self::$globalInstance ?? (self::$globalInstance = new self());
+    }
 
-	/** @var HandlerList[] classname => HandlerList */
-	private array $allLists = [];
-	/**
-	 * @var RegisteredListenerCache[] event class name => cache
-	 * @phpstan-var array<class-string<Event|AsyncEvent>, RegisteredListenerCache>
-	 */
-	private array $handlerCaches = [];
+    /**
+     * @var HandlerList[] classname => HandlerList
+     * @phpstan-var array<class-string<Event>, HandlerList<*>>
+     */
+    private array $allLists = [];
+    /**
+     * @var RegisteredListenerCache[] event class name => cache
+     * @phpstan-var array<class-string<Event>, RegisteredListenerCache<*>>
+     */
+    private array $handlerCaches = [];
 
-	/**
-	 * Unregisters all the listeners
-	 * If a Plugin or Listener is passed, all the listeners with that object will be removed
-	 */
-	public function unregisterAll(RegisteredListener|Plugin|Listener|null $object = null) : void{
-		if($object instanceof Listener || $object instanceof Plugin || $object instanceof RegisteredListener){
-			foreach($this->allLists as $h){
-				$h->unregister($object);
-			}
-		}else{
-			foreach($this->allLists as $h){
-				$h->clear();
-			}
-		}
-	}
+    /**
+     * Unregisters all the listeners
+     * If a Plugin or Listener is passed, all the listeners with that object will be removed
+     * @phpstan-param RegisteredListener<*>|Plugin|Listener|null $object
+     */
+    public function unregisterAll(RegisteredListener|Plugin|Listener|null $object = null) : void{
+        if($object instanceof Listener || $object instanceof Plugin || $object instanceof RegisteredListener){
+            foreach($this->allLists as $h){
+                $h->unregister($object);
+            }
+        }else{
+            foreach($this->allLists as $h){
+                $h->clear();
+            }
+        }
+    }
 
-	/**
-	 * @phpstan-param \ReflectionClass<Event|AsyncEvent> $class
-	 */
-	private static function isValidClass(\ReflectionClass $class) : bool{
-		$tags = Utils::parseDocComment((string) $class->getDocComment());
-		return !$class->isAbstract() || isset($tags["allowHandle"]);
-	}
+    /**
+     * @phpstan-param \ReflectionClass<Event|AsyncEvent> $class
+     */
+    private static function isValidClass(\ReflectionClass $class) : bool{
+        $tags = Utils::parseDocComment((string) $class->getDocComment());
+        return !$class->isAbstract() || isset($tags["allowHandle"]);
+    }
 
-	/**
-	 * @phpstan-param \ReflectionClass<Event|AsyncEvent> $class
-	 *
-	 * @phpstan-return \ReflectionClass<Event|AsyncEvent>|null
-	 */
-	private static function resolveNearestHandleableParent(\ReflectionClass $class) : ?\ReflectionClass{
-		for($parent = $class->getParentClass(); $parent !== false; $parent = $parent->getParentClass()){
-			if(self::isValidClass($parent)){
-				return $parent;
-			}
-			//NOOP
-		}
-		return null;
-	}
+    /**
+     * @phpstan-template TEvent of Event
+     * @phpstan-param \ReflectionClass<TEvent> $class
+     *
+     * @phpstan-return (\ReflectionClass<contravariant TEvent>&\ReflectionClass<Event>)|null
+     */
+    private static function resolveNearestHandleableParent(\ReflectionClass $class) : ?\ReflectionClass{
+        for($parent = $class->getParentClass(); $parent !== false; $parent = $parent->getParentClass()){
+            if(self::isValidClass($parent)){
+                return $parent;
+            }
+            //NOOP
+        }
+        return null;
+    }
 
-	/**
-	 * Returns the HandlerList for listeners that explicitly handle this event.
-	 *
-	 * Calling this method also lazily initializes the $classMap inheritance tree of handler lists.
-	 *
-	 * @phpstan-template TEvent of Event|AsyncEvent
-	 * @phpstan-param class-string<TEvent> $event
-	 *
-	 * @throws \ReflectionException
-	 * @throws \InvalidArgumentException
-	 */
-	public function getListFor(string $event) : HandlerList{
-		if(isset($this->allLists[$event])){
-			return $this->allLists[$event];
-		}
+    /**
+     * Returns the HandlerList for listeners that explicitly handle this event.
+     *
+     * Calling this method also lazily initializes the $classMap inheritance tree of handler lists.
+     *
+     * @phpstan-template TEvent of Event
+     *
+     * @phpstan-param class-string<TEvent> $event
+     * @phpstan-return HandlerList<TEvent>
+     *
+     * @throws \ReflectionException
+     * @throws \InvalidArgumentException
+     */
+    public function getListFor(string $event) : HandlerList{
+        if(isset($this->allLists[$event])){
+            /** @phpstan-var HandlerList<TEvent> $list */
+            $list = $this->allLists[$event];
+            return $list;
+        }
 
-		$class = new \ReflectionClass($event);
-		if(!self::isValidClass($class)){
-			throw new \InvalidArgumentException("Event must be non-abstract or have the @allowHandle annotation");
-		}
+        $class = new \ReflectionClass($event);
+        if(!self::isValidClass($class)){
+            throw new \InvalidArgumentException("Event must be non-abstract or have the @allowHandle annotation");
+        }
 
-		$parent = self::resolveNearestHandleableParent($class);
-		$cache = new RegisteredListenerCache();
-		$this->handlerCaches[$event] = $cache;
-		return $this->allLists[$event] = new HandlerList(
-			$event,
-			parentList: $parent !== null ? $this->getListFor($parent->getName()) : null,
-			handlerCache: $cache
-		);
-	}
+        $parent = self::resolveNearestHandleableParent($class);
+        $cache = new RegisteredListenerCache();
+        $this->handlerCaches[$event] = $cache;
 
-	/**
-	 * @phpstan-param class-string<Event|AsyncEvent> $event
-	 *
-	 * @return RegisteredListener[]
-	 */
-	public function getHandlersFor(string $event) : array{
-		$cache = $this->handlerCaches[$event] ?? null;
-		//getListFor() will populate the cache for the next call
-		return $cache->list ?? $this->getListFor($event)->getListenerList();
-	}
+        $parentList = $parent !== null ? $this->getListFor($parent->getName()) : null;
 
-	/**
-	 * @return HandlerList[]
-	 */
-	public function getAll() : array{
-		return $this->allLists;
-	}
+        //TODO: this @var is needed because we can't stop parentList from screwing up the inference for HandlerList<TEvent>
+        /** @phpstan-var HandlerList<TEvent> $list */
+        $list = new HandlerList(
+            $event,
+            parentList: $parentList,
+            handlerCache: $cache
+        );
+        $this->allLists[$event] = $list;
+        return $list;
+    }
+
+    /**
+     * @phpstan-template TEvent of Event
+     * @phpstan-param class-string<TEvent> $event
+     *
+     * @return RegisteredListener[]
+     * @phpstan-return list<RegisteredListener<TEvent>>
+     */
+    public function getHandlersFor(string $event) : array{
+        /** @phpstan-var ?RegisteredListenerCache<TEvent> $cache */
+        $cache = $this->handlerCaches[$event] ?? null;
+        //getListFor() will populate the cache for the next call
+        return $cache->list ?? $this->getListFor($event)->getListenerList();
+    }
+
+    /**
+     * @return HandlerList[]
+     * @phpstan-return array<class-string<Event>, HandlerList<*>>
+     */
+    public function getAll() : array{
+        return $this->allLists;
+    }
 }
