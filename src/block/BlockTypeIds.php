@@ -795,7 +795,7 @@ public const MOSS_BLOCK = 10759;
     public const SCULK_SHRIEKER = 10765;
     public const RESPAWN_ANCHOR = 10766;
 
-    // --- Ajout des nouveaux blocs Upstream (Décalés de +7) ---
+    // --- Blocs Upstream (Décalés pour laisser la place aux blocs personnalisés) ---
     public const OMINOUS_BANNER = 10767;
     public const OMINOUS_WALL_BANNER = 10768;
     public const ACACIA_CEILING_CENTER_HANGING_SIGN = 10769;
@@ -843,8 +843,30 @@ public const MOSS_BLOCK = 10759;
     public const WARPED_NYLIUM = 10811;
     public const INFESTED_DEEPSLATE = 10812;
     public const STRUCTURE_VOID = 10813;
+    
+    // --- Blocs Bamboo & Azalea (Fusionnés depuis Upstream) ---
+    public const BAMBOO_BLOCK = 10814;
+    public const BAMBOO_BUTTON = 10815;
+    public const BAMBOO_CEILING_CENTER_HANGING_SIGN = 10816;
+    public const BAMBOO_CEILING_EDGES_HANGING_SIGN = 10817;
+    public const BAMBOO_DOOR = 10818;
+    public const BAMBOO_FENCE = 10819;
+    public const BAMBOO_FENCE_GATE = 10820;
+    public const BAMBOO_PLANKS = 10821;
+    public const BAMBOO_PRESSURE_PLATE = 10822;
+    public const BAMBOO_SIGN = 10823;
+    public const BAMBOO_SLAB = 10824;
+    public const BAMBOO_STAIRS = 10825;
+    public const BAMBOO_TRAPDOOR = 10826;
+    public const BAMBOO_WALL_HANGING_SIGN = 10827;
+    public const BAMBOO_WALL_SIGN = 10828;
+    public const BAMBOO_MOSAIC = 10829;
+    public const BAMBOO_MOSAIC_SLAB = 10830;
+    public const BAMBOO_MOSAIC_STAIRS = 10831;
+    public const AZALEA = 10832;
+    public const FLOWERING_AZALEA = 10833;
 
-    public const FIRST_UNUSED_BLOCK_ID = 10814;
+    public const FIRST_UNUSED_BLOCK_ID = 10834;
 
 	private static int $nextDynamicId = self::FIRST_UNUSED_BLOCK_ID;
 

@@ -53,8 +53,6 @@ use pocketmine\network\mcpe\protocol\AnimatePacket;
 use pocketmine\network\mcpe\protocol\BlockActorDataPacket;
 use pocketmine\network\mcpe\protocol\BlockPickRequestPacket;
 use pocketmine\network\mcpe\protocol\BookEditPacket;
-use pocketmine\network\mcpe\protocol\BossEventPacket;
-use pocketmine\network\mcpe\protocol\CommandBlockUpdatePacket;
 use pocketmine\network\mcpe\protocol\CommandRequestPacket;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\EmotePacket;
@@ -62,10 +60,8 @@ use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 use pocketmine\network\mcpe\protocol\ItemStackRequestPacket;
 use pocketmine\network\mcpe\protocol\ItemStackResponsePacket;
-use pocketmine\network\mcpe\protocol\LabTablePacket;
 use pocketmine\network\mcpe\protocol\LecternUpdatePacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
-use pocketmine\network\mcpe\protocol\MapInfoRequestPacket;
 use pocketmine\network\mcpe\protocol\MobArmorEquipmentPacket;
 use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\network\mcpe\protocol\ModalFormResponsePacket;
@@ -77,12 +73,9 @@ use pocketmine\network\mcpe\protocol\PlayerHotbarPacket;
 use pocketmine\network\mcpe\protocol\PlayerSkinPacket;
 use pocketmine\network\mcpe\protocol\RequestChunkRadiusPacket;
 use pocketmine\network\mcpe\protocol\serializer\BitSet;
-use pocketmine\network\mcpe\protocol\ServerSettingsRequestPacket;
 use pocketmine\network\mcpe\protocol\SetActorMotionPacket;
 use pocketmine\network\mcpe\protocol\SetPlayerGameTypePacket;
-use pocketmine\network\mcpe\protocol\ShowCreditsPacket;
 use pocketmine\network\mcpe\protocol\SpawnExperienceOrbPacket;
-use pocketmine\network\mcpe\protocol\SubClientLoginPacket;
 use pocketmine\network\mcpe\protocol\TextPacket;
 use pocketmine\network\mcpe\protocol\types\BlockPosition;
 use pocketmine\network\mcpe\protocol\types\inventory\ContainerIds;
@@ -126,9 +119,22 @@ use const JSON_THROW_ON_ERROR;
 /**
  * This handler handles packets related to general gameplay.
  */
+#[SilentDiscard(ActorEventPacket::class, comment: "Not needed")]
+#[SilentDiscard(LevelSoundEventPacket::class, comment: "Sounds are always handled server side")]
+#[SilentDiscard(MobArmorEquipmentPacket::class, comment: "Not needed")]
+#[SilentDiscard(MovePlayerPacket::class, comment: "Not needed, noisy debug when landing on ground")]
+#[SilentDiscard(NetworkStackLatencyPacket::class, comment: "Not used, noisy debug")]
+#[SilentDiscard(PlayerHotbarPacket::class, comment: "Not needed")]
+#[SilentDiscard(SetActorMotionPacket::class, comment: "Not needed, erroneously sent by client when in a vehicle")]
+#[SilentDiscard(SpawnExperienceOrbPacket::class, comment: "XP drops should be server-calculated")]
 class InGamePacketHandler extends PacketHandler{
 	private const MAX_FORM_RESPONSE_SIZE = 10 * 1024; //10 KiB should be more than enough
 	private const MAX_FORM_RESPONSE_DEPTH = 2; //modal/simple will be 1, custom forms 2 - they will never contain anything other than string|int|float|bool|null
+
+	//TODO: The client-side per-page character limit is inconsistent for non-ASCII text,
+	//allowing input beyond 256 chars. Use a slightly higher bounded soft limit to
+	//prevent rejected edits while still mitigating book-bomb attacks
+	private const PAGE_LENGTH_SOFT_LIMIT_CHARS = 512;
 
 	protected float $lastRightClickTime = 0.0;
 	protected ?UseItemTransactionData $lastRightClickData = null;
@@ -156,12 +162,6 @@ class InGamePacketHandler extends PacketHandler{
 		}
 
 		return false;
-	}
-
-	public function handleMovePlayer(MovePlayerPacket $packet) : bool{
-		//The client sends this every time it lands on the ground, even when using PlayerAuthInputPacket.
-		//Silence the debug spam that this causes.
-		return true;
 	}
 
 	private function resolveOnOffInputFlags(BitSet $inputFlags, int $startFlag, int $stopFlag) : ?bool{
@@ -226,7 +226,7 @@ class InGamePacketHandler extends PacketHandler{
 			$gliding = $this->resolveOnOffInputFlags($inputFlags, PlayerAuthInputFlags::START_GLIDING, PlayerAuthInputFlags::STOP_GLIDING);
 			$flying = $this->resolveOnOffInputFlags($inputFlags, PlayerAuthInputFlags::START_FLYING, PlayerAuthInputFlags::STOP_FLYING);
 			$mismatch =
-				($sneaking !== null && !$this->player->toggleSneak($sneaking, $sneakPressed)) |
+				(!$this->player->toggleSneak($sneaking ?? $this->player->isSneaking(), $sneakPressed)) |
 				($sprinting !== null && !$this->player->toggleSprint($sprinting)) |
 				($swimming !== null && !$this->player->toggleSwim($swimming)) |
 				($gliding !== null && !$this->player->toggleGlide($gliding)) |
@@ -299,10 +299,6 @@ class InGamePacketHandler extends PacketHandler{
 		}
 
 		return $packetHandled;
-	}
-
-	public function handleActorEvent(ActorEventPacket $packet) : bool{
-		return true; //not used
 	}
 
 	public function handleInventoryTransaction(InventoryTransactionPacket $packet) : bool{
@@ -640,10 +636,6 @@ class InGamePacketHandler extends PacketHandler{
 		return false;
 	}
 
-	public function handleMobArmorEquipment(MobArmorEquipmentPacket $packet) : bool{
-		return true; //Not used
-	}
-
 	public function handleInteract(InteractPacket $packet) : bool{
 		if($packet->action === InteractPacket::ACTION_MOUSEOVER){
 			//TODO HACK: silence useless spam (MCPE 1.8)
@@ -740,10 +732,6 @@ class InGamePacketHandler extends PacketHandler{
 		return true;
 	}
 
-	public function handleSetActorMotion(SetActorMotionPacket $packet) : bool{
-		return true; //Not used: This packet is (erroneously) sent to the server when the client is riding a vehicle.
-	}
-
 	public function handleAnimate(AnimatePacket $packet) : bool{
 		//this spams harder than a firehose on left click if "Improved Input Response" is enabled, and we don't even
 		//use it anyway :<
@@ -753,10 +741,6 @@ class InGamePacketHandler extends PacketHandler{
 	public function handleContainerClose(ContainerClosePacket $packet) : bool{
 		$this->inventoryManager->onClientRemoveWindow($packet->windowId);
 		return true;
-	}
-
-	public function handlePlayerHotbar(PlayerHotbarPacket $packet) : bool{
-		return true; //this packet is useless
 	}
 
 	/**
@@ -827,26 +811,10 @@ class InGamePacketHandler extends PacketHandler{
 		return true;
 	}
 
-	public function handleSpawnExperienceOrb(SpawnExperienceOrbPacket $packet) : bool{
-		return false; //TODO
-	}
-
-	public function handleMapInfoRequest(MapInfoRequestPacket $packet) : bool{
-		return false; //TODO
-	}
-
 	public function handleRequestChunkRadius(RequestChunkRadiusPacket $packet) : bool{
 		$this->player->setViewDistance($packet->radius);
 
 		return true;
-	}
-
-	public function handleBossEvent(BossEventPacket $packet) : bool{
-		return false; //TODO
-	}
-
-	public function handleShowCredits(ShowCreditsPacket $packet) : bool{
-		return false; //TODO: handle resume
 	}
 
 	public function handleCommandRequest(CommandRequestPacket $packet) : bool{
@@ -855,10 +823,6 @@ class InGamePacketHandler extends PacketHandler{
 			return true;
 		}
 		return false;
-	}
-
-	public function handleCommandBlockUpdate(CommandBlockUpdatePacket $packet) : bool{
-		return false; //TODO
 	}
 
 	public function handlePlayerSkin(PlayerSkinPacket $packet) : bool{
@@ -877,10 +841,6 @@ class InGamePacketHandler extends PacketHandler{
 			throw PacketHandlingException::wrap($e, "Invalid skin in PlayerSkinPacket");
 		}
 		return $this->player->changeSkin($skin, $packet->newSkinName, $packet->oldSkinName);
-	}
-
-	public function handleSubClientLogin(SubClientLoginPacket $packet) : bool{
-		return false; //TODO
 	}
 
 	/**
@@ -917,7 +877,7 @@ class InGamePacketHandler extends PacketHandler{
 		$cancel = false;
 		switch($packet->type){
 			case BookEditPacket::TYPE_REPLACE_PAGE:
-				$text = self::checkBookText($packet->text, "page text", 256, WritableBookPage::PAGE_LENGTH_HARD_LIMIT_BYTES, $cancel);
+				$text = self::checkBookText($packet->text, "page text", self::PAGE_LENGTH_SOFT_LIMIT_CHARS, WritableBookPage::PAGE_LENGTH_HARD_LIMIT_BYTES, $cancel);
 				$newBook->setPageText($packet->pageNumber, $text);
 				$modifiedPages[] = $packet->pageNumber;
 				break;
@@ -927,7 +887,7 @@ class InGamePacketHandler extends PacketHandler{
 					//TODO: the client can send insert-before actions on trailing client-side pages which cause odd behaviour on the server
 					return false;
 				}
-				$text = self::checkBookText($packet->text, "page text", 256, WritableBookPage::PAGE_LENGTH_HARD_LIMIT_BYTES, $cancel);
+				$text = self::checkBookText($packet->text, "page text", self::PAGE_LENGTH_SOFT_LIMIT_CHARS, WritableBookPage::PAGE_LENGTH_HARD_LIMIT_BYTES, $cancel);
 				$newBook->insertPage($packet->pageNumber, $text);
 				$modifiedPages[] = $packet->pageNumber;
 				break;
@@ -1020,14 +980,6 @@ class InGamePacketHandler extends PacketHandler{
 		}
 	}
 
-	public function handleServerSettingsRequest(ServerSettingsRequestPacket $packet) : bool{
-		return false; //TODO: GUI stuff
-	}
-
-	public function handleLabTable(LabTablePacket $packet) : bool{
-		return false; //TODO
-	}
-
 	public function handleLecternUpdate(LecternUpdatePacket $packet) : bool{
 		$pos = $packet->blockPosition;
 		$chunkX = $pos->getX() >> Chunk::COORD_BIT_SIZE;
@@ -1046,20 +998,6 @@ class InGamePacketHandler extends PacketHandler{
 		}
 
 		return false;
-	}
-
-	public function handleNetworkStackLatency(NetworkStackLatencyPacket $packet) : bool{
-		return true; //TODO: implement this properly - this is here to silence debug spam from MCPE dev builds
-	}
-
-	public function handleLevelSoundEvent(LevelSoundEventPacket $packet) : bool{
-		/*
-		 * We don't handle this - all sounds are handled by the server now.
-		 * However, some plugins find this useful to detect events like left-click-air, which doesn't have any other
-		 * action bound to it.
-		 * In addition, we use this handler to silence debug noise, since this packet is frequently sent by the client.
-		 */
-		return true;
 	}
 
 	public function handleEmote(EmotePacket $packet) : bool{
