@@ -35,7 +35,6 @@ use pocketmine\data\bedrock\block\BlockTypeNames as Ids;
 use pocketmine\data\bedrock\block\convert\BlockStateSerializerHelper as Helper;
 use pocketmine\data\bedrock\block\convert\BlockStateWriter as Writer;
 use function get_class;
-use function strtolower;
 
 final class BlockObjectToStateSerializer implements BlockStateSerializer{
 	/**

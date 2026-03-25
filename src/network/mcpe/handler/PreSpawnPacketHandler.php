@@ -175,4 +175,3 @@ class PreSpawnPacketHandler extends PacketHandler{
 		return true;
 	}
 }
-

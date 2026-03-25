@@ -2,7 +2,7 @@
 
 /*
  *
- * ____            _        _   __  __ _                  __  __ ____
+ *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
  * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
  * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
@@ -34,141 +34,141 @@ use const SORT_NUMERIC;
  * @phpstan-template TEvent of Event
  */
 class HandlerList{
-    /**
-     * @var RegisteredListener[][]
-     * @phpstan-var array<int, array<int, RegisteredListener<TEvent>>>
-     */
-    private array $handlerSlots = [];
+	/**
+	 * @var RegisteredListener[][]
+	 * @phpstan-var array<int, array<int, RegisteredListener<TEvent>>>
+	 */
+	private array $handlerSlots = [];
 
-    /**
-     * @var RegisteredListenerCache[]
-     * @phpstan-var array<int, RegisteredListenerCache<*>>
-     */
-    private array $affectedHandlerCaches = [];
+	/**
+	 * @var RegisteredListenerCache[]
+	 * @phpstan-var array<int, RegisteredListenerCache<*>>
+	 */
+	private array $affectedHandlerCaches = [];
 
-    /**
-     * TODO: parentList should not participate in the inference of TEvent, but PHPStan doesn't currently have NoInfer features
-     * @phpstan-param class-string<TEvent> $class
-     * @phpstan-param ?HandlerList<contravariant TEvent> $parentList
-     * @phpstan-param RegisteredListenerCache<TEvent> $handlerCache
-     */
-    public function __construct(
-        private string $class,
-        private ?HandlerList $parentList,
-        private RegisteredListenerCache $handlerCache = new RegisteredListenerCache()
-    ){
-        for($list = $this; $list !== null; $list = $list->parentList){
-            $list->affectedHandlerCaches[spl_object_id($this->handlerCache)] = $this->handlerCache;
-        }
-    }
+	/**
+	 * TODO: parentList should not participate in the inference of TEvent, but PHPStan doesn't currently have NoInfer features
+	 * @phpstan-param class-string<TEvent> $class
+	 * @phpstan-param ?HandlerList<contravariant TEvent> $parentList
+	 * @phpstan-param RegisteredListenerCache<TEvent> $handlerCache
+	 */
+	public function __construct(
+		private string $class,
+		private ?HandlerList $parentList,
+		private RegisteredListenerCache $handlerCache = new RegisteredListenerCache()
+	){
+		for($list = $this; $list !== null; $list = $list->parentList){
+			$list->affectedHandlerCaches[spl_object_id($this->handlerCache)] = $this->handlerCache;
+		}
+	}
 
-    /**
-     * @phpstan-param RegisteredListener<TEvent> $listener
-     */
-    public function register(RegisteredListener $listener) : void{
-        if(isset($this->handlerSlots[$listener->getPriority()][spl_object_id($listener)])){
-            throw new \InvalidArgumentException("This listener is already registered to priority {$listener->getPriority()} of event {$this->class}");
-        }
-        $this->handlerSlots[$listener->getPriority()][spl_object_id($listener)] = $listener;
-        $this->invalidateAffectedCaches();
-    }
+	/**
+	 * @phpstan-param RegisteredListener<TEvent> $listener
+	 */
+	public function register(RegisteredListener $listener) : void{
+		if(isset($this->handlerSlots[$listener->getPriority()][spl_object_id($listener)])){
+			throw new \InvalidArgumentException("This listener is already registered to priority {$listener->getPriority()} of event {$this->class}");
+		}
+		$this->handlerSlots[$listener->getPriority()][spl_object_id($listener)] = $listener;
+		$this->invalidateAffectedCaches();
+	}
 
-    /**
-     * @param RegisteredListener[] $listeners
-     * @phpstan-param array<RegisteredListener<TEvent>> $listeners
-     */
-    public function registerAll(array $listeners) : void{
-        foreach($listeners as $listener){
-            $this->register($listener);
-        }
-        $this->invalidateAffectedCaches();
-    }
+	/**
+	 * @param RegisteredListener[] $listeners
+	 * @phpstan-param array<RegisteredListener<TEvent>> $listeners
+	 */
+	public function registerAll(array $listeners) : void{
+		foreach($listeners as $listener){
+			$this->register($listener);
+		}
+		$this->invalidateAffectedCaches();
+	}
 
-    /**
-     * @phpstan-param RegisteredListener<*>|Plugin|Listener $object
-     */
-    public function unregister(RegisteredListener|Plugin|Listener $object) : void{
-        if($object instanceof Plugin || $object instanceof Listener){
-            foreach($this->handlerSlots as $priority => $list){
-                foreach($list as $hash => $listener){
-                    if(($object instanceof Plugin && $listener->getPlugin() === $object)
-                        || ($object instanceof Listener && (new \ReflectionFunction($listener->getHandler()))->getClosureThis() === $object) //this doesn't even need to be a listener :D
-                    ){
-                        unset($this->handlerSlots[$priority][$hash]);
-                    }
-                }
-            }
-        }else{
-            unset($this->handlerSlots[$object->getPriority()][spl_object_id($object)]);
-        }
-        $this->invalidateAffectedCaches();
-    }
+	/**
+	 * @phpstan-param RegisteredListener<*>|Plugin|Listener $object
+	 */
+	public function unregister(RegisteredListener|Plugin|Listener $object) : void{
+		if($object instanceof Plugin || $object instanceof Listener){
+			foreach($this->handlerSlots as $priority => $list){
+				foreach($list as $hash => $listener){
+					if(($object instanceof Plugin && $listener->getPlugin() === $object)
+						|| ($object instanceof Listener && (new \ReflectionFunction($listener->getHandler()))->getClosureThis() === $object) //this doesn't even need to be a listener :D
+					){
+						unset($this->handlerSlots[$priority][$hash]);
+					}
+				}
+			}
+		}else{
+			unset($this->handlerSlots[$object->getPriority()][spl_object_id($object)]);
+		}
+		$this->invalidateAffectedCaches();
+	}
 
-    public function clear() : void{
-        $this->handlerSlots = [];
-        $this->invalidateAffectedCaches();
-    }
+	public function clear() : void{
+		$this->handlerSlots = [];
+		$this->invalidateAffectedCaches();
+	}
 
-    /**
-     * @return RegisteredListener[]
-     * @phpstan-return array<int, RegisteredListener<TEvent>>
-     */
-    public function getListenersByPriority(int $priority) : array{
-        return $this->handlerSlots[$priority] ?? [];
-    }
+	/**
+	 * @return RegisteredListener[]
+	 * @phpstan-return array<int, RegisteredListener<TEvent>>
+	 */
+	public function getListenersByPriority(int $priority) : array{
+		return $this->handlerSlots[$priority] ?? [];
+	}
 
-    /**
-     * @phpstan-return ?HandlerList<contravariant TEvent>
-     */
-    public function getParent() : ?HandlerList{
-        return $this->parentList;
-    }
+	/**
+	 * @phpstan-return ?HandlerList<contravariant TEvent>
+	 */
+	public function getParent() : ?HandlerList{
+		return $this->parentList;
+	}
 
-    /**
-     * Invalidates all known caches which might be affected by this list's contents.
-     */
-    private function invalidateAffectedCaches() : void{
-        foreach($this->affectedHandlerCaches as $cache){
-            $cache->list = null;
-        }
-    }
+	/**
+	 * Invalidates all known caches which might be affected by this list's contents.
+	 */
+	private function invalidateAffectedCaches() : void{
+		foreach($this->affectedHandlerCaches as $cache){
+			$cache->list = null;
+		}
+	}
 
-    /**
-     * @return RegisteredListener[]
-     * @phpstan-return list<RegisteredListener<TEvent>>
-     */
-    public function getListenerList() : array{
-        if($this->handlerCache->list !== null){
-            return $this->handlerCache->list;
-        }
+	/**
+	 * @return RegisteredListener[]
+	 * @phpstan-return list<RegisteredListener<TEvent>>
+	 */
+	public function getListenerList() : array{
+		if($this->handlerCache->list !== null){
+			return $this->handlerCache->list;
+		}
 
-        $handlerLists = [];
-        for($currentList = $this; $currentList !== null; $currentList = $currentList->parentList){
-            $handlerLists[] = $currentList;
-        }
+		$handlerLists = [];
+		for($currentList = $this; $currentList !== null; $currentList = $currentList->parentList){
+			$handlerLists[] = $currentList;
+		}
 
-        $listeners = [];
-        $asyncListeners = [];
-        $exclusiveAsyncListeners = [];
-        foreach($handlerLists as $currentList){
-            foreach($currentList->handlerSlots as $priority => $listenersToSort){
-                foreach($listenersToSort as $listener){
-                    if(!$listener instanceof RegisteredAsyncListener){
-                        $listeners[$priority][] = $listener;
-                    }elseif(!$listener->canBeCalledConcurrently()){
-                        $asyncListeners[$priority][] = $listener;
-                    }else{
-                        $exclusiveAsyncListeners[$priority][] = $listener;
-                    }
-                }
-            }
-        }
-        /** @var RegisteredListener[][] $listenersByPriority */
-        $listenersByPriority = array_merge_recursive($listeners, $asyncListeners, $exclusiveAsyncListeners);
+		$listeners = [];
+		$asyncListeners = [];
+		$exclusiveAsyncListeners = [];
+		foreach($handlerLists as $currentList){
+			foreach($currentList->handlerSlots as $priority => $listenersToSort){
+				foreach($listenersToSort as $listener){
+					if(!$listener instanceof RegisteredAsyncListener){
+						$listeners[$priority][] = $listener;
+					}elseif(!$listener->canBeCalledConcurrently()){
+						$asyncListeners[$priority][] = $listener;
+					}else{
+						$exclusiveAsyncListeners[$priority][] = $listener;
+					}
+				}
+			}
+		}
+		/** @var RegisteredListener[][] $listenersByPriority */
+		$listenersByPriority = array_merge_recursive($listeners, $asyncListeners, $exclusiveAsyncListeners);
 
-        //TODO: why on earth do the priorities have higher values for lower priority?
-        ksort($listenersByPriority, SORT_NUMERIC);
+		//TODO: why on earth do the priorities have higher values for lower priority?
+		ksort($listenersByPriority, SORT_NUMERIC);
 
-        return $this->handlerCache->list = array_merge(...$listenersByPriority);
-    }
+		return $this->handlerCache->list = array_merge(...$listenersByPriority);
+	}
 }
