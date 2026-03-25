@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y curl ca-certifi
 RUN mkdir /opt/pocketmine
 COPY --chmod=700 ./build/php/compile.sh /opt/pocketmine
 WORKDIR /opt/pocketmine
-RUN ./compile.sh -t linux64 -j ${THREADS:-$(grep -E ^processor /proc/cpuinfo | wc -l)} ${COMPILE_SH_ARGS}
+RUN ./compile.sh -j ${THREADS:-$(grep -E ^processor /proc/cpuinfo | wc -l)} ${COMPILE_SH_ARGS}
 
 FROM ubuntu:22.04 AS build-pocketmine
 ARG GIT_HASH=""
@@ -20,7 +20,7 @@ RUN ln -s /opt/pocketmine/bin/php7/bin/php /usr/bin/php
 RUN curl -L https://getcomposer.org/installer | php
 RUN mv composer.phar /usr/bin/composer
 
-COPY ./build/server-phar.php ./build/server-phar-stub.php /opt/pocketmine/repo/build/
+COPY ./build /opt/pocketmine/repo/build/
 COPY ./resources /opt/pocketmine/repo/resources
 COPY ./src /opt/pocketmine/repo/src
 COPY ./generated /opt/pocketmine/repo/generated
@@ -28,6 +28,7 @@ COPY ./composer.json ./composer.lock /opt/pocketmine/repo/
 
 WORKDIR /opt/pocketmine/repo
 RUN composer install --classmap-authoritative --no-dev --prefer-dist
+RUN composer update-codegen
 RUN php vendor/pocketmine/bedrock-data/.minify_json.php
 RUN php -dphar.readonly=0 ./build/server-phar.php --git ${GIT_HASH}
 # Just to make sure the build script didn't false-positive-exit
@@ -50,6 +51,7 @@ ADD ./docker/start.sh /usr/bin/start-pocketmine
 RUN mkdir /plugins /data
 RUN chown 1000:1000 /plugins /data . -R
 RUN chmod o+x /usr/bin/php
+RUN chmod a+rx /usr/bin/start-pocketmine
 
 USER pocketmine
 
