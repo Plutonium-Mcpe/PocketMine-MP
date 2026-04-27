@@ -70,21 +70,10 @@ jobs:
           echo PRERELEASE=$(php build/dump-version-info.php prerelease) >> $GITHUB_OUTPUT
           echo CHANNEL=$(php build/dump-version-info.php channel) >> $GITHUB_OUTPUT
 
-      - name: Generate build info
-        run: |
-          php build/generate-build-info-json.php \
-            ${{ github.sha }} \
-            ${{ steps.get-pm-version.outputs.PM_VERSION }} \
-            ${{ github.repository }} \
-            ${{ steps.build-number.outputs.BUILD_NUMBER }} \
-            ${{ github.run_id }} \
-            "" \
-            > build_info.json
-
       - name: Create release
         uses: ncipollo/release-action@v1.16.0
         with:
-          artifacts: "PocketMine-MP.phar,start.*,build_info.json"
+          artifacts: "PocketMine-MP.phar,start.*"
           commit: ${{ github.sha }}
           name: "PocketMine-MP ${{ steps.get-pm-version.outputs.PM_VERSION }}"
           tag: ${{ steps.get-pm-version.outputs.PM_VERSION }}
