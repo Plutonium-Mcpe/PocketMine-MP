@@ -19,18 +19,10 @@ jobs:
     runs-on: ['self-hosted', 'Linux']
     strategy:
       fail-fast: false
-    env:
-      GH_TOKEN: ${{ secrets.KEY_GITHUB }}
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
-          token: ${{ secrets.KEY_GITHUB }}
-
-      - name: SSH Agent
-        uses: webfactory/ssh-agent@v0.9.1
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@2.36.0
@@ -47,11 +39,6 @@ jobs:
           key: "composer-v2-cache-${{ hashFiles('./composer.lock') }}"
           restore-keys: |
             composer-v2-cache-
-
-      - name: Add composer auth
-        run: |
-          composer config --global --auth http-basic.composer.plutonium.best admin '${{ secrets.PRIVATE_COMPOSER_TOKEN }}'
-          composer config --global github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Composer dependencies
         run: composer install --no-dev --prefer-dist --no-interaction --ignore-platform-reqs
@@ -98,7 +85,7 @@ jobs:
           commit: ${{ github.sha }}
           name: "PocketMine-MP ${{ steps.get-pm-version.outputs.PM_VERSION }}"
           tag: ${{ steps.get-pm-version.outputs.PM_VERSION }}
-          token: ${{ secrets.KEY_GITHUB }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           replacesArtifacts: true
           prerelease: ${{ steps.get-pm-version.outputs.PRERELEASE }}
