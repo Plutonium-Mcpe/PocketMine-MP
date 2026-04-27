@@ -40,6 +40,9 @@ jobs:
           restore-keys: |
             composer-v2-cache-
 
+      - name: Add composer auth
+        run: composer config --global github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install Composer dependencies
         run: composer install --no-dev --prefer-dist --no-interaction --ignore-platform-reqs
 
