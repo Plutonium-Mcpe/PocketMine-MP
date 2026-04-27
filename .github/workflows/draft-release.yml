@@ -62,13 +62,14 @@ jobs:
       - name: Get PocketMine-MP release version
         id: get-pm-version
         run: |
-          echo PM_VERSION=$(php build/dump-version-info.php base_version) >> $GITHUB_OUTPUT
-          echo MCPE_VERSION=$(php build/dump-version-info.php mcpe_version) >> $GITHUB_OUTPUT
-          echo MCPE_DISPLAY_VERSION=$(php build/dump-version-info.php mcpe_display_version) >> $GITHUB_OUTPUT
-          echo CHANGELOG_FILE_NAME=$(php build/dump-version-info.php changelog_file_name) >> $GITHUB_OUTPUT
-          echo CHANGELOG_MD_HEADER=$(php build/dump-version-info.php changelog_md_header) >> $GITHUB_OUTPUT
-          echo PRERELEASE=$(php build/dump-version-info.php prerelease) >> $GITHUB_OUTPUT
-          echo CHANNEL=$(php build/dump-version-info.php channel) >> $GITHUB_OUTPUT
+          dump() { php -d display_errors=0 build/dump-version-info.php "$1" | tail -n 1; }
+          echo PM_VERSION=$(dump base_version) >> $GITHUB_OUTPUT
+          echo MCPE_VERSION=$(dump mcpe_version) >> $GITHUB_OUTPUT
+          echo MCPE_DISPLAY_VERSION=$(dump mcpe_display_version) >> $GITHUB_OUTPUT
+          echo CHANGELOG_FILE_NAME=$(dump changelog_file_name) >> $GITHUB_OUTPUT
+          echo CHANGELOG_MD_HEADER=$(dump changelog_md_header) >> $GITHUB_OUTPUT
+          echo PRERELEASE=$(dump prerelease) >> $GITHUB_OUTPUT
+          echo CHANNEL=$(dump channel) >> $GITHUB_OUTPUT
 
       - name: Create release
         uses: ncipollo/release-action@v1.16.0
