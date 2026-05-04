@@ -59,6 +59,12 @@ final class BlockDataUpgrader{
 
 			$blockStateData = $this->upgradeStringIdMeta($id, $data);
 		}else{
+			//Some chunks written by external tooling omit the "states" tag for stateless blocks
+			//(e.g. minecraft:kelp_plant). Treat a missing states tag as an empty compound so the
+			//block can still be deserialized using its default state instead of failing the whole palette entry.
+			if($tag->getTag(BlockStateData::TAG_STATES) === null){
+				$tag = (clone $tag)->setTag(BlockStateData::TAG_STATES, CompoundTag::create());
+			}
 			//Modern (post-1.13) blockstate
 			$blockStateData = BlockStateData::fromNbt($tag);
 		}
