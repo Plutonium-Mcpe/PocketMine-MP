@@ -46,6 +46,16 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-dev --prefer-dist --no-interaction --ignore-platform-reqs
 
+      - name: Regenerate codegen
+        run: composer run update-codegen
+
+      - name: Fail if generated/ is out of sync with sources
+        run: |
+          if ! git diff --exit-code -- generated/; then
+            echo "::error::generated/ is stale. Run 'composer run update-codegen' locally and commit the result before releasing."
+            exit 1
+          fi
+
       - name: Calculate build number
         id: build-number
         run: |
