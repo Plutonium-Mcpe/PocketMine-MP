@@ -23,7 +23,6 @@ declare(strict_types=1);
 
 namespace pocketmine\crafting;
 
-use pocketmine\crafting\json\FurnaceRecipeData;
 use pocketmine\crafting\json\ItemStackData;
 use pocketmine\crafting\json\PotionContainerChangeRecipeData;
 use pocketmine\crafting\json\PotionTypeRecipeData;
@@ -44,6 +43,7 @@ use pocketmine\utils\Utils;
 use pocketmine\world\format\io\GlobalItemDataHandlers;
 use Symfony\Component\Filesystem\Path;
 use function base64_decode;
+use function count;
 use function get_debug_type;
 use function is_array;
 use function is_object;
