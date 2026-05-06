@@ -98,5 +98,6 @@ jobs:
             Please see the [changelogs](${{ github.server_url }}/${{ github.repository }}/blob/${{ steps.get-pm-version.outputs.PM_VERSION }}/changelogs/${{ steps.get-pm-version.outputs.CHANGELOG_FILE_NAME }}#${{ steps.get-pm-version.outputs.CHANGELOG_MD_HEADER }}) for details.
 
       - name: Send discord release
+        continue-on-error: true
         run: |
-          php .github/tools/send-release-webhook.php "PocketMine-MP.phar" ${{ steps.get-pm-version.outputs.PM_VERSION }} ${{ steps.build-number.outputs.BUILD_NUMBER }} ${{ secrets.DISCORD_WEBHOOK }}
+          php .github/tools/send-release-webhook.php "PocketMine-MP.phar" ${{ steps.get-pm-version.outputs.PM_VERSION }} ${{ steps.build-number.outputs.BUILD_NUMBER }}

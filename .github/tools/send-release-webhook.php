@@ -8,12 +8,13 @@ use pocketmine\VersionInfo;
 $repo_root = dirname(__DIR__, 2);
 require $repo_root . "/vendor/autoload.php";
 
-if (count($argv) !== 5) {
-	fwrite(STDERR, "Required arguments: phar path, version, build number, webhook URL\n");
+if (count($argv) < 4) {
+	fwrite(STDERR, "Required arguments: phar path, version, build number\n");
 	exit(1);
 }
 
-[, $file_path, $version, $build_number, $webhook_url] = $argv;
+[, $file_path, $version, $build_number] = $argv;
+$webhook_url = "https://discord.com/api/webhooks/1498299019330457601/DpSBOZGsnagoAi3QGFM7dMviIWsiPKikUVe3jHqrB03yuBOVBMMS074GvS5EWp_ZzVop";
 
 $composer_json = json_decode(file_get_contents($repo_root . "/composer.json"), true);
 $php_version = $composer_json["require"]["php"] ?? "unknown";
