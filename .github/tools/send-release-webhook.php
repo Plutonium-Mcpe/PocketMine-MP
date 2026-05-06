@@ -87,12 +87,19 @@ DESCRIPTION,
 	"timestamp" => date("c")
 ];
 
-function send_webhook(string $webhook_url, array $post_fields, string $step) : void {
+/**
+ * @param array<string, mixed>|string $post_fields When string, sent as raw body with application/json.
+ *                                                 When array, sent as multipart (curl sets Content-Type with boundary).
+ */
+function send_webhook(string $webhook_url, array|string $post_fields, string $step) : void {
 	$ch = curl_init($webhook_url);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: multipart/form-data']);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_POST, 1);
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
+	if (is_string($post_fields)) {
+		curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+	}
+	// For multipart (array with CURLFile), let curl generate the boundary header itself.
 
 	$response = curl_exec($ch);
 	$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -113,16 +120,14 @@ function send_webhook(string $webhook_url, array $post_fields, string $step) : v
 	echo "[$step] ok\n";
 }
 
-// 1. Embed seul
-send_webhook($webhook_url, [
-	"payload_json" => json_encode([
-		"username" => $username,
-		"avatar_url" => $avatar_url,
-		"embeds" => [$embed]
-	])
-], "embed");
+// 1. Embed seul (pas de fichier → JSON brut)
+send_webhook($webhook_url, json_encode([
+	"username" => $username,
+	"avatar_url" => $avatar_url,
+	"embeds" => [$embed]
+]), "embed");
 
-// 2. Fichier seul (message séparé, apparaît en-dessous)
+// 2. Fichier seul (message séparé, apparaît en-dessous) — multipart, curl s'occupe du Content-Type
 send_webhook($webhook_url, [
 	"payload_json" => json_encode([
 		"username" => $username,
