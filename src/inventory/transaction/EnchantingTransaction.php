@@ -120,12 +120,6 @@ class EnchantingTransaction extends InventoryTransaction{
 			$this->source->getXpManager()->subtractXpLevels(min($this->cost, $this->source->getXpManager()->getXpLevel()));
 		}
 		$this->source->regenerateEnchantmentSeed();
-
-		//Bedrock client doesn't refresh the enchant glint on custom (non-vanilla) items after enchanting,
-		//requiring a reconnect to see it. Force a full inventory resync so the result item displays correctly.
-		if($this->inputItem !== null && !str_starts_with($this->inputItem::class, 'pocketmine\\')){
-			$this->source->getNetworkSession()->getInvManager()?->requestSyncAll();
-		}
 	}
 
 	protected function callExecuteEvent() : bool{
