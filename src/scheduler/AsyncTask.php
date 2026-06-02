@@ -85,10 +85,17 @@ abstract class AsyncTask extends Runnable{
 		$timings = Timings::getAsyncTaskRunTimings($this);
 		$timings->startTiming();
 
+		$asyncProfStart = microtime(true);
 		try{
 			$this->onRun();
 		}finally{
 			$timings->stopTiming();
+			// [AsyncProf] DEBUG: log any task that blocks an async worker for too long, so we can
+			// identify which service (HTTP microservice call, etc.) is starving chunk generation.
+			$asyncProfMs = (microtime(true) - $asyncProfStart) * 1000.0;
+			if($asyncProfMs >= 100.0){
+				\GlobalLogger::get()->warning(sprintf("[AsyncProf] %s a bloque un worker async %.0f ms", get_class($this), $asyncProfMs));
+			}
 		}
 
 		$this->finished = true;
