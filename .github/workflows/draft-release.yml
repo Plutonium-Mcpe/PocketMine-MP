@@ -25,19 +25,11 @@ jobs:
           submodules: true
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@2.36.0
+        uses: pmmp/setup-php-action@3.2.0
         with:
           php-version: ${{ env.PHP_VERSION }}
-          extensions: yaml,igbinary,zip,curl,gmp,sockets,zlib,bcmath
-
-      - name: Ensure ext-yaml is enabled
-        run: |
-          if ! php -m | grep -qi '^yaml$'; then
-            echo "ext-yaml not loaded by setup-php (common on self-hosted runners); installing from apt"
-            sudo apt-get update
-            sudo apt-get install -y "php${{ env.PHP_VERSION }}-yaml"
-          fi
-          php -m | grep -qi '^yaml$' || { echo "::error::ext-yaml is still not available; codegen will fail"; exit 1; }
+          install-path: "./bin"
+          pm-version-major: 5
 
       - name: Restore Composer package cache
         uses: actions/cache@v4
