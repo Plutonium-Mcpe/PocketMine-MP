@@ -24,11 +24,9 @@ declare(strict_types=1);
 namespace pocketmine\crafting;
 
 use pocketmine\data\bedrock\item\ItemTypeNames;
-use pocketmine\item\Durable;
 use pocketmine\item\ToolTier;
 use pocketmine\item\VanillaArmorMaterials;
 use pocketmine\item\VanillaItems;
-use pocketmine\world\format\io\GlobalItemDataHandlers;
 
 final class AnvilCraftingManagerDataFiller{
 	public static function fillData(CraftingManager $manager) : CraftingManager{
@@ -69,18 +67,14 @@ final class AnvilCraftingManagerDataFiller{
 			new MetaWildcardRecipeIngredient(ItemTypeNames::ENCHANTED_BOOK)
 		));
 
-		foreach(VanillaItems::getAll() as $item){
-			if($item instanceof Durable){
-				$itemId = GlobalItemDataHandlers::getSerializer()->serializeType($item)->getName();
-				$manager->registerAnvilRecipe(new ItemSelfCombineRecipe(
-					new MetaWildcardRecipeIngredient($itemId)
-				));
-				$manager->registerAnvilRecipe(new ItemDifferentCombineRecipe(
-					new MetaWildcardRecipeIngredient($itemId),
-					new MetaWildcardRecipeIngredient(ItemTypeNames::ENCHANTED_BOOK)
-				));
-			}
-		}
+		// Generic recipes that apply to every durable item (vanilla AND custom plugin items), so they don't need to be
+		// enumerated one-by-one. ItemSelfCombineRecipe additionally enforces that both items are of the same type.
+		$durable = new DurableRecipeIngredient();
+		$manager->registerAnvilRecipe(new ItemSelfCombineRecipe($durable));
+		$manager->registerAnvilRecipe(new ItemDifferentCombineRecipe(
+			$durable,
+			new MetaWildcardRecipeIngredient(ItemTypeNames::ENCHANTED_BOOK)
+		));
 
 		return $manager;
 	}

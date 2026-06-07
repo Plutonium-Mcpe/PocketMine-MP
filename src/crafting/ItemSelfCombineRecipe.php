@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace pocketmine\crafting;
 
 use pocketmine\item\Item;
+use pocketmine\world\format\io\GlobalItemDataHandlers;
 
 /**
  * Represent a recipe that repair an item with a material in an anvil.
@@ -39,6 +40,13 @@ class ItemSelfCombineRecipe extends ItemCombineRecipe{
 	}
 
 	protected function validate(Item $input, Item $material) : bool{
-		return $this->target->accepts($input) && $this->target->accepts($material);
+		if(!$this->target->accepts($input) || !$this->target->accepts($material)){
+			return false;
+		}
+
+		// Self-combining requires both items to be of the same type (e.g. a diamond sword cannot be combined with an
+		// iron pickaxe), matching vanilla behaviour.
+		$serializer = GlobalItemDataHandlers::getSerializer();
+		return $serializer->serializeType($input)->getName() === $serializer->serializeType($material)->getName();
 	}
 }
