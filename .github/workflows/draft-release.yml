@@ -30,6 +30,15 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           extensions: yaml,igbinary,zip,curl,gmp,sockets,zlib,bcmath
 
+      - name: Ensure ext-yaml is enabled
+        run: |
+          if ! php -m | grep -qi '^yaml$'; then
+            echo "ext-yaml not loaded by setup-php (common on self-hosted runners); installing from apt"
+            sudo apt-get update
+            sudo apt-get install -y "php${{ env.PHP_VERSION }}-yaml"
+          fi
+          php -m | grep -qi '^yaml$' || { echo "::error::ext-yaml is still not available; codegen will fail"; exit 1; }
+
       - name: Restore Composer package cache
         uses: actions/cache@v4
         with:
