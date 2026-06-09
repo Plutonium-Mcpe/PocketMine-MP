@@ -59,12 +59,6 @@ class AsyncPool{
 	 */
 	private array $workerStartHooks = [];
 
-	/** [AsyncProf] DEBUG: spl_object_id => [class, submit microtime] */
-	private array $profSubmit = [];
-	/** [AsyncProf] DEBUG: class => [count, totalMs] accumulated over the current window */
-	private array $profAgg = [];
-	private int $profLastFlush = 0;
-
 	public function __construct(
 		protected int $size,
 		private int $workerMemoryLimit,
@@ -159,8 +153,6 @@ class AsyncPool{
 
 		$task->setSubmitted();
 
-		$this->profSubmit[spl_object_id($task)] = [get_class($task), \microtime(true)];
-
 		$this->getWorker($worker)->submit($task);
 	}
 
@@ -245,7 +237,6 @@ class AsyncPool{
 	 * @return bool whether there are tasks left to be collected
 	 */
 	public function collectTasks() : bool{
-		$this->flushAsyncProf();
 		foreach($this->workers as $workerId => $entry){
 			$this->collectTasksFromWorker($workerId);
 		}
@@ -270,15 +261,6 @@ class AsyncPool{
 			$task = $queue->bottom();
 			if($task->isFinished()){ //make sure the task actually executed before trying to collect
 				$queue->dequeue();
-
-				$profId = spl_object_id($task);
-				if(isset($this->profSubmit[$profId])){
-					[$profCls, $profT0] = $this->profSubmit[$profId];
-					unset($this->profSubmit[$profId]);
-					$profMs = (\microtime(true) - $profT0) * 1000.0;
-					$profCur = $this->profAgg[$profCls] ?? [0, 0.0];
-					$this->profAgg[$profCls] = [$profCur[0] + 1, $profCur[1] + $profMs];
-				}
 
 				if($task->isTerminated()){
 					$this->checkCrashedWorker($worker, $task);
@@ -306,30 +288,6 @@ class AsyncPool{
 		}
 		$this->workers[$worker]->worker->collect();
 		return $more;
-	}
-
-	/**
-	 * [AsyncProf] DEBUG: every 5s, log how much wall-clock time each AsyncTask class consumed on the
-	 * worker pool (count + total ms, submit->collect). Reveals which service (HTTP microservice, chunk
-	 * compression, etc.) is hogging the async workers. Remove once the culprit is identified.
-	 */
-	private function flushAsyncProf() : void{
-		$now = time();
-		if($this->profLastFlush === 0){
-			$this->profLastFlush = $now;
-			return;
-		}
-		if($now - $this->profLastFlush < 5 || $this->profAgg === []){
-			return;
-		}
-		$this->profLastFlush = $now;
-		uasort($this->profAgg, function(array $a, array $b) : int{ return $b[1] <=> $a[1]; });
-		$parts = [];
-		foreach($this->profAgg as $cls => $stat){
-			$parts[] = sprintf("%s x%d=%.0fms", $cls, $stat[0], $stat[1]);
-		}
-		$this->logger->info("[AsyncProf] 5s | workers=" . count($this->workers) . "/" . $this->size . " | " . implode(" | ", $parts));
-		$this->profAgg = [];
 	}
 
 	/**
