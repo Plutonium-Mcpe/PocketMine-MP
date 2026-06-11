@@ -66,12 +66,17 @@ final class FastChunkSerializer{
 		$stream = new ByteBufferWriter();
 		Byte::writeUnsigned($stream, ($chunk->isPopulated() ? self::FLAG_POPULATED : 0));
 
-		//subchunks
+		//subchunks — skip empty ones to reduce allocation; Chunk constructor fills missing indices with defaults
 		$subChunks = $chunk->getSubChunks();
-		$count = count($subChunks);
-		Byte::writeUnsigned($stream, $count);
-
+		$nonEmpty = [];
 		foreach($subChunks as $y => $subChunk){
+			if(!$subChunk->isEmptyAuthoritative()){
+				$nonEmpty[$y] = $subChunk;
+			}
+		}
+
+		Byte::writeUnsigned($stream, count($nonEmpty));
+		foreach($nonEmpty as $y => $subChunk){
 			Byte::writeSigned($stream, $y);
 			BE::writeUnsignedInt($stream, $subChunk->getEmptyBlockId());
 
@@ -81,7 +86,6 @@ final class FastChunkSerializer{
 				self::serializePalettedArray($stream, $blocks);
 			}
 			self::serializePalettedArray($stream, $subChunk->getBiomeArray());
-
 		}
 
 		return $stream->getData();

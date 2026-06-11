@@ -302,6 +302,7 @@ final class VanillaBlocks{
 	private static DoubleTallGrass $_mDOUBLE_TALLGRASS;
 	private static DragonEgg $_mDRAGON_EGG;
 	private static DriedKelp $_mDRIED_KELP;
+	private static Kelp $_mKELP;
 	private static Opaque $_mDRIPSTONE;
 	private static DyedCandle $_mDYED_CANDLE;
 	private static DyedShulkerBox $_mDYED_SHULKER_BOX;
@@ -728,6 +729,7 @@ final class VanillaBlocks{
 	private static SculkVein $_mSCULK_VEIN;
 	private static SeaLantern $_mSEA_LANTERN;
 	private static SeaPickle $_mSEA_PICKLE;
+	private static Seagrass $_mSEAGRASS;
 	private static Opaque $_mSHROOMLIGHT;
 	private static ShulkerBox $_mSHULKER_BOX;
 	private static Slime $_mSLIME;
@@ -1142,6 +1144,7 @@ final class VanillaBlocks{
 			"double_tallgrass" => fn(DoubleTallGrass $v) => self::$_mDOUBLE_TALLGRASS = $v,
 			"dragon_egg" => fn(DragonEgg $v) => self::$_mDRAGON_EGG = $v,
 			"dried_kelp" => fn(DriedKelp $v) => self::$_mDRIED_KELP = $v,
+			"kelp" => fn(Kelp $v) => self::$_mKELP = $v,
 			"dripstone" => fn(Opaque $v) => self::$_mDRIPSTONE = $v,
 			"dyed_candle" => fn(DyedCandle $v) => self::$_mDYED_CANDLE = $v,
 			"dyed_shulker_box" => fn(DyedShulkerBox $v) => self::$_mDYED_SHULKER_BOX = $v,
@@ -1568,6 +1571,7 @@ final class VanillaBlocks{
 			"sculk_vein" => fn(SculkVein $v) => self::$_mSCULK_VEIN = $v,
 			"sea_lantern" => fn(SeaLantern $v) => self::$_mSEA_LANTERN = $v,
 			"sea_pickle" => fn(SeaPickle $v) => self::$_mSEA_PICKLE = $v,
+			"seagrass" => fn(Seagrass $v) => self::$_mSEAGRASS = $v,
 			"shroomlight" => fn(Opaque $v) => self::$_mSHROOMLIGHT = $v,
 			"shulker_box" => fn(ShulkerBox $v) => self::$_mSHULKER_BOX = $v,
 			"slime" => fn(Slime $v) => self::$_mSLIME = $v,
@@ -3040,6 +3044,11 @@ final class VanillaBlocks{
 	public static function DRIED_KELP() : DriedKelp{
 		if(!isset(self::$_mDRIED_KELP)){ self::init(); }
 		return clone self::$_mDRIED_KELP;
+	}
+
+	public static function KELP() : Kelp{
+		if(!isset(self::$_mKELP)){ self::init(); }
+		return clone self::$_mKELP;
 	}
 
 	public static function DRIPSTONE() : Opaque{
@@ -5170,6 +5179,11 @@ final class VanillaBlocks{
 	public static function SEA_PICKLE() : SeaPickle{
 		if(!isset(self::$_mSEA_PICKLE)){ self::init(); }
 		return clone self::$_mSEA_PICKLE;
+	}
+
+	public static function SEAGRASS() : Seagrass{
+		if(!isset(self::$_mSEAGRASS)){ self::init(); }
+		return clone self::$_mSEAGRASS;
 	}
 
 	public static function SHROOMLIGHT() : Opaque{

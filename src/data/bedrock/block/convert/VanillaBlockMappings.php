@@ -59,6 +59,7 @@ use pocketmine\block\Froglight;
 use pocketmine\block\FrostedIce;
 use pocketmine\block\GlazedTerracotta;
 use pocketmine\block\Hopper;
+use pocketmine\block\Kelp;
 use pocketmine\block\Lantern;
 use pocketmine\block\Leaves;
 use pocketmine\block\Lectern;
@@ -80,6 +81,7 @@ use pocketmine\block\RedstoneTorch;
 use pocketmine\block\RespawnAnchor;
 use pocketmine\block\Sapling;
 use pocketmine\block\SeaPickle;
+use pocketmine\block\Seagrass;
 use pocketmine\block\SmallDripleaf;
 use pocketmine\block\SnowLayer;
 use pocketmine\block\Sponge;
@@ -386,6 +388,8 @@ final class VanillaBlockMappings{
 		$reg->mapSimple(Blocks::MANGROVE_ROOTS(), Ids::MANGROVE_ROOTS);
 		$reg->mapSimple(Blocks::MELON(), Ids::MELON_BLOCK);
 		$reg->mapSimple(Blocks::MONSTER_SPAWNER(), Ids::MOB_SPAWNER);
+		$reg->mapSimple(Blocks::MOSS_BLOCK(), Ids::MOSS_BLOCK);
+		$reg->mapSimple(Blocks::MOSS_CARPET(), Ids::MOSS_CARPET);
 		$reg->mapSimple(Blocks::MOSSY_COBBLESTONE(), Ids::MOSSY_COBBLESTONE);
 		$reg->mapSimple(Blocks::MOSSY_STONE_BRICKS(), Ids::MOSSY_STONE_BRICKS);
 		$reg->mapSimple(Blocks::MUD(), Ids::MUD);
@@ -615,6 +619,14 @@ final class VanillaBlockMappings{
 		$reg->mapModel(Model::create(Blocks::TORCHFLOWER_CROP(), Ids::TORCHFLOWER_CROP)->properties([
 			//TODO: this property can have values 0-7, but only 0-1 are valid
 			new IntProperty(StateNames::GROWTH, 0, 7, fn(TorchflowerCrop $b) => $b->isReady() ? 1 : 0, fn(TorchflowerCrop $b, int $v) => $b->setReady($v !== 0))
+		]));
+
+		$reg->mapModel(Model::create(Blocks::KELP(), Ids::KELP)->properties([
+			new IntProperty(StateNames::KELP_AGE, 0, 25, fn(Kelp $b) => $b->getAge(), fn(Kelp $b, int $v) => $b->setAge($v))
+		]));
+
+		$reg->mapModel(Model::create(Blocks::SEAGRASS(), Ids::SEAGRASS)->properties([
+			new DummyProperty(StateNames::SEA_GRASS_TYPE, StringValues::SEA_GRASS_TYPE_DEFAULT)
 		]));
 	}
 

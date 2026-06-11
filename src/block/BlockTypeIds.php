@@ -865,8 +865,10 @@ public const MOSS_BLOCK = 10759;
 	public const BAMBOO_MOSAIC_STAIRS = 10831;
 	public const AZALEA = 10832;
 	public const FLOWERING_AZALEA = 10833;
+	public const KELP = 10834;
+	public const SEAGRASS = 10835;
 
-	public const FIRST_UNUSED_BLOCK_ID = 10834;
+	public const FIRST_UNUSED_BLOCK_ID = 10836;
 
 	private static int $nextDynamicId = self::FIRST_UNUSED_BLOCK_ID;
 
