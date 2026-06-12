@@ -302,7 +302,6 @@ final class VanillaBlocks{
 	private static DoubleTallGrass $_mDOUBLE_TALLGRASS;
 	private static DragonEgg $_mDRAGON_EGG;
 	private static DriedKelp $_mDRIED_KELP;
-	private static Kelp $_mKELP;
 	private static Opaque $_mDRIPSTONE;
 	private static DyedCandle $_mDYED_CANDLE;
 	private static DyedShulkerBox $_mDYED_SHULKER_BOX;
@@ -509,6 +508,7 @@ final class VanillaBlocks{
 	private static WallHangingSign $_mJUNGLE_WALL_HANGING_SIGN;
 	private static WallSign $_mJUNGLE_WALL_SIGN;
 	private static Wood $_mJUNGLE_WOOD;
+	private static Kelp $_mKELP;
 	private static ChemistryTable $_mLAB_TABLE;
 	private static Ladder $_mLADDER;
 	private static Lantern $_mLANTERN;
@@ -727,9 +727,9 @@ final class VanillaBlocks{
 	private static SculkSensor $_mSCULK_SENSOR;
 	private static SculkShrieker $_mSCULK_SHRIEKER;
 	private static SculkVein $_mSCULK_VEIN;
+	private static Seagrass $_mSEAGRASS;
 	private static SeaLantern $_mSEA_LANTERN;
 	private static SeaPickle $_mSEA_PICKLE;
-	private static Seagrass $_mSEAGRASS;
 	private static Opaque $_mSHROOMLIGHT;
 	private static ShulkerBox $_mSHULKER_BOX;
 	private static Slime $_mSLIME;
@@ -1144,7 +1144,6 @@ final class VanillaBlocks{
 			"double_tallgrass" => fn(DoubleTallGrass $v) => self::$_mDOUBLE_TALLGRASS = $v,
 			"dragon_egg" => fn(DragonEgg $v) => self::$_mDRAGON_EGG = $v,
 			"dried_kelp" => fn(DriedKelp $v) => self::$_mDRIED_KELP = $v,
-			"kelp" => fn(Kelp $v) => self::$_mKELP = $v,
 			"dripstone" => fn(Opaque $v) => self::$_mDRIPSTONE = $v,
 			"dyed_candle" => fn(DyedCandle $v) => self::$_mDYED_CANDLE = $v,
 			"dyed_shulker_box" => fn(DyedShulkerBox $v) => self::$_mDYED_SHULKER_BOX = $v,
@@ -1351,6 +1350,7 @@ final class VanillaBlocks{
 			"jungle_wall_hanging_sign" => fn(WallHangingSign $v) => self::$_mJUNGLE_WALL_HANGING_SIGN = $v,
 			"jungle_wall_sign" => fn(WallSign $v) => self::$_mJUNGLE_WALL_SIGN = $v,
 			"jungle_wood" => fn(Wood $v) => self::$_mJUNGLE_WOOD = $v,
+			"kelp" => fn(Kelp $v) => self::$_mKELP = $v,
 			"lab_table" => fn(ChemistryTable $v) => self::$_mLAB_TABLE = $v,
 			"ladder" => fn(Ladder $v) => self::$_mLADDER = $v,
 			"lantern" => fn(Lantern $v) => self::$_mLANTERN = $v,
@@ -1569,9 +1569,9 @@ final class VanillaBlocks{
 			"sculk_sensor" => fn(SculkSensor $v) => self::$_mSCULK_SENSOR = $v,
 			"sculk_shrieker" => fn(SculkShrieker $v) => self::$_mSCULK_SHRIEKER = $v,
 			"sculk_vein" => fn(SculkVein $v) => self::$_mSCULK_VEIN = $v,
+			"seagrass" => fn(Seagrass $v) => self::$_mSEAGRASS = $v,
 			"sea_lantern" => fn(SeaLantern $v) => self::$_mSEA_LANTERN = $v,
 			"sea_pickle" => fn(SeaPickle $v) => self::$_mSEA_PICKLE = $v,
-			"seagrass" => fn(Seagrass $v) => self::$_mSEAGRASS = $v,
 			"shroomlight" => fn(Opaque $v) => self::$_mSHROOMLIGHT = $v,
 			"shulker_box" => fn(ShulkerBox $v) => self::$_mSHULKER_BOX = $v,
 			"slime" => fn(Slime $v) => self::$_mSLIME = $v,
