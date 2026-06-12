@@ -3046,11 +3046,6 @@ final class VanillaBlocks{
 		return clone self::$_mDRIED_KELP;
 	}
 
-	public static function KELP() : Kelp{
-		if(!isset(self::$_mKELP)){ self::init(); }
-		return clone self::$_mKELP;
-	}
-
 	public static function DRIPSTONE() : Opaque{
 		if(!isset(self::$_mDRIPSTONE)){ self::init(); }
 		return clone self::$_mDRIPSTONE;
@@ -4079,6 +4074,11 @@ final class VanillaBlocks{
 	public static function JUNGLE_WOOD() : Wood{
 		if(!isset(self::$_mJUNGLE_WOOD)){ self::init(); }
 		return clone self::$_mJUNGLE_WOOD;
+	}
+
+	public static function KELP() : Kelp{
+		if(!isset(self::$_mKELP)){ self::init(); }
+		return clone self::$_mKELP;
 	}
 
 	public static function LAB_TABLE() : ChemistryTable{
@@ -5171,6 +5171,11 @@ final class VanillaBlocks{
 		return clone self::$_mSCULK_VEIN;
 	}
 
+	public static function SEAGRASS() : Seagrass{
+		if(!isset(self::$_mSEAGRASS)){ self::init(); }
+		return clone self::$_mSEAGRASS;
+	}
+
 	public static function SEA_LANTERN() : SeaLantern{
 		if(!isset(self::$_mSEA_LANTERN)){ self::init(); }
 		return clone self::$_mSEA_LANTERN;
@@ -5179,11 +5184,6 @@ final class VanillaBlocks{
 	public static function SEA_PICKLE() : SeaPickle{
 		if(!isset(self::$_mSEA_PICKLE)){ self::init(); }
 		return clone self::$_mSEA_PICKLE;
-	}
-
-	public static function SEAGRASS() : Seagrass{
-		if(!isset(self::$_mSEAGRASS)){ self::init(); }
-		return clone self::$_mSEAGRASS;
 	}
 
 	public static function SHROOMLIGHT() : Opaque{
