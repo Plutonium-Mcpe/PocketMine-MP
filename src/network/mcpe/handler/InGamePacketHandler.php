@@ -496,6 +496,11 @@ class InGamePacketHandler extends PacketHandler{
 				}
 				return true;
 			case UseItemTransactionData::ACTION_CLICK_AIR:
+			case UseItemTransactionData::ACTION_BREAK_BLOCK:
+				//Newer Bedrock clients (protocol 1001 or +) report a right-click item use in the air as
+				//ACTION_BREAK_BLOCK with triggerType UNKNOWN instead of the legacy ACTION_CLICK_AIR. Actual block
+				//breaking is handled separately through PlayerAuthInput block actions, so
+				//it never reaches this method.
 				if($this->player->isUsingItem()){
 					if(!$this->player->consumeHeldItem()){
 						$hungerAttr = $this->player->getAttributeMap()->get(Attribute::HUNGER) ?? throw new AssumptionFailedError();
