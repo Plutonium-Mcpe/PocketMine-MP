@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "500b69105f8138e0855551515ad0b506",
+    "content-hash": "201e135469ae18293556ac0581f60c74",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -204,42 +204,40 @@
         },
         {
             "name": "pocketmine/bedrock-data",
-            "version": "dev-bedrock-1.26.20",
+            "version": "dev-bedrock-1.26.30",
             "source": {
                 "type": "git",
-                "url": "https://github.com/pmmp/BedrockData.git",
-                "reference": "588acca8a59ef403ceb64b57a18075426256bd68"
+                "url": "https://github.com/Plutonium-Mcpe/BedrockData.git",
+                "reference": "7e91146842837b2267a8e4d8bf8b8dab5e482970"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockData/zipball/588acca8a59ef403ceb64b57a18075426256bd68",
-                "reference": "588acca8a59ef403ceb64b57a18075426256bd68",
+                "url": "https://api.github.com/repos/Plutonium-Mcpe/BedrockData/zipball/7e91146842837b2267a8e4d8bf8b8dab5e482970",
+                "reference": "7e91146842837b2267a8e4d8bf8b8dab5e482970",
                 "shasum": ""
             },
             "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "CC0-1.0"
             ],
             "description": "Blobs of data generated from Minecraft: Bedrock Edition, used by PocketMine-MP",
             "support": {
-                "issues": "https://github.com/pmmp/BedrockData/issues",
-                "source": "https://github.com/pmmp/BedrockData/tree/bedrock-1.26.20"
+                "source": "https://github.com/Plutonium-Mcpe/BedrockData/tree/bedrock-1.26.30"
             },
-            "time": "2026-05-06T13:13:49+00:00"
+            "time": "2026-06-16T10:44:11+00:00"
         },
         {
             "name": "pocketmine/bedrock-item-upgrade-schema",
-            "version": "1.16.0",
+            "version": "1.17.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockItemUpgradeSchema.git",
-                "reference": "8c48ceaa72d390e89c4dbff9542aa4dfa734057d"
+                "reference": "e19685d2e7e76eb7446115c556df34e5d627d072"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockItemUpgradeSchema/zipball/8c48ceaa72d390e89c4dbff9542aa4dfa734057d",
-                "reference": "8c48ceaa72d390e89c4dbff9542aa4dfa734057d",
+                "url": "https://api.github.com/repos/pmmp/BedrockItemUpgradeSchema/zipball/e19685d2e7e76eb7446115c556df34e5d627d072",
+                "reference": "e19685d2e7e76eb7446115c556df34e5d627d072",
                 "shasum": ""
             },
             "type": "library",
@@ -250,22 +248,22 @@
             "description": "JSON schemas for upgrading items found in older Minecraft: Bedrock world saves",
             "support": {
                 "issues": "https://github.com/pmmp/BedrockItemUpgradeSchema/issues",
-                "source": "https://github.com/pmmp/BedrockItemUpgradeSchema/tree/1.16.0"
+                "source": "https://github.com/pmmp/BedrockItemUpgradeSchema/tree/1.17.0"
             },
-            "time": "2025-10-02T13:22:32+00:00"
+            "time": "2026-05-06T13:12:04+00:00"
         },
         {
             "name": "pocketmine/bedrock-protocol",
-            "version": "dev-bedrock-1.26.20",
+            "version": "dev-bedrock-1.26.30",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockProtocol.git",
-                "reference": "300dc9ae37ca9a43f227afd655206a115bb61be9"
+                "reference": "507a8df7c53b369f6e62aebd32e3dbaf609b4755"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockProtocol/zipball/300dc9ae37ca9a43f227afd655206a115bb61be9",
-                "reference": "300dc9ae37ca9a43f227afd655206a115bb61be9",
+                "url": "https://api.github.com/repos/pmmp/BedrockProtocol/zipball/507a8df7c53b369f6e62aebd32e3dbaf609b4755",
+                "reference": "507a8df7c53b369f6e62aebd32e3dbaf609b4755",
                 "shasum": ""
             },
             "require": {
@@ -297,9 +295,9 @@
             "description": "An implementation of the Minecraft: Bedrock Edition protocol in PHP",
             "support": {
                 "issues": "https://github.com/pmmp/BedrockProtocol/issues",
-                "source": "https://github.com/pmmp/BedrockProtocol/tree/bedrock-1.26.20"
+                "source": "https://github.com/pmmp/BedrockProtocol/tree/bedrock-1.26.30"
             },
-            "time": "2026-05-06T14:03:50+00:00"
+            "time": "2026-06-16T11:12:56+00:00"
         },
         {
             "name": "pocketmine/binaryutils",
