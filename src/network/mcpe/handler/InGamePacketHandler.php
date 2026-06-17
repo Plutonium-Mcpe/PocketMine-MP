@@ -563,6 +563,10 @@ class InGamePacketHandler extends PacketHandler{
 				$this->player->interactEntity($target, $data->getClickPosition());
 				return true;
 			case UseItemOnEntityTransactionData::ACTION_ATTACK:
+			case UseItemOnEntityTransactionData::ACTION_ITEM_INTERACT:
+				//Bedrock 1.26.30 clients send melee attacks on entities as ITEM_INTERACT (2) instead of the legacy
+				//ATTACK (1). Right-click interactions still arrive as INTERACT (0), so both attack action types can
+				//be routed to attackEntity() without affecting interactions.
 				$this->player->attackEntity($target);
 				return true;
 		}
