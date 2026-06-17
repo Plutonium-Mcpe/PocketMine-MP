@@ -72,13 +72,13 @@ final class FastChunkSerializer{
 		Byte::writeUnsigned($stream, $count);
 
 		foreach($subChunks as $y => $subChunk){
-			Byte::writeSignedInt($stream, $subChunk);
+			Byte::writeSigned($stream, $y);
 			BE::writeUnsignedInt($stream, $subChunk->getEmptyBlockId());
 
 			$layers = $subChunk->getBlockLayers();
-			Byte::writeUnsignedInt($stream, count($layers));
-			foreach($layers as $block){
-				self::serializePalettedArray($stream, $block);
+			Byte::writeUnsigned($stream, count($layers));
+			foreach($layers as $blocks){
+				self::serializePalettedArray($stream, $blocks);
 			}
 			self::serializePalettedArray($stream, $subChunk->getBiomeArray());
 
