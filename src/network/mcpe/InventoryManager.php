@@ -521,7 +521,7 @@ class InventoryManager{
 			$this->session->sendDataPacket(InventorySlotPacket::create(
 				$windowId,
 				$netSlot,
-				new FullContainerName($this->lastInventoryNetworkId),
+				null,
 				null,
 				new ItemStackWrapper(0, ItemStack::null())
 			));
