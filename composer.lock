@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "201e135469ae18293556ac0581f60c74",
+    "content-hash": "2a3bd9ff00d93b0a386edba5be7f502c",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -258,12 +258,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockProtocol.git",
-                "reference": "507a8df7c53b369f6e62aebd32e3dbaf609b4755"
+                "reference": "da812602c06c5b3adc49f63e0ba321ca7f169fe0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockProtocol/zipball/507a8df7c53b369f6e62aebd32e3dbaf609b4755",
-                "reference": "507a8df7c53b369f6e62aebd32e3dbaf609b4755",
+                "url": "https://api.github.com/repos/pmmp/BedrockProtocol/zipball/da812602c06c5b3adc49f63e0ba321ca7f169fe0",
+                "reference": "da812602c06c5b3adc49f63e0ba321ca7f169fe0",
                 "shasum": ""
             },
             "require": {
@@ -297,7 +297,7 @@
                 "issues": "https://github.com/pmmp/BedrockProtocol/issues",
                 "source": "https://github.com/pmmp/BedrockProtocol/tree/bedrock-1.26.30"
             },
-            "time": "2026-06-16T11:12:56+00:00"
+            "time": "2026-06-18T15:57:45+00:00"
         },
         {
             "name": "pocketmine/binaryutils",
