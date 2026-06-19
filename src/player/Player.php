@@ -1553,7 +1553,20 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 			}
 
 			if($this->blockBreakHandler !== null && !$this->blockBreakHandler->update()){
+				//update() returns false either because the break progress completed, or because
+				//the attempt was interrupted (e.g. the player moved out of range).
+				$breakCompleted = $this->blockBreakHandler->getBreakProgress() >= 1;
+				$blockBreakPos = $this->blockBreakHandler->getBlockPos();
 				$this->blockBreakHandler = null;
+				if($breakCompleted){
+					//Server-authoritative break: destroy the block as soon as the server-side break
+					//progress completes, rather than waiting for the client's PREDICT_DESTROY_BLOCK.
+					//The crack animation is server-driven (BLOCK_START_BREAK), so this keeps the
+					//destruction in sync with the animation. It matters most for custom blocks, whose
+					//client-side destroy time (destructible_by_mining) is not tool-aware and therefore
+					//completes much later than the server's tool-aware break time.
+					$this->breakBlock($blockBreakPos);
+				}
 			}
 
 			if($this->isUsingItem() && $this->getItemUseDuration() % 4 === 0 && ($item = $this->inventory->getItemInHand()) instanceof ConsumableItem){
