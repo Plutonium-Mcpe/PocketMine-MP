@@ -25,8 +25,7 @@ namespace pocketmine\event;
 
 use pocketmine\plugin\Plugin;
 use function array_merge;
-use function array_merge_recursive;
-use function ksort;
+use function krsort;
 use function spl_object_id;
 use const SORT_NUMERIC;
 
@@ -163,12 +162,19 @@ class HandlerList{
 				}
 			}
 		}
+		//NOTE: array_merge()/array_merge_recursive() must NOT be used here: they renumber integer keys,
+		//which would destroy the priority indexes and break event ordering entirely.
 		/** @var RegisteredListener[][] $listenersByPriority */
-		$listenersByPriority = array_merge_recursive($listeners, $asyncListeners, $exclusiveAsyncListeners);
+		$listenersByPriority = [];
+		foreach([$listeners, $asyncListeners, $exclusiveAsyncListeners] as $group){
+			foreach($group as $priority => $listenersForPriority){
+				$listenersByPriority[$priority] = array_merge($listenersByPriority[$priority] ?? [], $listenersForPriority);
+			}
+		}
 
 		//TODO: why on earth do the priorities have higher values for lower priority?
-		ksort($listenersByPriority, SORT_NUMERIC);
+		krsort($listenersByPriority, SORT_NUMERIC);
 
-		return $this->handlerCache->list = array_merge(...$listenersByPriority);
+		return $this->handlerCache->list = $listenersByPriority === [] ? [] : array_merge(...$listenersByPriority);
 	}
 }
