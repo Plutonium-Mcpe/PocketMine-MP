@@ -887,6 +887,9 @@ class InGamePacketHandler extends PacketHandler{
 		switch($packet->type){
 			case BookEditPacket::TYPE_REPLACE_PAGE:
 				$text = self::checkBookText($packet->text, "page text", self::PAGE_LENGTH_SOFT_LIMIT_CHARS, WritableBookPage::PAGE_LENGTH_HARD_LIMIT_BYTES, $cancel);
+				if($packet->pageNumber < 0){
+					throw new PacketHandlingException("Page number cannot be negative");
+				}
 				$newBook->setPageText($packet->pageNumber, $text);
 				$modifiedPages[] = $packet->pageNumber;
 				break;
@@ -908,6 +911,9 @@ class InGamePacketHandler extends PacketHandler{
 				$modifiedPages[] = $packet->pageNumber;
 				break;
 			case BookEditPacket::TYPE_SWAP_PAGES:
+				if($packet->pageNumber < 0 || $packet->secondaryPageNumber < 0){
+					throw new PacketHandlingException("Page numbers cannot be negative");
+				}
 				if(!$newBook->pageExists($packet->pageNumber) || !$newBook->pageExists($packet->secondaryPageNumber)){
 					//the client will create pages on its own without telling us until it tries to switch them
 					$newBook->addPage(max($packet->pageNumber, $packet->secondaryPageNumber));
