@@ -487,6 +487,42 @@ class InventoryManager{
 			$this->itemStackExtraDataEqual($left, $right);
 	}
 
+	/**
+	 * Hook used to display custom items as a vanilla "proxy" item in anvil slots.
+	 *
+	 * The Bedrock client cannot compute an anvil result (output preview + XP cost) for server-defined
+	 * component-based items, so without this it never shows anything when such an item is placed in an anvil,
+	 * making book-enchanting impossible client-side. This hook lets the server show the client a vanilla
+	 * equivalent (e.g. a diamond sword for a custom sword) carrying the same enchantments/repair cost, so the
+	 * client computes and displays a result. The real custom item stays in the server-side inventory, and the
+	 * server-side anvil logic (cost calculation in AnvilHelper, applying the enchantment) is unaffected: when
+	 * the player takes the output, the transaction is computed from the real items.
+	 *
+	 * @var (\Closure(AnvilInventory $inventory, int $slot, Item $item) : Item)|null
+	 */
+	private static ?\Closure $anvilDisplayHook = null;
+
+	public static function setAnvilDisplayHook(?\Closure $hook) : void{
+		self::$anvilDisplayHook = $hook;
+	}
+
+	/**
+	 * Returns the item that should be shown to the client for the given inventory slot. For anvil slots holding
+	 * a custom item this may be a vanilla proxy (see {@link InventoryManager::setAnvilDisplayHook()}); for every
+	 * other case it returns the item unchanged.
+	 */
+	private function transformDisplayItem(Inventory $inventory, int $slot, Item $item) : Item{
+		if(self::$anvilDisplayHook !== null && $inventory instanceof AnvilInventory){
+			try{
+				return (self::$anvilDisplayHook)($inventory, $slot, $item);
+			}catch(\Throwable $e){
+				//never let a display transform break inventory sync - fall back to the real item
+				$this->session->getLogger()->logException($e);
+			}
+		}
+		return $item;
+	}
+
 	public function onSlotChange(Inventory $inventory, int $slot) : void{
 		$inventoryEntry = $this->inventories[spl_object_id($inventory)] ?? null;
 		if($inventoryEntry === null){
@@ -494,7 +530,7 @@ class InventoryManager{
 			//is cleared before removal.
 			return;
 		}
-		$currentItem = $this->session->getTypeConverter()->coreItemStackToNet($inventory->getItem($slot));
+		$currentItem = $this->session->getTypeConverter()->coreItemStackToNet($this->transformDisplayItem($inventory, $slot, $inventory->getItem($slot)));
 		$clientSideItem = $inventoryEntry->predictions[$slot] ?? null;
 		if($clientSideItem === null || !$this->itemStacksEqual($currentItem, $clientSideItem)){
 			//no prediction or incorrect - do not associate this with the currently active itemstack request
@@ -607,7 +643,7 @@ class InventoryManager{
 			$contents = [];
 			$typeConverter = $this->session->getTypeConverter();
 			foreach($inventory->getContents(true) as $slot => $item){
-				$itemStack = $typeConverter->coreItemStackToNet($item);
+				$itemStack = $typeConverter->coreItemStackToNet($this->transformDisplayItem($inventory, $slot, $item));
 				$info = $this->trackItemStack($entry, $slot, $itemStack, null);
 				$contents[] = new ItemStackWrapper($info->getStackId(), $itemStack);
 			}
@@ -646,7 +682,7 @@ class InventoryManager{
 
 				//any prediction that still exists at this point is a slot that was predicted to change but didn't
 				$this->session->getLogger()->debug("Detected prediction mismatch in inventory " . get_class($inventory) . "#" . spl_object_id($inventory) . " slot $slot");
-				$entry->pendingSyncs[$slot] = $typeConverter->coreItemStackToNet($inventory->getItem($slot));
+				$entry->pendingSyncs[$slot] = $typeConverter->coreItemStackToNet($this->transformDisplayItem($inventory, $slot, $inventory->getItem($slot)));
 			}
 
 			$entry->predictions = [];
