@@ -30,4 +30,10 @@ class Kelp extends Flowable implements Ageable{
 	use AgeableTrait;
 
 	public const MAX_AGE = 25;
+
+	public function canBeFlowedInto() : bool{
+		//prevent water from destroying kelp: breaking one underwater would otherwise let water flow in and
+		//chain-break every adjacent kelp, causing lag. Behaves like a normal block towards liquid flow.
+		return false;
+	}
 }

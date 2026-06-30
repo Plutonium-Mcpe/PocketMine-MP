@@ -25,4 +25,7 @@ namespace pocketmine\block;
 
 class Seagrass extends Flowable{
 
+	public function canBeFlowedInto() : bool{
+		return false;
+	}
 }
