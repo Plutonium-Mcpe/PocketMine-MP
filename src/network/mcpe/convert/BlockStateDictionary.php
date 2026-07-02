@@ -110,6 +110,17 @@ final class BlockStateDictionary{
 	}
 
 	/**
+	 * Returns the FNV1a-32 network hash of the blockstate at the given dictionary state ID, used as
+	 * the wire runtime ID when blockNetworkIdsAreHashes is enabled (see BlockStateDictionaryEntry).
+	 * The state ID is a dictionary index that always resolves (callers pass the result of a lookup or
+	 * the fallback state ID), so a missing entry is a programming error.
+	 */
+	public function getNetworkHashFromStateId(int $stateId) : int{
+		$entry = $this->states[$stateId] ?? throw new \InvalidArgumentException("Unknown blockstate ID $stateId");
+		return $entry->getNetworkRuntimeHash();
+	}
+
+	/**
 	 * Searches for the appropriate state ID which matches the given blockstate NBT.
 	 * Returns null if there were no matches.
 	 */
