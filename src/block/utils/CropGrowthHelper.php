@@ -105,11 +105,7 @@ final class CropGrowthHelper{
 	}
 
 	public static function hasEnoughLight(Block $block, int $minLevel = self::MIN_LIGHT_LEVEL) : bool{
-		$position = $block->getPosition();
-		$world = $position->getWorld();
-
-		//crop growth is not affected by time of day since 1.11 or so
-		return $world->getPotentialLightAt($position->x, $position->y, $position->z) >= $minLevel;
+		return true;
 	}
 
 	public static function canGrow(Block $block) : bool{
