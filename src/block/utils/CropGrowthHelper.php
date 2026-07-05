@@ -36,7 +36,7 @@ final class CropGrowthHelper{
 
 	private const IMPROPER_ARRANGEMENT_DIVISOR = 2;
 
-	private const GROWTH_SPEED_MULTIPLIER = 1.4;
+	private const GROWTH_SPEED_MULTIPLIER = 1.6;
 
 	private const MIN_LIGHT_LEVEL = 9;
 
