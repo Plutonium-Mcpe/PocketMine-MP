@@ -117,8 +117,6 @@ final class ChunkSerializer{
 
 		Byte::writeUnsigned($stream, count($layers));
 
-		$blockStateDictionary = $blockTranslator->getBlockStateDictionary();
-
 		foreach($layers as $blocks){
 			$bitsPerBlock = $blocks->getBitsPerBlock();
 			$words = $blocks->getWordArray();
@@ -133,10 +131,12 @@ final class ChunkSerializer{
 				$nbtSerializer = new NetworkNbtSerializer();
 				foreach($palette as $p){
 					//TODO: introduce a binary cache for this
-					$state = $blockStateDictionary->generateDataFromStateId($blockTranslator->internalIdToNetworkId($p));
-					if($state === null){
-						$state = $blockTranslator->getFallbackStateData();
-					}
+					//This branch writes the blockstate NBT, which must be resolved from the dictionary
+					//INDEX, not the wire runtime ID: in hash mode internalIdToNetworkId() returns a hash
+					//that is not a valid dictionary index, so generateDataFromStateId() would return null
+					//and every block would collapse to the fallback info_update state. internalIdToNetworkStateData()
+					//does the correct index lookup (with its own fallback) in both modes.
+					$state = $blockTranslator->internalIdToNetworkStateData($p);
 
 					$stream->writeByteArray($nbtSerializer->write(new TreeRoot($state->toNbt())));
 				}

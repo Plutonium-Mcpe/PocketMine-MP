@@ -117,6 +117,18 @@ final class BlockTranslator{
 	}
 
 	/**
+	 * Converts a dictionary state ID (positional index) into the wire runtime ID, applying the hash
+	 * transform when in hash mode. For the rare call sites that already hold a dictionary state ID
+	 * (e.g. a synthetic/fake blockstate looked up directly via the dictionary) rather than an internal
+	 * state ID, so they don't accidentally write a raw index while chunks write hashes.
+	 */
+	public function networkStateIdToNetworkId(int $networkStateId) : int{
+		return self::$blockNetworkIdsAreHashes
+			? $this->blockStateDictionary->getNetworkHashFromStateId($networkStateId)
+			: $networkStateId;
+	}
+
+	/**
 	 * Looks up the network state data associated with the given internal state ID.
 	 */
 	public function internalIdToNetworkStateData(int $internalStateId) : BlockStateData{
