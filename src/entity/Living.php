@@ -25,6 +25,7 @@ namespace pocketmine\entity;
 
 use pocketmine\block\Block;
 use pocketmine\block\BlockTypeIds;
+use pocketmine\block\Liquid;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Water;
 use pocketmine\data\bedrock\EffectIdMap;
@@ -745,7 +746,11 @@ abstract class Living extends Entity{
 			for($z = $baseZ - $radius; $z <= $baseZ + $radius; $z++){
 				$block = $world->getBlockAt($x, $y, $z);
 				if(
-					!$block->isSameState($liquid) ||
+					//match any SOURCE block of the same liquid, regardless of its "still" flag: world-generated
+					//water (oceans/rivers) deserializes as still water (minecraft:water) while bucket-placed water
+					//uses the flowing form (minecraft:flowing_water); isSameState() would reject the former.
+					!$block->hasSameTypeId($liquid) ||
+					!($block instanceof Liquid && $block->isSource()) ||
 					$world->getBlockAt($x, $y + 1, $z)->getTypeId() !== BlockTypeIds::AIR ||
 					count($world->getNearbyEntities(AxisAlignedBB::one()->offset($x, $y, $z))) !== 0
 				){
