@@ -17,12 +17,12 @@ jobs:
     name: Create GitHub release
     if: startsWith(github.event.head_commit.message, 'Release ')
     runs-on: ['self-hosted', 'Linux']
-    strategy:
-      fail-fast: false
     steps:
+      # Le phar n'embarque que resources/, src/ et vendor/ (build/server-phar.php), et aucune
+      # étape ci-dessous ne lit l'historique git ni les submodules : un checkout superficiel suffit.
       - uses: actions/checkout@v4
         with:
-          submodules: true
+          fetch-depth: 1
 
       - name: Setup PHP
         uses: pmmp/setup-php-action@3.2.0
@@ -45,7 +45,7 @@ jobs:
         run: composer config --global github-oauth.github.com ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Composer dependencies
-        run: composer install --no-dev --prefer-dist --no-interaction --ignore-platform-reqs
+        run: composer install --no-dev --prefer-dist --no-interaction --no-progress --ignore-platform-reqs
 
       - name: Regenerate codegen
         run: composer run update-codegen
