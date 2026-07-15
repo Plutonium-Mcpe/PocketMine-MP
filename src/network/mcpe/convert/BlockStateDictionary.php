@@ -25,18 +25,18 @@ namespace pocketmine\network\mcpe\convert;
 
 use pocketmine\data\bedrock\block\BlockStateData;
 use pocketmine\data\bedrock\block\BlockTypeNames;
+use pocketmine\nbt\BigEndianNbtSerializer;
 use pocketmine\nbt\NbtDataException;
-use pocketmine\nbt\TreeRoot;
-use pocketmine\network\mcpe\protocol\serializer\NetworkNbtSerializer;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\utils\Utils;
 use function array_key_first;
-use function array_map;
 use function count;
 use function get_debug_type;
 use function is_array;
 use function is_int;
 use function is_string;
 use function json_decode;
+use function zlib_decode;
 use const JSON_THROW_ON_ERROR;
 
 /**
@@ -170,10 +170,24 @@ final class BlockStateDictionary{
 	 * @throws NbtDataException
 	 */
 	public static function loadPaletteFromString(string $blockPaletteContents) : array{
-		return array_map(
-			fn(TreeRoot $root) => BlockStateData::fromNbt($root->mustGetCompoundTag()),
-			(new NetworkNbtSerializer())->readMultiple($blockPaletteContents)
-		);
+		$paletteRaw = zlib_decode($blockPaletteContents);
+		if($paletteRaw === false){
+			throw new \InvalidArgumentException("Failed to decompress block palette");
+		}
+		$blocks = (new BigEndianNbtSerializer())->read($paletteRaw)->mustGetCompoundTag()->getListTag("blocks") ??
+			throw new \InvalidArgumentException("Missing \"blocks\" list in block palette");
+
+		$states = [];
+		foreach($blocks as $i => $blockTag){
+			if(!($blockTag instanceof CompoundTag)){
+				throw new \InvalidArgumentException("Invalid block palette entry at offset $i, expected TAG_Compound, got " . get_debug_type($blockTag));
+			}
+			$stateTag = $blockTag->getCompoundTag(BlockStateData::TAG_STATES) ??
+				throw new \InvalidArgumentException("Missing states for block palette entry $i");
+			$states[] = BlockStateData::current($blockTag->getString(BlockStateData::TAG_NAME), $stateTag->getValue());
+		}
+
+		return $states;
 	}
 
 	public static function loadFromString(string $blockPaletteContents, string $metaMapContents) : self{

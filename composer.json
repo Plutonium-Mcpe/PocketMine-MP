@@ -8,6 +8,16 @@
       {
          "type": "vcs",
          "url": "https://github.com/Plutonium-Mcpe/BedrockData.git"
+      },
+      {
+         "type": "vcs",
+         "url": "https://github.com/altayofficial/BedrockData.git",
+         "no-api": true
+      },
+      {
+         "type": "vcs",
+         "url": "https://github.com/altayofficial/BedrockProtocol.git",
+         "no-api": true
       }
    ],
    "require": {
@@ -41,9 +51,9 @@
       "adhocore/json-comment": "~1.2.0",
       "netresearch/jsonmapper": "~v5.0.0",
       "pocketmine/bedrock-block-upgrade-schema": "~5.2.0+bedrock-1.21.110",
-      "pocketmine/bedrock-data": "dev-bedrock-1.26.30",
+      "altayofficial/bedrock-data": "dev-bedrock-1.26.40",
+      "altayofficial/bedrock-protocol": "dev-bedrock-1.26.40",
       "pocketmine/bedrock-item-upgrade-schema": "~1.17.0+bedrock-1.26.20",
-      "pocketmine/bedrock-protocol": "dev-bedrock-1.26.30#da812602c06c5b3adc49f63e0ba321ca7f169fe0",
       "pocketmine/binaryutils": "^0.2.1",
       "pocketmine/callback-validator": "~1.0.4",
       "pocketmine/color": "^0.3.0",
@@ -99,8 +109,8 @@
       "update-codegen": [
          "@php build/codegen/bedrockdata-path-consts.php",
          "@php build/codegen/biome-ids.php",
-         "@php build/codegen/block-serializer-consts.php vendor/pocketmine/bedrock-data/canonical_block_states.nbt",
-         "@php build/codegen/item-type-names.php vendor/pocketmine/bedrock-data/required_item_list.json",
+         "@php build/codegen/block-serializer-consts.php vendor/altayofficial/bedrock-data/block_palette.nbt",
+         "@php build/codegen/item-type-names.php vendor/altayofficial/bedrock-data/item_palette.json",
          "@php build/codegen/known-translation-apis.php",
          "@php build/codegen/pocketmine-yml-property-consts.php",
          "@php build/codegen/registry-interface.php src generated"

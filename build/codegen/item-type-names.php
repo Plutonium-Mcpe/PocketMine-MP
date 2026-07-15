@@ -26,6 +26,7 @@ namespace pocketmine\build\generate_item_serializer_ids;
 use pocketmine\data\bedrock\item\BlockItemIdMap;
 use pocketmine\network\mcpe\convert\ItemTypeDictionaryFromDataHelper;
 use pocketmine\network\mcpe\protocol\serializer\ItemTypeDictionary;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\Filesystem;
 use pocketmine\utils\Utils;
 use function asort;
@@ -38,6 +39,7 @@ use function fopen;
 use function fwrite;
 use function is_dir;
 use function mkdir;
+use function preg_replace;
 use function strtoupper;
 use const SORT_STRING;
 use const STDERR;
@@ -45,7 +47,8 @@ use const STDERR;
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
 function constifyMcId(string $id) : string{
-	return strtoupper(explode(":", $id, 2)[1]);
+	return preg_replace('/[^A-Z0-9_]/', "_", strtoupper(explode(":", $id, 2)[1])) ??
+		throw new AssumptionFailedError("Failed to normalize item ID $id");
 }
 
 /** @return resource */
