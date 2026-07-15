@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - stable
+      - 1.26.40
   workflow_dispatch:
 
 permissions:
