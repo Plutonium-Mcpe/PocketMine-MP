@@ -1467,6 +1467,22 @@ class World implements ChunkManager{
 	}
 
 	/**
+	 * Returns whether a scheduled block update is already pending for the given
+	 * coordinates.
+	 *
+	 * scheduleDelayedBlockUpdate() only skips a duplicate when the pending delay
+	 * is shorter than or equal to the new one; a shorter delay inserts a second
+	 * queue entry and the first one is never removed. Blocks that reschedule
+	 * themselves on a random delay AND on every neighbour change - frosted ice
+	 * being the worst offender - therefore pile up several updates per position
+	 * in a dense field. Callers can use this to skip a reschedule that would
+	 * only add a duplicate.
+	 */
+	public function hasScheduledBlockUpdate(Vector3 $pos) : bool{
+		return isset($this->scheduledBlockUpdateQueueIndex[World::blockHash($pos->x, $pos->y, $pos->z)]);
+	}
+
+	/**
 	 * Schedules a block update to be executed after the specified number of ticks.
 	 * Blocks will be updated with the scheduled update type.
 	 */
