@@ -35,14 +35,11 @@ class FrostedIce extends Ice implements Ageable{
 
 	public function onNearbyBlockChange() : void{
 		$world = $this->position->getWorld();
-		//La glace se replanifie deja a chaque mise a jour ou elle ne fond pas, donc
-		//une update est presque toujours en attente. En replanifier une seconde ici
-		//n'avance rien: scheduleDelayedBlockUpdate() n'ecarte le doublon que si le
-		//delai en attente est plus court, et les deux tirent dans 20-40 ticks. Une
-		//fois sur deux on inserait donc une entree supplementaire dans la file sans
-		//jamais retirer l'ancienne. Dans un champ dense chaque fonte touche six
-		//voisins qui en injectaient chacun une, ce qui multipliait le nombre reel
-		//d'updates executees par tick bien au-dela d'une par bloc et par seconde.
+		//scheduleDelayedBlockUpdate() n'ecarte le doublon que si le delai en attente
+		//est plus court, et les deux tirent dans 20-40 ticks: sans ce garde, une fois
+		//sur deux on inserait une entree supplementaire dans la file sans jamais
+		//retirer l'ancienne. Dans un champ dense chaque fonte touche six voisins qui
+		//en injectaient chacun une.
 		if($world->hasScheduledBlockUpdate($this->position)){
 			return;
 		}
@@ -54,7 +51,15 @@ class FrostedIce extends Ice implements Ageable{
 		//Le tirage est evalue en premier: il vaut le meme resultat booleen mais
 		//court-circuite checkAdjacentBlocks() une fois sur trois, et donc ses
 		//huit getBlockAt(). Sur un champ de glace dense c'est le poste le plus
-		//cher de la mise a jour, replanifiee toutes les 20 a 40 ticks par bloc.
+		//cher de la mise a jour.
+		//
+		//Pas de replanification quand la glace ne fond pas: la file d'updates
+		//n'est pas persistee, elle repart vide a chaque demarrage et seul le
+		//random tick y injecte de la glace. Se replanifier soi-meme faisait de
+		//cette injection un cliquet — un bloc recrute n'en sortait jamais tant
+		//qu'il ne fondait pas — donc la file ne faisait que grossir avec
+		//l'uptime. Sans elle, la glace n'est plus vue que par le random tick,
+		//qui est plafonne a 3 blocs par sous-chunk et par tick.
 		if((mt_rand(0, 2) === 0 || !$this->checkAdjacentBlocks(4)) &&
 			$world->getHighestAdjacentFullLightAt($this->position->x, $this->position->y, $this->position->z) >= 12 - $this->age){
 			if($this->tryMelt()){
@@ -64,8 +69,6 @@ class FrostedIce extends Ice implements Ageable{
 					}
 				}
 			}
-		}else{
-			$world->scheduleDelayedBlockUpdate($this->position, mt_rand(20, 40));
 		}
 	}
 
