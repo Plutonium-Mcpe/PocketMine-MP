@@ -71,12 +71,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/altayofficial/BedrockData.git",
-                "reference": "d00a3a3f36e44a0f5b222d5d369e7194abc3d8ce"
+                "reference": "a57f724d4dd303d361e8c5a804ea678d1bb2be5c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/altayofficial/BedrockData/zipball/d00a3a3f36e44a0f5b222d5d369e7194abc3d8ce",
-                "reference": "d00a3a3f36e44a0f5b222d5d369e7194abc3d8ce",
+                "url": "https://api.github.com/repos/altayofficial/BedrockData/zipball/a57f724d4dd303d361e8c5a804ea678d1bb2be5c",
+                "reference": "a57f724d4dd303d361e8c5a804ea678d1bb2be5c",
                 "shasum": ""
             },
             "type": "library",
@@ -84,7 +84,7 @@
                 "CC0-1.0"
             ],
             "description": "Blobs of data generated from Minecraft: Bedrock Edition, used by Altayz",
-            "time": "2026-07-12T18:49:10+00:00"
+            "time": "2026-07-23T08:05:33+00:00"
         },
         {
             "name": "altayofficial/bedrock-protocol",
