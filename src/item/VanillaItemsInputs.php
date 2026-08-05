@@ -379,7 +379,7 @@ final class VanillaItemsInputs extends RegistrySource{
 	private function registerArmorItems() : void{
 		self::registerDelayed("chainmail_boots", fn($name) : Armor => new Armor(self::makeIID($name), "Chainmail Boots", new ArmorTypeInfo(1, 196, ArmorInventory::SLOT_FEET, material: ArmorMaterials::CHAINMAIL()), [EnchantmentTags::BOOTS]));
 		self::registerDelayed("copper_boots", fn($name) : Armor => new Armor(self::makeIID($name), "Copper Boots", new ArmorTypeInfo(1, 144, ArmorInventory::SLOT_FEET, material: ArmorMaterials::COPPER()), [EnchantmentTags::BOOTS]));
-		self::registerDelayed("diamond_boots", fn($name) : Armor => new Armor(self::makeIID($name), "Diamond Boots", new ArmorTypeInfo(3, 430, ArmorInventory::SLOT_FEET, 2, material: ArmorMaterials::DIAMOND()), [EnchantmentTags::BOOTS]));
+		self::registerDelayed("diamond_boots", fn($name) : Armor => new Armor(self::makeIID($name), "Diamond Boots", new ArmorTypeInfo(3, 430, ArmorInventory::SLOT_FEET, material: ArmorMaterials::DIAMOND()), [EnchantmentTags::BOOTS]));
 		self::registerDelayed("golden_boots", fn($name) : Armor => new Armor(self::makeIID($name), "Golden Boots", new ArmorTypeInfo(1, 92, ArmorInventory::SLOT_FEET, material: ArmorMaterials::GOLD()), [EnchantmentTags::BOOTS]));
 		self::registerDelayed("iron_boots", fn($name) : Armor => new Armor(self::makeIID($name), "Iron Boots", new ArmorTypeInfo(2, 196, ArmorInventory::SLOT_FEET, material: ArmorMaterials::IRON()), [EnchantmentTags::BOOTS]));
 		self::registerDelayed("leather_boots", fn($name) : Armor => new Armor(self::makeIID($name), "Leather Boots", new ArmorTypeInfo(1, 66, ArmorInventory::SLOT_FEET, material: ArmorMaterials::LEATHER()), [EnchantmentTags::BOOTS]));
@@ -387,7 +387,7 @@ final class VanillaItemsInputs extends RegistrySource{
 
 		self::registerDelayed("chainmail_chestplate", fn($name) : Armor => new Armor(self::makeIID($name), "Chainmail Chestplate", new ArmorTypeInfo(5, 241, ArmorInventory::SLOT_CHEST, material: ArmorMaterials::CHAINMAIL()), [EnchantmentTags::CHESTPLATE]));
 		self::registerDelayed("copper_chestplate", fn($name) : Armor => new Armor(self::makeIID($name), "Copper Chestplate", new ArmorTypeInfo(4, 177, ArmorInventory::SLOT_CHEST, material: ArmorMaterials::COPPER()), [EnchantmentTags::CHESTPLATE]));
-		self::registerDelayed("diamond_chestplate", fn($name) : Armor => new Armor(self::makeIID($name), "Diamond Chestplate", new ArmorTypeInfo(8, 529, ArmorInventory::SLOT_CHEST, 2, material: ArmorMaterials::DIAMOND()), [EnchantmentTags::CHESTPLATE]));
+		self::registerDelayed("diamond_chestplate", fn($name) : Armor => new Armor(self::makeIID($name), "Diamond Chestplate", new ArmorTypeInfo(6, 529, ArmorInventory::SLOT_CHEST, material: ArmorMaterials::DIAMOND()), [EnchantmentTags::CHESTPLATE]));
 		self::registerDelayed("golden_chestplate", fn($name) : Armor => new Armor(self::makeIID($name), "Golden Chestplate", new ArmorTypeInfo(5, 113, ArmorInventory::SLOT_CHEST, material: ArmorMaterials::GOLD()), [EnchantmentTags::CHESTPLATE]));
 		self::registerDelayed("iron_chestplate", fn($name) : Armor => new Armor(self::makeIID($name), "Iron Chestplate", new ArmorTypeInfo(6, 241, ArmorInventory::SLOT_CHEST, material: ArmorMaterials::IRON()), [EnchantmentTags::CHESTPLATE]));
 		self::registerDelayed("leather_tunic", fn($name) : Armor => new Armor(self::makeIID($name), "Leather Tunic", new ArmorTypeInfo(3, 81, ArmorInventory::SLOT_CHEST, material: ArmorMaterials::LEATHER()), [EnchantmentTags::CHESTPLATE]));
@@ -395,7 +395,7 @@ final class VanillaItemsInputs extends RegistrySource{
 
 		self::registerDelayed("chainmail_helmet", fn($name) : Armor => new Armor(self::makeIID($name), "Chainmail Helmet", new ArmorTypeInfo(2, 166, ArmorInventory::SLOT_HEAD, material: ArmorMaterials::CHAINMAIL()), [EnchantmentTags::HELMET]));
 		self::registerDelayed("copper_helmet", fn($name) : Armor => new Armor(self::makeIID($name), "Copper Helmet", new ArmorTypeInfo(2, 122, ArmorInventory::SLOT_HEAD, material: ArmorMaterials::COPPER()), [EnchantmentTags::HELMET]));
-		self::registerDelayed("diamond_helmet", fn($name) : Armor => new Armor(self::makeIID($name), "Diamond Helmet", new ArmorTypeInfo(3, 364, ArmorInventory::SLOT_HEAD, 2, material: ArmorMaterials::DIAMOND()), [EnchantmentTags::HELMET]));
+		self::registerDelayed("diamond_helmet", fn($name) : Armor => new Armor(self::makeIID($name), "Diamond Helmet", new ArmorTypeInfo(2, 364, ArmorInventory::SLOT_HEAD, material: ArmorMaterials::DIAMOND()), [EnchantmentTags::HELMET]));
 		self::registerDelayed("golden_helmet", fn($name) : Armor => new Armor(self::makeIID($name), "Golden Helmet", new ArmorTypeInfo(2, 78, ArmorInventory::SLOT_HEAD, material: ArmorMaterials::GOLD()), [EnchantmentTags::HELMET]));
 		self::registerDelayed("iron_helmet", fn($name) : Armor => new Armor(self::makeIID($name), "Iron Helmet", new ArmorTypeInfo(2, 166, ArmorInventory::SLOT_HEAD, material: ArmorMaterials::IRON()), [EnchantmentTags::HELMET]));
 		self::registerDelayed("leather_cap", fn($name) : Armor => new Armor(self::makeIID($name), "Leather Cap", new ArmorTypeInfo(1, 56, ArmorInventory::SLOT_HEAD, material: ArmorMaterials::LEATHER()), [EnchantmentTags::HELMET]));
@@ -404,7 +404,7 @@ final class VanillaItemsInputs extends RegistrySource{
 
 		self::registerDelayed("chainmail_leggings", fn($name) : Armor => new Armor(self::makeIID($name), "Chainmail Leggings", new ArmorTypeInfo(4, 226, ArmorInventory::SLOT_LEGS, material: ArmorMaterials::CHAINMAIL()), [EnchantmentTags::LEGGINGS]));
 		self::registerDelayed("copper_leggings", fn($name) : Armor => new Armor(self::makeIID($name), "Copper Leggings", new ArmorTypeInfo(3, 166, ArmorInventory::SLOT_LEGS, material: ArmorMaterials::COPPER()), [EnchantmentTags::LEGGINGS]));
-		self::registerDelayed("diamond_leggings", fn($name) : Armor => new Armor(self::makeIID($name), "Diamond Leggings", new ArmorTypeInfo(6, 496, ArmorInventory::SLOT_LEGS, 2, material: ArmorMaterials::DIAMOND()), [EnchantmentTags::LEGGINGS]));
+		self::registerDelayed("diamond_leggings", fn($name) : Armor => new Armor(self::makeIID($name), "Diamond Leggings", new ArmorTypeInfo(5, 496, ArmorInventory::SLOT_LEGS, material: ArmorMaterials::DIAMOND()), [EnchantmentTags::LEGGINGS]));
 		self::registerDelayed("golden_leggings", fn($name) : Armor => new Armor(self::makeIID($name), "Golden Leggings", new ArmorTypeInfo(3, 106, ArmorInventory::SLOT_LEGS, material: ArmorMaterials::GOLD()), [EnchantmentTags::LEGGINGS]));
 		self::registerDelayed("iron_leggings", fn($name) : Armor => new Armor(self::makeIID($name), "Iron Leggings", new ArmorTypeInfo(5, 226, ArmorInventory::SLOT_LEGS, material: ArmorMaterials::IRON()), [EnchantmentTags::LEGGINGS]));
 		self::registerDelayed("leather_pants", fn($name) : Armor => new Armor(self::makeIID($name), "Leather Pants", new ArmorTypeInfo(2, 76, ArmorInventory::SLOT_LEGS, material: ArmorMaterials::LEATHER()), [EnchantmentTags::LEGGINGS]));
