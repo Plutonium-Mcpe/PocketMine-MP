@@ -18,6 +18,11 @@
          "type": "vcs",
          "url": "https://github.com/altayofficial/BedrockProtocol.git",
          "no-api": true
+      },
+      {
+         "type": "vcs",
+         "url": "https://github.com/altayofficial/NBT.git",
+         "no-api": true
       }
    ],
    "require": {
@@ -52,7 +57,7 @@
       "netresearch/jsonmapper": "~v5.0.0",
       "pocketmine/bedrock-block-upgrade-schema": "~5.2.0+bedrock-1.21.110",
       "altayofficial/bedrock-data": "dev-bedrock-1.26.40",
-      "altayofficial/bedrock-protocol": "dev-bedrock-1.26.40",
+      "altayofficial/bedrock-protocol": "dev-master",
       "pocketmine/bedrock-item-upgrade-schema": "~1.17.0+bedrock-1.26.20",
       "pocketmine/binaryutils": "^0.2.1",
       "pocketmine/callback-validator": "~1.0.4",
@@ -60,7 +65,7 @@
       "pocketmine/errorhandler": "^0.7.0",
       "pocketmine/log": "^0.4.0",
       "pocketmine/math": "~1.0.0",
-      "pocketmine/nbt": "~1.2.0",
+      "altayofficial/nbt": "dev-stable",
       "pocketmine/raklib": "~1.2.0",
       "pocketmine/raklib-ipc": "~1.0.0",
       "pocketmine/snooze": "^0.5.0",

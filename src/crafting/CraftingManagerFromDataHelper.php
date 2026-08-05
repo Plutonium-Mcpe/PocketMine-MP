@@ -93,7 +93,9 @@ final class CraftingManagerFromDataHelper{
 				$blockStateData = BlockStateData::current($blockName, $blockStatesTag->getValue());
 			}else{
 				$dictionary = TypeConverter::getInstance()->getBlockTranslator()->getBlockStateDictionary();
-				$stateId = $dictionary->lookupStateIdFromIdMeta($blockName, $meta ?? 0) ?? $dictionary->lookupStateIdFromIdMeta($blockName, 0);
+				$stateId = $dictionary->lookupStateIdFromIdMeta($blockName, $meta ?? 0)
+					?? $dictionary->lookupStateIdFromIdMeta($blockName, 0)
+					?? $dictionary->lookupDefaultStateIdFromId($blockName);
 				if($stateId === null){
 					return null;
 				}

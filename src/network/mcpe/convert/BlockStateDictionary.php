@@ -156,6 +156,15 @@ final class BlockStateDictionary{
 		};
 	}
 
+	public function lookupDefaultStateIdFromId(string $id) : ?int{
+		$metas = $this->getIdMetaToStateIdLookup()[$id] ?? null;
+		return match(true){
+			$metas === null => null,
+			is_int($metas) => $metas,
+			is_array($metas) => $metas[0] ?? $metas[array_key_first($metas)] ?? null
+		};
+	}
+
 	/**
 	 * Returns an array mapping runtime ID => blockstate data.
 	 * @return BlockStateDictionaryEntry[]

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a5598d030734fa9e4844f253d13d8e65",
+    "content-hash": "bfbdd96e47197f7adb3aa0ba352a5862",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -88,26 +88,26 @@
         },
         {
             "name": "altayofficial/bedrock-protocol",
-            "version": "dev-bedrock-1.26.40",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/altayofficial/BedrockProtocol.git",
-                "reference": "d77112c2096fc5c3654fe00508ec447d42bc490c"
+                "reference": "368a56c5855056f43a827f4c2e71cffe8c287e58"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/altayofficial/BedrockProtocol/zipball/d77112c2096fc5c3654fe00508ec447d42bc490c",
-                "reference": "d77112c2096fc5c3654fe00508ec447d42bc490c",
+                "url": "https://api.github.com/repos/altayofficial/BedrockProtocol/zipball/368a56c5855056f43a827f4c2e71cffe8c287e58",
+                "reference": "368a56c5855056f43a827f4c2e71cffe8c287e58",
                 "shasum": ""
             },
             "require": {
+                "altayofficial/nbt": "dev-stable",
                 "ext-encoding": "~1.0.0",
                 "ext-json": "*",
                 "php": "^8.1",
                 "pocketmine/binaryutils": "^0.2.0",
                 "pocketmine/color": "^0.2.0 || ^0.3.0",
                 "pocketmine/math": "^0.3.0 || ^0.4.0 || ^1.0.0",
-                "pocketmine/nbt": "^1.0.0",
                 "ramsey/uuid": "^4.1"
             },
             "require-dev": {
@@ -117,6 +117,7 @@
                 "phpstan/phpstan-strict-rules": "^2.0.0",
                 "phpunit/phpunit": "^9.5 || ^10.0 || ^11.0"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -137,27 +138,70 @@
                 "LGPL-3.0"
             ],
             "description": "An implementation of the Minecraft: Bedrock Edition protocol in PHP",
-            "time": "2026-07-14T10:09:06+00:00"
+            "time": "2026-08-04T18:15:46+00:00"
         },
         {
-            "name": "brick/math",
-            "version": "0.14.8",
+            "name": "altayofficial/nbt",
+            "version": "dev-stable",
             "source": {
                 "type": "git",
-                "url": "https://github.com/brick/math.git",
-                "reference": "63422359a44b7f06cae63c3b429b59e8efcc0629"
+                "url": "https://github.com/altayofficial/NBT.git",
+                "reference": "2b1399b905db2937478435d596417c47e4120437"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/brick/math/zipball/63422359a44b7f06cae63c3b429b59e8efcc0629",
-                "reference": "63422359a44b7f06cae63c3b429b59e8efcc0629",
+                "url": "https://api.github.com/repos/altayofficial/NBT/zipball/2b1399b905db2937478435d596417c47e4120437",
+                "reference": "2b1399b905db2937478435d596417c47e4120437",
+                "shasum": ""
+            },
+            "require": {
+                "ext-encoding": "^1.0.0",
+                "php": "^8.1",
+                "php-64bit": "*"
+            },
+            "require-dev": {
+                "phpstan/extension-installer": "^1.0",
+                "phpstan/phpstan": "2.1.33",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "phpunit/phpunit": "^9.5"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "pocketmine\\nbt\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "pocketmine\\nbt\\": "tests/phpunit/"
+                }
+            },
+            "license": [
+                "LGPL-3.0"
+            ],
+            "description": "PHP library for working with Named Binary Tags",
+            "time": "2026-07-22T13:04:40+00:00"
+        },
+        {
+            "name": "brick/math",
+            "version": "0.18.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/brick/math.git",
+                "reference": "82944324d1c1bdb2c2618e89978d4e2ad78d69ad"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/brick/math/zipball/82944324d1c1bdb2c2618e89978d4e2ad78d69ad",
+                "reference": "82944324d1c1bdb2c2618e89978d4e2ad78d69ad",
                 "shasum": ""
             },
             "require": {
                 "php": "^8.2"
             },
             "require-dev": {
-                "php-coveralls/php-coveralls": "^2.2",
                 "phpstan/phpstan": "2.1.22",
                 "phpunit/phpunit": "^11.5"
             },
@@ -189,7 +233,7 @@
             ],
             "support": {
                 "issues": "https://github.com/brick/math/issues",
-                "source": "https://github.com/brick/math/tree/0.14.8"
+                "source": "https://github.com/brick/math/tree/0.18.0"
             },
             "funding": [
                 {
@@ -197,7 +241,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-10T14:33:43+00:00"
+            "time": "2026-06-14T18:21:03+00:00"
         },
         {
             "name": "netresearch/jsonmapper",
@@ -554,49 +598,6 @@
             "time": "2023-08-03T12:56:33+00:00"
         },
         {
-            "name": "pocketmine/nbt",
-            "version": "1.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/pmmp/NBT.git",
-                "reference": "51b8d6a97065fb93e0b4f660b65164b6e1ed2fff"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/NBT/zipball/51b8d6a97065fb93e0b4f660b65164b6e1ed2fff",
-                "reference": "51b8d6a97065fb93e0b4f660b65164b6e1ed2fff",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.4 || ^8.0",
-                "php-64bit": "*",
-                "pocketmine/binaryutils": "^0.2.0"
-            },
-            "require-dev": {
-                "phpstan/extension-installer": "^1.0",
-                "phpstan/phpstan": "2.1.27",
-                "phpstan/phpstan-phpunit": "^2.0",
-                "phpstan/phpstan-strict-rules": "^2.0",
-                "phpunit/phpunit": "^9.5"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "pocketmine\\nbt\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPL-3.0"
-            ],
-            "description": "PHP library for working with Named Binary Tags",
-            "support": {
-                "issues": "https://github.com/pmmp/NBT/issues",
-                "source": "https://github.com/pmmp/NBT/tree/1.2.0"
-            },
-            "time": "2025-09-19T18:09:30+00:00"
-        },
-        {
             "name": "pocketmine/raklib",
             "version": "1.2.1",
             "source": {
@@ -798,20 +799,20 @@
         },
         {
             "name": "ramsey/uuid",
-            "version": "4.9.2",
+            "version": "4.9.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ramsey/uuid.git",
-                "reference": "8429c78ca35a09f27565311b98101e2826affde0"
+                "reference": "1df15849d00943a67d677dc9cfd80795f038c9f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ramsey/uuid/zipball/8429c78ca35a09f27565311b98101e2826affde0",
-                "reference": "8429c78ca35a09f27565311b98101e2826affde0",
+                "url": "https://api.github.com/repos/ramsey/uuid/zipball/1df15849d00943a67d677dc9cfd80795f038c9f8",
+                "reference": "1df15849d00943a67d677dc9cfd80795f038c9f8",
                 "shasum": ""
             },
             "require": {
-                "brick/math": "^0.8.16 || ^0.9 || ^0.10 || ^0.11 || ^0.12 || ^0.13 || ^0.14",
+                "brick/math": ">=0.8.16 <=0.18",
                 "php": "^8.0",
                 "ramsey/collection": "^1.2 || ^2.0"
             },
@@ -870,9 +871,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ramsey/uuid/issues",
-                "source": "https://github.com/ramsey/uuid/tree/4.9.2"
+                "source": "https://github.com/ramsey/uuid/tree/4.9.3"
             },
-            "time": "2025-12-14T04:43:48+00:00"
+            "time": "2026-06-18T03:57:49+00:00"
         },
         {
             "name": "symfony/filesystem",
@@ -2780,7 +2781,8 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "altayofficial/bedrock-data": 20,
-        "altayofficial/bedrock-protocol": 20
+        "altayofficial/bedrock-protocol": 20,
+        "altayofficial/nbt": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
