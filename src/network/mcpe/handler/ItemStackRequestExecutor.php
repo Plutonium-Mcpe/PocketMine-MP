@@ -245,6 +245,7 @@ class ItemStackRequestExecutor{
 		$craftingManager = $this->player->getServer()->getCraftingManager();
 		$recipeIndex = $recipeId - CraftingDataCache::RECIPE_ID_OFFSET;
 		$recipe = $craftingManager->getCraftingRecipeFromIndex($recipeIndex);
+		@file_put_contents("/tmp/pluto_pkt_dump.log", sprintf("CRAFT-DIAG recipeId=%d index=%d totalRecipes=%d found=%s\n", $recipeId, $recipeIndex, count($craftingManager->getCraftingRecipeIndex()), $recipe !== null ? "yes" : "NULL"), FILE_APPEND);
 		if($recipe === null){
 			throw new ItemStackRequestProcessException("No such crafting recipe index: $recipeIndex");
 		}

@@ -871,7 +871,7 @@ class NetworkSession{
 	public function transfer(string $ip, int $port, Translatable|string|null $reason = null) : void{
 		$reason ??= KnownTranslationFactory::pocketmine_disconnect_transfer();
 		$this->tryDisconnect(function() use ($ip, $port, $reason) : void{
-			$this->sendDataPacket(TransferPacket::create($ip, $port, false), true);
+			$this->sendDataPacket(TransferPacket::create($ip, $port, false, null), true);
 			if($this->player !== null){
 				$this->player->onPostDisconnect($reason, null);
 			}
@@ -1063,7 +1063,9 @@ class NetworkSession{
 			$yaw = $yaw ?? $location->getYaw();
 			$pitch = $pitch ?? $location->getPitch();
 
-			$this->sendDataPacket(MovePlayerPacket::simple(
+			$isTeleport = $mode === MovePlayerPacket::MODE_TELEPORT;
+
+			$this->sendDataPacket(MovePlayerPacket::create(
 				$this->player->getId(),
 				$this->player->getOffsetPosition($pos),
 				$pitch,
@@ -1072,6 +1074,8 @@ class NetworkSession{
 				$mode,
 				$this->player->onGround,
 				0, //TODO: riding entity ID
+				$isTeleport ? 0 : null,
+				$isTeleport ? 0 : null,
 				0 //TODO: tick
 			));
 
