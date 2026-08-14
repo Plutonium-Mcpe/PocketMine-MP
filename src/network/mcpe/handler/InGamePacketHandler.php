@@ -2,39 +2,49 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\handler;
 
+use pocketmine\block\Anvil;
 use pocketmine\block\BaseSign;
+use pocketmine\block\inventory\AnvilInventory;
 use pocketmine\block\Lectern;
 use pocketmine\block\tile\Sign;
+use pocketmine\block\utils\BlockEventHelper;
 use pocketmine\block\utils\SignText;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\Attribute;
 use pocketmine\entity\InvalidSkinException;
+use pocketmine\entity\Living;
 use pocketmine\event\player\PlayerEditBookEvent;
 use pocketmine\inventory\transaction\action\DropItemAction;
 use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\inventory\transaction\TransactionBuilder;
 use pocketmine\inventory\transaction\TransactionCancelledException;
 use pocketmine\inventory\transaction\TransactionValidationException;
+use pocketmine\item\ConsumableItem;
+use pocketmine\item\Item;
+use pocketmine\item\Releasable;
 use pocketmine\item\VanillaItems;
 use pocketmine\item\WritableBook;
 use pocketmine\item\WritableBookPage;
@@ -50,6 +60,7 @@ use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\network\mcpe\protocol\ActorPickRequestPacket;
 use pocketmine\network\mcpe\protocol\AnimatePacket;
+use pocketmine\network\mcpe\protocol\AnvilDamagePacket;
 use pocketmine\network\mcpe\protocol\BlockActorDataPacket;
 use pocketmine\network\mcpe\protocol\BlockPickRequestPacket;
 use pocketmine\network\mcpe\protocol\BookEditPacket;
@@ -98,6 +109,8 @@ use pocketmine\utils\Limits;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\Utils;
 use pocketmine\world\format\Chunk;
+use pocketmine\world\sound\AnvilBreakSound;
+use pocketmine\world\sound\AnvilUseSound;
 use function array_push;
 use function count;
 use function fmod;
@@ -135,8 +148,14 @@ class InGamePacketHandler extends PacketHandler{
 	//prevent rejected edits while still mitigating book-bomb attacks
 	private const PAGE_LENGTH_SOFT_LIMIT_CHARS = 512;
 
+	private const RIGHT_CLICK_ITEM_USE_DEDUP_TICKS = 2;
+
 	protected float $lastRightClickTime = 0.0;
 	protected ?UseItemTransactionData $lastRightClickData = null;
+
+	private int $lastEarlyConsumableReleaseTick = -1000;
+
+	private int $lastTransactionRightClickItemUseTick = -1000;
 
 	protected ?Vector3 $lastPlayerAuthInputPosition = null;
 	protected ?float $lastPlayerAuthInputYaw = null;
@@ -237,6 +256,14 @@ class InGamePacketHandler extends PacketHandler{
 			if($inputFlags->get(PlayerAuthInputFlags::START_JUMPING)){
 				$this->player->jump();
 			}
+			if($inputFlags->get(PlayerAuthInputFlags::START_USING_ITEM)){
+				if(!$this->player->shouldIgnoreChargeableClickAir()){
+					$this->player->clearAwaitingConsumableRelease();
+					if(!$this->recentlyUsedItemViaTransaction()){
+						$this->handleRightClickItemUse();
+					}
+				}
+			}
 			if($inputFlags->get(PlayerAuthInputFlags::MISSED_SWING)){
 				$this->player->missSwing();
 			}
@@ -258,9 +285,13 @@ class InGamePacketHandler extends PacketHandler{
 
 			$this->inventoryManager->setCurrentItemStackRequestId($useItemTransaction->getRequestId());
 			$this->inventoryManager->addRawPredictedSlotChanges($useItemTransaction->getTransactionData()->getActions());
-			if(!$this->handleUseItemTransaction($useItemTransaction->getTransactionData())){
+			$useItemHandled = $this->handleUseItemTransaction($useItemTransaction->getTransactionData());
+			if(!$useItemHandled){
 				$packetHandled = false;
 				$this->session->getLogger()->debug("Unhandled transaction in PlayerAuthInputPacket (type " . $useItemTransaction->getTransactionData()->getActionType() . ")");
+				$this->inventoryManager->syncMismatchedPredictedSlotChanges();
+			}elseif($this->player->isUsingItem()){
+				$this->discardHeldItemUsePredictions();
 			}else{
 				$this->inventoryManager->syncMismatchedPredictedSlotChanges();
 			}
@@ -301,7 +332,12 @@ class InGamePacketHandler extends PacketHandler{
 	public function handleInventoryTransaction(InventoryTransactionPacket $packet) : bool{
 		$result = true;
 
-		if(count($packet->trData?->getActions() ?? []) > 50){
+		$trData = $packet->trData;
+		if($trData === null){
+			throw new PacketHandlingException("Inventory transaction data is missing");
+		}
+
+		if(count($trData->getActions()) > 50){
 			throw new PacketHandlingException("Too many actions in inventory transaction");
 		}
 		if(count($packet->requestChangedSlots) > 10){
@@ -309,23 +345,36 @@ class InGamePacketHandler extends PacketHandler{
 		}
 
 		$this->inventoryManager->setCurrentItemStackRequestId($packet->requestId);
-		$this->inventoryManager->addRawPredictedSlotChanges($packet->trData?->getActions() ?? []);
+		$this->inventoryManager->addRawPredictedSlotChanges($trData->getActions());
 
-		if($packet->trData instanceof NormalTransactionData){
-			$result = $this->handleNormalTransaction($packet->trData, $packet->requestId);
-		}elseif($packet->trData instanceof MismatchTransactionData){
+		if($trData instanceof NormalTransactionData){
+			$result = $this->handleNormalTransaction($trData, $packet->requestId);
+		}elseif($trData instanceof MismatchTransactionData){
 			$this->session->getLogger()->debug("Mismatch transaction received");
 			$this->inventoryManager->requestSyncAll();
 			$result = true;
-		}elseif($packet->trData instanceof UseItemTransactionData){
-			$result = $this->handleUseItemTransaction($packet->trData);
-		}elseif($packet->trData instanceof UseItemOnEntityTransactionData){
-			$result = $this->handleUseItemOnEntityTransaction($packet->trData);
-		}elseif($packet->trData instanceof ReleaseItemTransactionData){
-			$result = $this->handleReleaseItemTransaction($packet->trData);
+		}elseif($trData instanceof UseItemTransactionData){
+			$result = $this->handleUseItemTransaction($trData);
+			if($result && $this->player->isUsingItem()){
+				$this->discardHeldItemUsePredictions();
+			}
+		}elseif($trData instanceof UseItemOnEntityTransactionData){
+			$result = $this->handleUseItemOnEntityTransaction($trData);
+			if($result && $this->player->isUsingItem()){
+				$this->discardHeldItemUsePredictions();
+			}
+		}elseif($trData instanceof ReleaseItemTransactionData){
+			$result = $this->handleReleaseItemTransaction($trData);
+			if($result){
+				$this->discardHeldItemUsePredictions();
+			}
 		}
 
-		$this->inventoryManager->syncMismatchedPredictedSlotChanges();
+		if(!($trData instanceof UseItemTransactionData && $result && $this->player->isUsingItem())
+			&& !($trData instanceof ReleaseItemTransactionData && $result)
+			&& !($trData instanceof UseItemOnEntityTransactionData && $result && $this->player->isUsingItem())){
+			$this->inventoryManager->syncMismatchedPredictedSlotChanges();
+		}
 
 		//requestChangedSlots asks the server to always send out the contents of the specified slots, even if they
 		//haven't changed. Handling these is necessary to ensure the client inventory stays in sync if the server
@@ -353,7 +402,6 @@ class InGamePacketHandler extends PacketHandler{
 		try{
 			$transaction->execute();
 		}catch(TransactionValidationException $e){
-			@file_put_contents("/tmp/pluto_pkt_dump.log", "TX-FAIL #$requestId: " . get_class($e) . ": " . $e->getMessage() . "\n", FILE_APPEND);
 			$this->inventoryManager->requestSyncAll();
 			$logger = $this->session->getLogger();
 			$logger->debug("Invalid inventory transaction $requestId: " . $e->getMessage());
@@ -453,6 +501,10 @@ class InGamePacketHandler extends PacketHandler{
 	private function handleUseItemTransaction(UseItemTransactionData $data) : bool{
 		$this->player->selectHotbarSlot($data->getHotbarSlot());
 
+		if(self::transactionTriggersRightClickItemUse($data)){
+			$this->lastTransactionRightClickItemUseTick = $this->player->getServer()->getTick();
+		}
+
 		switch($data->getActionType()){
 			case UseItemTransactionData::ACTION_CLICK_BLOCK:
 				//TODO: start hack for client spam bug
@@ -494,27 +546,53 @@ class InGamePacketHandler extends PacketHandler{
 				}
 				return true;
 			case UseItemTransactionData::ACTION_CLICK_AIR:
-			case UseItemTransactionData::ACTION_BREAK_BLOCK:
-				//Newer Bedrock clients (protocol 1001 or +) report a right-click item use in the air as
-				//ACTION_BREAK_BLOCK with triggerType UNKNOWN instead of the legacy ACTION_CLICK_AIR. Actual block
-				//breaking is handled separately through PlayerAuthInput block actions, so
-				//it never reaches this method.
-				if($this->player->isUsingItem()){
-					if(!$this->player->consumeHeldItem()){
-						$hungerAttr = $this->player->getAttributeMap()->get(Attribute::HUNGER) ?? throw new AssumptionFailedError();
-						$hungerAttr->markSynchronized(false);
-					}
-					//TODO: workaround goat horns getting stuck in the "using item" state
-					//this timed-trigger behaviour is also used for other items apart from food
-					//in the future we'll generalise this logic and add proper hooks for it
-					$this->player->setUsingItem(false);
+				if($this->player->shouldIgnoreChargeableClickAir()){
 					return true;
 				}
-				$this->player->useHeldItem();
+				return $this->handleRightClickItemUse();
+			case UseItemTransactionData::ACTION_BREAK_BLOCK:
+				$face = $data->getFace();
+				if($face === 255){
+					return $this->handleRightClickItemUse();
+				}
+				$item = $this->player->getInventory()->getItemInHand();
+				if($item instanceof ConsumableItem){
+					return $this->handleHoldToUseItemTransaction();
+				}
+				self::validateFacing($face);
+				$blockPos = $data->getBlockPosition();
+				$vBlockPos = new Vector3($blockPos->getX(), $blockPos->getY(), $blockPos->getZ());
+				if(!$this->player->breakBlock($vBlockPos)){
+					$this->syncBlocksNearby($vBlockPos, $data->getFace());
+				}
+				return true;
+			case UseItemTransactionData::ACTION_USE_AS_ATTACK:
+				$face = $data->getFace();
+				if($face !== 255 && in_array($face, Facing::ALL, true)){
+					$blockPos = $data->getBlockPosition();
+					$vBlockPos = new Vector3($blockPos->getX(), $blockPos->getY(), $blockPos->getZ());
+					if(!$this->player->attackBlock($vBlockPos, $face)){
+						$this->syncBlocksNearby($vBlockPos, $face);
+					}
+					return true;
+				}
+				$this->player->missSwing();
 				return true;
 		}
 
 		return false;
+	}
+
+	private function recentlyUsedItemViaTransaction() : bool{
+		return $this->player->getServer()->getTick() - $this->lastTransactionRightClickItemUseTick <= self::RIGHT_CLICK_ITEM_USE_DEDUP_TICKS;
+	}
+
+	private static function transactionTriggersRightClickItemUse(UseItemTransactionData $data) : bool{
+		return match($data->getActionType()){
+			UseItemTransactionData::ACTION_CLICK_AIR => true,
+			UseItemTransactionData::ACTION_BREAK_BLOCK => $data->getFace() === 255,
+			default => false,
+		};
 	}
 
 	/**
@@ -547,25 +625,36 @@ class InGamePacketHandler extends PacketHandler{
 	}
 
 	private function handleUseItemOnEntityTransaction(UseItemOnEntityTransactionData $data) : bool{
-		$target = $this->player->getWorld()->getEntity($data->getActorRuntimeId());
-		//TODO: HACK! We really shouldn't be keeping disconnected players (and generally flagged-for-despawn entities)
-		//in the world's entity table, but changing that is too risky for a hotfix. This workaround will do for now.
-		if($target === null || $target->isFlaggedForDespawn()){
-			return false;
-		}
-
 		$this->player->selectHotbarSlot($data->getHotbarSlot());
+
+		$target = $this->player->getWorld()->getEntity($data->getActorRuntimeId());
+		if($target === null || $target->isFlaggedForDespawn()){
+			if($data->getActorRuntimeId() !== $this->player->getId()){
+				if($data->getActionType() === UseItemOnEntityTransactionData::ACTION_ATTACK){
+					$this->player->missSwing();
+					return true;
+				}
+				return false;
+			}
+			$target = $this->player;
+		}
 
 		switch($data->getActionType()){
 			case UseItemOnEntityTransactionData::ACTION_INTERACT:
 				$this->player->interactEntity($target, $data->getClickPosition());
 				return true;
 			case UseItemOnEntityTransactionData::ACTION_ATTACK:
-			case UseItemOnEntityTransactionData::ACTION_ITEM_INTERACT:
-				//Bedrock 1.26.30 clients send melee attacks on entities as ITEM_INTERACT (2) instead of the legacy
-				//ATTACK (1). Right-click interactions still arrive as INTERACT (0), so both attack action types can
-				//be routed to attackEntity() without affecting interactions.
 				$this->player->attackEntity($target);
+				return true;
+			case UseItemOnEntityTransactionData::ACTION_ITEM_INTERACT:
+				if($target === $this->player){
+					return $this->handleRightClickItemUse();
+				}
+				if($target instanceof Living){
+					$this->player->attackEntity($target);
+					return true;
+				}
+				$this->player->interactEntity($target, $data->getClickPosition());
 				return true;
 		}
 
@@ -575,12 +664,111 @@ class InGamePacketHandler extends PacketHandler{
 	private function handleReleaseItemTransaction(ReleaseItemTransactionData $data) : bool{
 		$this->player->selectHotbarSlot($data->getHotbarSlot());
 
+		$result = match($data->getActionType()){
+			ReleaseItemTransactionData::ACTION_RELEASE,
+			ReleaseItemTransactionData::ACTION_CONSUME => $this->handleHeldItemReleaseOrConsume(),
+			default => $this->player->getInventory()->getItemInHand() instanceof Releasable
+				? $this->handleHeldItemReleaseOrConsume()
+				: false,
+		};
+
 		if($data->getActionType() === ReleaseItemTransactionData::ACTION_RELEASE){
-			$this->player->releaseHeldItem();
+			$this->player->clearAwaitingConsumableRelease();
+		}
+
+		return $result;
+	}
+
+	private function isHoldToUseItem(Item $item) : bool{
+		return $item instanceof Releasable;
+	}
+
+	private function handleRightClickItemUse() : bool{
+		if($this->player->isUsingItem()){
+			$held = $this->player->getInventory()->getItemInHand();
+			if($held instanceof ConsumableItem){
+				if($this->player->getItemUseDuration() < $held->getMinUseDuration()){
+					//the client may send a duplicate click-air in the same tick it started using the item,
+					//or think it finished eating slightly before the server - don't cancel eating, let the
+					//per-tick check in Player consume the item when the duration is reached
+					return true;
+				}
+				if(!$this->player->consumeHeldItem()){
+					$hungerAttr = $this->player->getAttributeMap()->get(Attribute::HUNGER) ?? throw new AssumptionFailedError();
+					$hungerAttr->markSynchronized(false);
+				}
+				$this->player->setUsingItem(false);
+			}
 			return true;
 		}
 
-		return false;
+		$item = $this->player->getInventory()->getItemInHand();
+		if($this->isHoldToUseItem($item)){
+			return $this->handleHoldToUseItemTransaction();
+		}
+
+		if($this->player->useHeldItem()){
+			$this->discardHeldItemUsePredictionsIfUsing();
+			if(!$this->player->isUsingItem()){
+				$this->discardHeldItemUsePredictions();
+			}
+		}
+
+		return true;
+	}
+
+	private function handleHoldToUseItemTransaction() : bool{
+		$item = $this->player->getInventory()->getItemInHand();
+		if($item instanceof ConsumableItem){
+			if($this->player->isUsingItem() || $this->player->isAwaitingConsumableRelease()){
+				return true;
+			}
+			if($this->player->getServer()->getTick() - $this->lastEarlyConsumableReleaseTick < 10){
+				return true;
+			}
+			if($this->player->useHeldItem()){
+				$this->discardHeldItemUsePredictions();
+			}
+			return true;
+		}
+		if($this->player->isUsingItem()){
+			return true;
+		}
+		if($this->player->useHeldItem()){
+			$this->discardHeldItemUsePredictions();
+		}
+		return true;
+	}
+
+	private function discardHeldItemUsePredictions() : void{
+		$inventory = $this->player->getInventory();
+		$this->inventoryManager->discardPredictedSlotChange($inventory, $inventory->getHeldItemIndex());
+	}
+
+	private function discardHeldItemUsePredictionsIfUsing() : void{
+		if($this->player->isUsingItem()){
+			$this->discardHeldItemUsePredictions();
+		}
+	}
+
+	private function handleHeldItemReleaseOrConsume() : bool{
+		$item = $this->player->getInventory()->getItemInHand();
+		if($item instanceof ConsumableItem){
+			if($this->player->consumeHeldItem()){
+				return true;
+			}
+			$this->player->clearAwaitingConsumableRelease();
+			$this->lastEarlyConsumableReleaseTick = $this->player->getServer()->getTick();
+			$this->player->setUsingItem(false);
+			$this->discardHeldItemUsePredictions();
+			return true;
+		}
+		if($this->player->releaseHeldItem()){
+			return true;
+		}
+		$this->player->setUsingItem(false);
+		$this->discardHeldItemUsePredictions();
+		return true;
 	}
 
 	private function handleSingleItemStackRequest(ItemStackRequest $request) : ?ItemStackResponseBuilder{
@@ -607,7 +795,6 @@ class InGamePacketHandler extends PacketHandler{
 			}
 		}catch(ItemStackRequestProcessException $e){
 			$result = false;
-			@file_put_contents("/tmp/pluto_pkt_dump.log", "CRAFT-FAIL #" . $request->getRequestId() . ": " . $e->getMessage() . "\n", FILE_APPEND);
 			$this->session->getLogger()->debug("ItemStackRequest #" . $request->getRequestId() . " failed: " . $e->getMessage());
 			$this->session->getLogger()->debug(implode("\n", Utils::printableExceptionInfo($e)));
 			$this->inventoryManager->requestSyncAll();
@@ -697,6 +884,7 @@ class InGamePacketHandler extends PacketHandler{
 				}
 				$this->lastBlockAttacked = $blockPosition;
 
+				$this->player->setUsingItem(false);
 				break;
 
 			case PlayerAction::ABORT_BREAK:
@@ -714,6 +902,7 @@ class InGamePacketHandler extends PacketHandler{
 				self::validateFacing($face);
 				$this->player->continueBreakBlock($pos, $face);
 				$this->lastBlockAttacked = $blockPosition;
+				$this->player->setUsingItem(false);
 				break;
 			case PlayerAction::INTERACT_BLOCK: //TODO: ignored (for now)
 				break;
@@ -726,17 +915,25 @@ class InGamePacketHandler extends PacketHandler{
 					$this->syncBlocksNearby($pos, $face);
 				}
 				$this->lastBlockAttacked = null;
+				$this->player->setUsingItem(false);
+				break;
+			case PlayerAction::MISSED_SWING:
+				$this->player->missSwing();
 				break;
 			case PlayerAction::START_ITEM_USE_ON:
 			case PlayerAction::STOP_ITEM_USE_ON:
 				//TODO: this has no obvious use and seems only used for analytics in vanilla - ignore it
 				break;
+			case PlayerAction::START_USING_ITEM:
+				if(!$this->player->shouldIgnoreChargeableClickAir()){
+					$this->player->clearAwaitingConsumableRelease();
+					$this->handleRightClickItemUse();
+				}
+				break;
 			default:
 				$this->session->getLogger()->debug("Unhandled/unknown player action type " . $action);
 				return false;
 		}
-
-		$this->player->setUsingItem(false);
 
 		return true;
 	}
@@ -809,6 +1006,42 @@ class InGamePacketHandler extends PacketHandler{
 		}
 
 		return false;
+	}
+
+	public function handleAnvilDamage(AnvilDamagePacket $packet) : bool{
+		//the client only tells us that it used an anvil - it can't be trusted to tell us which one, so we only accept
+		//this for the anvil the player currently has open
+		$window = $this->player->getCurrentWindow();
+		if(!($window instanceof AnvilInventory)){
+			return false;
+		}
+
+		$pos = $window->getHolder();
+		$blockPosition = $packet->getBlockPosition();
+		if($pos->getFloorX() !== $blockPosition->getX() || $pos->getFloorY() !== $blockPosition->getY() || $pos->getFloorZ() !== $blockPosition->getZ()){
+			return false;
+		}
+
+		$world = $pos->getWorld();
+		$block = $world->getBlock($pos);
+		if(!($block instanceof Anvil)){
+			return false;
+		}
+
+		if(Utils::getRandomFloat() >= 0.12){
+			return true;
+		}
+
+		if($block->getDamage() >= Anvil::VERY_DAMAGED){
+			if(BlockEventHelper::die($block, VanillaBlocks::AIR())){
+				$world->addSound($pos, new AnvilBreakSound());
+			}
+		}else{
+			$world->setBlock($pos, $block->setDamage($block->getDamage() + 1));
+			$world->addSound($pos, new AnvilUseSound());
+		}
+
+		return true;
 	}
 
 	public function handleSetPlayerGameType(SetPlayerGameTypePacket $packet) : bool{
