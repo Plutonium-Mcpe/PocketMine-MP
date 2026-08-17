@@ -21,35 +21,21 @@
 
 declare(strict_types=1);
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
-use pocketmine\block\tile\Bed as TileBed;
 use pocketmine\block\utils\Colored;
 use pocketmine\block\utils\ColoredTrait;
-use pocketmine\block\utils\DyeColor;
 
-class Bed extends BedBase implements Colored{
+class WoolSlab extends Slab implements Colored{
 	use ColoredTrait;
 
-	public function readStateFromWorld() : Block{
-		parent::readStateFromWorld();
-		//read extra state information from the tile - this is an ugly hack
-		$tile = $this->position->getWorld()->getTile($this->position);
-		if($tile instanceof TileBed){
-			$this->color = $tile->getColor();
-		}else{
-			$this->color = DyeColor::RED; //legacy pre-1.1 beds don't have tiles
-		}
-
-		return $this;
+	public function getFlameEncouragement() : int{
+		return 30;
 	}
 
-	public function writeStateToWorld() : void{
-		parent::writeStateToWorld();
-		//extra block properties storage hack
-		$tile = $this->position->getWorld()->getTile($this->position);
-		if($tile instanceof TileBed){
-			$tile->setColor($this->color);
-		}
+	public function getFlammability() : int{
+		return 60;
 	}
 }

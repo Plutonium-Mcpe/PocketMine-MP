@@ -31,6 +31,7 @@ use pocketmine\data\bedrock\block\BlockStateData;
 use pocketmine\data\bedrock\block\convert\BlockStateReader as Reader;
 use pocketmine\data\bedrock\block\convert\BlockStateWriter as Writer;
 use pocketmine\data\bedrock\block\convert\property\CommonProperties;
+use pocketmine\data\bedrock\block\convert\property\Property;
 use pocketmine\data\bedrock\block\convert\property\StringProperty;
 use function array_map;
 use function count;
@@ -187,15 +188,19 @@ final class BlockSerializerDeserializerRegistrar{
 	/**
 	 * @phpstan-template TBlock of Block&Colored
 	 * @phpstan-param TBlock $block
+	 * @phpstan-param list<Property<contravariant TBlock>> $properties
 	 */
-	public function mapColored(Block $block, string $idPrefix, string $idSuffix) : void{
-		$this->mapFlattenedId(FlattenedIdModel::create($block)
+	public function mapColored(Block $block, string $idPrefix, string $idSuffix, array $properties = []) : void{
+		$model = FlattenedIdModel::create($block)
 			->idComponents([
 				$idPrefix,
 				CommonProperties::getInstance()->dyeColorIdInfix,
 				$idSuffix
-			])
-		);
+			]);
+		if(count($properties) > 0){
+			$model->properties($properties);
+		}
+		$this->mapFlattenedId($model);
 	}
 
 	public function mapSlab(Slab $block, string $type) : void{
