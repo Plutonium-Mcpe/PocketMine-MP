@@ -301,7 +301,7 @@ class InGamePacketHandler extends PacketHandler{
 	public function handleInventoryTransaction(InventoryTransactionPacket $packet) : bool{
 		$result = true;
 
-		if(count($packet->trData?->getActions() ?? []) > 50){
+		if(count($packet->trData->getActions()) > 50){
 			throw new PacketHandlingException("Too many actions in inventory transaction");
 		}
 		if(count($packet->requestChangedSlots) > 10){
@@ -309,7 +309,7 @@ class InGamePacketHandler extends PacketHandler{
 		}
 
 		$this->inventoryManager->setCurrentItemStackRequestId($packet->requestId);
-		$this->inventoryManager->addRawPredictedSlotChanges($packet->trData?->getActions() ?? []);
+		$this->inventoryManager->addRawPredictedSlotChanges($packet->trData->getActions());
 
 		if($packet->trData instanceof NormalTransactionData){
 			$result = $this->handleNormalTransaction($packet->trData, $packet->requestId);
