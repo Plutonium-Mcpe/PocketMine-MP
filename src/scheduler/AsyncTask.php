@@ -29,11 +29,14 @@ use pmmp\thread\ThreadSafeArray;
 use pocketmine\thread\NonThreadSafeValue;
 use pocketmine\timings\Timings;
 use function array_key_exists;
+use function get_class;
 use function igbinary_serialize;
 use function igbinary_unserialize;
 use function is_null;
 use function is_scalar;
+use function microtime;
 use function spl_object_id;
+use function sprintf;
 
 /**
  * Class used to run async tasks in other threads.

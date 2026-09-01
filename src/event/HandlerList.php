@@ -164,7 +164,10 @@ class HandlerList{
 		}
 		//NOTE: array_merge()/array_merge_recursive() must NOT be used here: they renumber integer keys,
 		//which would destroy the priority indexes and break event ordering entirely.
-		/** @var RegisteredListener[][] $listenersByPriority */
+		/**
+		 * @var RegisteredListener[][] $listenersByPriority
+		 * @phpstan-var array<int, list<RegisteredListener<TEvent>>> $listenersByPriority
+		 */
 		$listenersByPriority = [];
 		foreach([$listeners, $asyncListeners, $exclusiveAsyncListeners] as $group){
 			foreach($group as $priority => $listenersForPriority){

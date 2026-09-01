@@ -46,7 +46,6 @@ use pocketmine\player\PlayerInfo;
 use pocketmine\player\XboxLivePlayerInfo;
 use pocketmine\Server;
 use pocketmine\utils\Utils;
-use pocketmine\utils\VersionString;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use function base64_decode;
@@ -148,13 +147,7 @@ class LoginPacketHandler extends PacketHandler{
 		$clientData = $this->parseClientData($packet->clientDataJwt);
 
 		try{
-			$__sd = ClientDataToSkinDataHelper::fromClientData($clientData);
-			$__img = $__sd->getSkinImage();
-			$__exp = $__img->getWidth() * $__img->getHeight() * 4;
-			$__real = strlen($__img->getData());
-			@file_put_contents("/tmp/pluto_pkt_dump.log", sprintf("SKIN-IMG w=%d h=%d dataLen=%d expected(w*h*4)=%d match=%s | capeLen=%d geoLen=%d\n", $__img->getWidth(), $__img->getHeight(), $__real, $__exp, $__real === $__exp ? "YES" : "NON-MISMATCH!!", strlen($__sd->getCapeImage()->getData()), strlen($__sd->getGeometryData())), FILE_APPEND);
-			try{ $this->session->getTypeConverter()->getSkinAdapter()->fromSkinData($__sd); @file_put_contents("/tmp/pluto_pkt_dump.log", "SKIN-CORE build OK\n", FILE_APPEND); }catch(\Throwable $__e){ @file_put_contents("/tmp/pluto_pkt_dump.log", "SKIN-CORE FAIL: " . $__e->getMessage() . "\n", FILE_APPEND); }
-			$skin = $this->session->getTypeConverter()->getSkinAdapter()->fromSkinData($__sd);
+			$skin = $this->session->getTypeConverter()->getSkinAdapter()->fromSkinData(ClientDataToSkinDataHelper::fromClientData($clientData));
 		}catch(\InvalidArgumentException | InvalidSkinException $e){
 			$this->session->disconnectWithError(
 				reason: "Invalid skin: " . $e->getMessage(),

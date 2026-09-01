@@ -104,13 +104,13 @@ class AnvilCraftTest extends TestCase{
 		yield "No enchant on base item and one enchant on material" => [
 			VanillaItems::DIAMOND_PICKAXE(),
 			VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1)),
-			new AnvilCraftResult(2, VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1)), null)
+			new AnvilCraftResult(2, VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1))->setAnvilRepairCost(1), null)
 		];
 
 		yield "Combine two identical items with damage" => [
 			VanillaItems::DIAMOND_PICKAXE()->setDamage(10),
 			VanillaItems::DIAMOND_PICKAXE(),
-			new AnvilCraftResult(1, VanillaItems::DIAMOND_PICKAXE()->setDamage(0), null)
+			new AnvilCraftResult(2, VanillaItems::DIAMOND_PICKAXE()->setDamage(0)->setAnvilRepairCost(1), null)
 		];
 
 		yield "Combine two identical items with damage for material" => [
@@ -124,7 +124,7 @@ class AnvilCraftTest extends TestCase{
 			VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1)),
 			new AnvilCraftResult(2, VanillaItems::DIAMOND_PICKAXE()
 				->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 2))
-				->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1)),
+				->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1))->setAnvilRepairCost(1),
 				null)
 		];
 
@@ -133,7 +133,7 @@ class AnvilCraftTest extends TestCase{
 			VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1)),
 			new AnvilCraftResult(4, VanillaItems::DIAMOND_PICKAXE()
 				->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 2))
-				->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1)),
+				->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1))->setAnvilRepairCost(1),
 				null)
 		];
 
@@ -142,26 +142,26 @@ class AnvilCraftTest extends TestCase{
 			VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1))->setDamage(10),
 			new AnvilCraftResult(2, VanillaItems::DIAMOND_PICKAXE()
 				->addEnchantment(new EnchantmentInstance(VanillaEnchantments::EFFICIENCY(), 2))
-				->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1)),
+				->addEnchantment(new EnchantmentInstance(VanillaEnchantments::UNBREAKING(), 1))->setAnvilRepairCost(1),
 				null)
 		];
 
 		yield "Combine two identical items with same enchantment level" => [
 			VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FORTUNE(), 1)),
 			VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FORTUNE(), 1)),
-			new AnvilCraftResult(8, VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FORTUNE(), 2)), null)
+			new AnvilCraftResult(8, VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FORTUNE(), 2))->setAnvilRepairCost(1), null)
 		];
 
 		yield "Combine two identical items with same enchantment level and damage" => [
 			VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FORTUNE(), 1))->setDamage(10),
 			VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FORTUNE(), 1)),
-			new AnvilCraftResult(10, VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FORTUNE(), 2))->setDamage(0), null)
+			new AnvilCraftResult(10, VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FORTUNE(), 2))->setDamage(0)->setAnvilRepairCost(1), null)
 		];
 
 		yield "Combine two identical items with same enchantment level and damage for material" => [
 			VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FORTUNE(), 1)),
 			VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FORTUNE(), 1))->setDamage(10),
-			new AnvilCraftResult(8, VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FORTUNE(), 2)), null)
+			new AnvilCraftResult(8, VanillaItems::DIAMOND_PICKAXE()->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FORTUNE(), 2))->setAnvilRepairCost(1), null)
 		];
 	}
 

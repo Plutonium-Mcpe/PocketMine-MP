@@ -127,11 +127,12 @@ class AnvilTransaction extends InventoryTransaction{
 		if($inventory instanceof AnvilInventory){
 			$world = $inventory->getHolder()->getWorld();
 			$anvilBlock = $world->getBlock($inventory->getHolder());
-			$event = new AnvilUseEvent($anvilBlock, mt_rand(0, 12) === 0);
-			$event->call();
-			if(!$event->isCancelled()){
-				if($event->shouldTakeDamage()){
-					if($anvilBlock instanceof Anvil){
+			//the anvil may have been broken or replaced while the window was open
+			if($anvilBlock instanceof Anvil){
+				$event = new AnvilUseEvent($anvilBlock, mt_rand(0, 12) === 0);
+				$event->call();
+				if(!$event->isCancelled()){
+					if($event->shouldTakeDamage()){
 						$newDamage = $anvilBlock->getDamage() + 1;
 						if($newDamage > Anvil::VERY_DAMAGED){
 							$newBlock = VanillaBlocks::AIR();
@@ -141,9 +142,8 @@ class AnvilTransaction extends InventoryTransaction{
 						}
 						$world->setBlock($inventory->getHolder(), $newBlock);
 					}
-
+					$world->addSound($inventory->getHolder(), new AnvilUseSound());
 				}
-				$world->addSound($inventory->getHolder(), new AnvilUseSound());
 			}
 		}
 	}

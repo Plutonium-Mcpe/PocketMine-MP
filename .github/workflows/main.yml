@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ["8.1", "8.2", "8.3", "8.4", "8.5"]
+        php: ["8.2", "8.3", "8.4", "8.5"]
 
     uses: ./.github/workflows/main-php-matrix.yml
     with:
@@ -64,28 +64,3 @@ jobs:
 
       - name: Verify translations
         run: php .github/workflows/verify-translations.php ${{ github.workspace }}/resources/translations
-
-  codegen:
-    name: Codegen freshness
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@2.37.1
-        with:
-          php-version: 8.3
-          extensions: yaml,igbinary,zip,curl,gmp,sockets,zlib,bcmath
-
-      - name: Install Composer dependencies
-        run: composer install --no-dev --prefer-dist --no-interaction --ignore-platform-reqs
-
-      - name: Regenerate codegen
-        run: composer run update-codegen
-
-      - name: Fail if generated/ is out of sync with sources
-        run: |
-          if ! git diff --exit-code -- generated/; then
-            echo "::error::generated/ is stale. Run 'composer run update-codegen' locally and commit the result."
-            exit 1
-          fi

@@ -23,11 +23,12 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\block\utils\MultiAnyFacing;
 use pocketmine\block\utils\MultiAnySupportTrait;
 use pocketmine\block\utils\SupportType;
 use pocketmine\item\Item;
 
-class SculkVein extends Transparent{
+class SculkVein extends Transparent implements MultiAnyFacing{
 	use MultiAnySupportTrait;
 
 	public function isSolid() : bool{

@@ -353,7 +353,6 @@ class InGamePacketHandler extends PacketHandler{
 		try{
 			$transaction->execute();
 		}catch(TransactionValidationException $e){
-			@file_put_contents("/tmp/pluto_pkt_dump.log", "TX-FAIL #$requestId: " . get_class($e) . ": " . $e->getMessage() . "\n", FILE_APPEND);
 			$this->inventoryManager->requestSyncAll();
 			$logger = $this->session->getLogger();
 			$logger->debug("Invalid inventory transaction $requestId: " . $e->getMessage());
@@ -607,7 +606,6 @@ class InGamePacketHandler extends PacketHandler{
 			}
 		}catch(ItemStackRequestProcessException $e){
 			$result = false;
-			@file_put_contents("/tmp/pluto_pkt_dump.log", "CRAFT-FAIL #" . $request->getRequestId() . ": " . $e->getMessage() . "\n", FILE_APPEND);
 			$this->session->getLogger()->debug("ItemStackRequest #" . $request->getRequestId() . " failed: " . $e->getMessage());
 			$this->session->getLogger()->debug(implode("\n", Utils::printableExceptionInfo($e)));
 			$this->inventoryManager->requestSyncAll();
