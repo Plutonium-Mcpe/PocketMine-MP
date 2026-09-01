@@ -51,7 +51,9 @@ function constifyMcId(string $id) : string{
 		throw new AssumptionFailedError("Failed to normalize item ID $id");
 }
 
-/** @return resource */
+/**
+ * @return resource
+ */
 function safe_fopen(string $file, string $flags){
 	$dir = dirname($file);
 	if(!@mkdir($dir, recursive: true) && !is_dir($dir)){
