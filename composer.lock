@@ -71,12 +71,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/altayofficial/BedrockData.git",
-                "reference": "612b3bbe77ccb8e7b13f1ec9c5366bd25b71e1af"
+                "reference": "8bff2297f81ff60496e87096aa28ae28e95a4f63"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/altayofficial/BedrockData/zipball/612b3bbe77ccb8e7b13f1ec9c5366bd25b71e1af",
-                "reference": "612b3bbe77ccb8e7b13f1ec9c5366bd25b71e1af",
+                "url": "https://api.github.com/repos/altayofficial/BedrockData/zipball/8bff2297f81ff60496e87096aa28ae28e95a4f63",
+                "reference": "8bff2297f81ff60496e87096aa28ae28e95a4f63",
                 "shasum": ""
             },
             "type": "library",
@@ -84,7 +84,7 @@
                 "CC0-1.0"
             ],
             "description": "Blobs of data generated from Minecraft: Bedrock Edition, used by Altayz",
-            "time": "2026-08-17T16:33:54+00:00"
+            "time": "2026-09-02T14:52:22+00:00"
         },
         {
             "name": "altayofficial/bedrock-protocol",
@@ -92,12 +92,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/altayofficial/BedrockProtocol.git",
-                "reference": "26f4e7c8fa9f42d875c2eb0908849633aa07e2c3"
+                "reference": "4ed21c3f4e4e35a466558d5f12e0b49f174ec397"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/altayofficial/BedrockProtocol/zipball/26f4e7c8fa9f42d875c2eb0908849633aa07e2c3",
-                "reference": "26f4e7c8fa9f42d875c2eb0908849633aa07e2c3",
+                "url": "https://api.github.com/repos/altayofficial/BedrockProtocol/zipball/4ed21c3f4e4e35a466558d5f12e0b49f174ec397",
+                "reference": "4ed21c3f4e4e35a466558d5f12e0b49f174ec397",
                 "shasum": ""
             },
             "require": {
@@ -137,7 +137,7 @@
                 "LGPL-3.0"
             ],
             "description": "An implementation of the Minecraft: Bedrock Edition protocol in PHP",
-            "time": "2026-08-17T17:24:35+00:00"
+            "time": "2026-09-02T13:04:16+00:00"
         },
         {
             "name": "altayofficial/nbt",
