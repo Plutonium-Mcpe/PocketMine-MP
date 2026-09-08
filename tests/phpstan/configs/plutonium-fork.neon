@@ -1,0 +1,80 @@
+# Fork-specific PHPStan suppressions (Plutonium-Mcpe/PocketMine-MP).
+#
+# Kept in a separate file from the upstream-generated actual-problems.neon so that
+# syncing with pmmp/PocketMine-MP never conflicts on a hand-edited baseline.
+#
+# `reportUnmatched: false` is used throughout: several of these only surface on some
+# PHP versions, and the CI matrix spans 8.2 to 8.5.
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Strict comparison using \=\=\= between \*NEVER\* and 5 will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			reportUnmatched: false
+			path: ../../../src/command/defaults/TeleportCommand.php
+
+		-
+			message: '#^Parameter \#1 \$event of method pocketmine\\event\\HandlerListManager\:\:getListFor\(\) expects class\-string\<pocketmine\\event\\Event\>, class\-string\<static\(pocketmine\\event\\AsyncEvent\)\> given\.$#'
+			identifier: argument.type
+			reportUnmatched: false
+			path: ../../../src/event/AsyncEvent.php
+
+		-
+			message: '#^Unable to resolve the template type TEvent in call to method pocketmine\\event\\HandlerListManager\:\:getListFor\(\)$#'
+			identifier: argument.templateType
+			reportUnmatched: false
+			path: ../../../src/event/AsyncEvent.php
+
+		-
+			message: '#^Parameter \#1 \$class of static method pocketmine\\event\\HandlerListManager\:\:isValidClass\(\) expects ReflectionClass\<pocketmine\\event\\AsyncEvent\|pocketmine\\event\\Event\>, ReflectionClass\<TEvent of pocketmine\\event\\Event\> given\.$#'
+			identifier: argument.type
+			reportUnmatched: false
+			path: ../../../src/event/HandlerListManager.php
+
+		-
+			message: '#^Class pocketmine\\event\\RegisteredAsyncListener extends generic class pocketmine\\event\\RegisteredListener but does not specify its types\: TEvent$#'
+			identifier: missingType.generics
+			reportUnmatched: false
+			path: ../../../src/event/RegisteredAsyncListener.php
+
+		-
+			message: '#^Parameter \#1 \$handler of method pocketmine\\event\\RegisteredListener\<pocketmine\\event\\Event\>\:\:__construct\(\) expects Closure\(pocketmine\\event\\Event\)\: void, Closure\(pocketmine\\event\\AsyncEvent\)\: pocketmine\\promise\\Promise\<null\> given\.$#'
+			identifier: argument.type
+			reportUnmatched: false
+			path: ../../../src/event/RegisteredAsyncListener.php
+
+		-
+			message: '#^Possibly invalid array key type int\|null\.$#'
+			identifier: offsetAccess.invalidOffset
+			reportUnmatched: false
+			path: ../../../src/network/mcpe/convert/BlockStateDictionary.php
+
+		-
+			message: '#^Property pocketmine\\network\\mcpe\\raklib\\PthreadsChannelWriter\:\:\$buffer is never read, only written\.$#'
+			identifier: property.onlyWritten
+			reportUnmatched: false
+			path: ../../../src/network/mcpe/raklib/PthreadsChannelWriter.php
+
+		-
+			message: '#^Property pocketmine\\network\\mcpe\\raklib\\SnoozeAwarePthreadsChannelWriter\:\:\$buffer is never read, only written\.$#'
+			identifier: property.onlyWritten
+			reportUnmatched: false
+			path: ../../../src/network/mcpe/raklib/SnoozeAwarePthreadsChannelWriter.php
+
+		-
+			message: '#^PHPDoc tag @var with type ReflectionClass\<pocketmine\\event\\Event\> is not subtype of native type \*NEVER\*\.$#'
+			identifier: varTag.nativeType
+			reportUnmatched: false
+			path: ../../../src/plugin/PluginManager.php
+
+		-
+			message: '#^Parameter \#1 \$event of method pocketmine\\event\\HandlerListManager\:\:getListFor\(\) expects class\-string\<pocketmine\\event\\Event\>, class\-string\<pocketmine\\event\\AsyncEvent\> given\.$#'
+			identifier: argument.type
+			reportUnmatched: false
+			path: ../../../src/plugin/PluginManager.php
+
+		-
+			message: '#^Unable to resolve the template type TEvent in call to method pocketmine\\event\\HandlerListManager\:\:getListFor\(\)$#'
+			identifier: argument.templateType
+			reportUnmatched: false
+			path: ../../../src/plugin/PluginManager.php

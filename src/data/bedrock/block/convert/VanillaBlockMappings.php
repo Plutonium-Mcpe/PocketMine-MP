@@ -80,6 +80,8 @@ use pocketmine\block\RedstoneRepeater;
 use pocketmine\block\RedstoneTorch;
 use pocketmine\block\RespawnAnchor;
 use pocketmine\block\Sapling;
+use pocketmine\block\SculkSensor;
+use pocketmine\block\SculkShrieker;
 use pocketmine\block\SeaPickle;
 use pocketmine\block\Seagrass;
 use pocketmine\block\ShelfMushroom;
@@ -1527,6 +1529,14 @@ final class VanillaBlockMappings{
 		]));
 
 		//S
+		$reg->mapModel(Model::create(Blocks::SCULK_SENSOR(), Ids::SCULK_SENSOR)->properties([
+			new IntProperty(StateNames::SCULK_SENSOR_PHASE, 0, 2, fn(SculkSensor $b) => $b->getPhase(), fn(SculkSensor $b, int $v) => $b->setPhase($v))
+		]));
+		$reg->mapModel(Model::create(Blocks::SCULK_SHRIEKER(), Ids::SCULK_SHRIEKER)->properties([
+			new BoolProperty(StateNames::ACTIVE, fn(SculkShrieker $b) => $b->isActive(), fn(SculkShrieker $b, bool $v) => $b->setActive($v)),
+			new BoolProperty(StateNames::CAN_SUMMON, fn(SculkShrieker $b) => $b->canSummon(), fn(SculkShrieker $b, bool $v) => $b->setCanSummon($v))
+		]));
+		$reg->mapModel(Model::create(Blocks::SCULK_VEIN(), Ids::SCULK_VEIN)->properties([$commonProperties->multiFacingFlags]));
 		$reg->mapModel(Model::create(Blocks::SHELF_MUSHROOM(), Ids::SHELF_MUSHROOM)->properties([
 			new IntProperty(StateNames::GROWTH, 0, ShelfMushroom::MAX_AGE, fn(ShelfMushroom $b) => $b->getAge(), fn(ShelfMushroom $b, int $v) => $b->setAge($v)),
 			$commonProperties->horizontalFacingCardinal

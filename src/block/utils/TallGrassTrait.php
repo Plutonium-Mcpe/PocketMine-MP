@@ -34,6 +34,9 @@ trait TallGrassTrait{
 		return true;
 	}
 
+	/**
+	 * @return Item[]
+	 */
 	public function getDropsForIncompatibleTool(Item $item) : array{
 		if(FortuneDropHelper::bonusChanceDivisor($item, 8, 2)){
 			return [
