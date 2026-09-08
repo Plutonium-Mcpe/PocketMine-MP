@@ -54,6 +54,8 @@ use function substr;
  * packs to the client.
  */
 class ResourcePacksPacketHandler extends PacketHandler{
+	use PacketViolationWarningTrait;
+
 	private const PACK_CHUNK_SIZE = 256 * 1024; //256KB
 
 	/**
@@ -228,6 +230,9 @@ class ResourcePacksPacketHandler extends PacketHandler{
 				break;
 			case ResourcePackClientResponsePacket::STATUS_COMPLETED:
 				$this->session->getLogger()->debug("Resource packs sequence completed");
+				if($this->session->getHandler() === $this){
+					$this->session->setHandler(null);
+				}
 				($this->completionCallback)();
 				break;
 			default:

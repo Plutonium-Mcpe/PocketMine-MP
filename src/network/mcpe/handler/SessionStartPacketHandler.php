@@ -29,6 +29,8 @@ use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\network\mcpe\protocol\RequestNetworkSettingsPacket;
 
 final class SessionStartPacketHandler extends PacketHandler{
+	use PacketViolationWarningTrait;
+
 
 	/**
 	 * @phpstan-param \Closure() : void $onSuccess
