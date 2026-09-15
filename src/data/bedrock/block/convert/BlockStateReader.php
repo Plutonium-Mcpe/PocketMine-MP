@@ -25,6 +25,7 @@ namespace pocketmine\data\bedrock\block\convert;
 
 use pocketmine\block\utils\BellAttachmentType;
 use pocketmine\block\utils\SlabType;
+use pocketmine\block\utils\StairShape;
 use pocketmine\block\utils\WallConnectionType;
 use pocketmine\data\bedrock\block\BlockLegacyMetadata;
 use pocketmine\data\bedrock\block\BlockStateData;
@@ -68,6 +69,14 @@ final class BlockStateReader{
 			"Property \"$name\" has unexpected value \"$stringifiedValue\"" . (
 			$reason !== null ? " ($reason)" : ""
 		));
+	}
+
+	/**
+	 * Returns whether the state actually carries the given property. Used to tolerate states saved before a
+	 * property was introduced, so that worlds written by older versions still load.
+	 */
+	public function hasProperty(string $name) : bool{
+		return $this->data->getState($name) !== null;
 	}
 
 	/** @throws BlockStateDeserializeException */
@@ -293,6 +302,14 @@ final class BlockStateReader{
 	 */
 	public function readBellAttachmentType() : BellAttachmentType{
 		return $this->readUnitEnum(BlockStateNames::ATTACHMENT, ValueMappings::getInstance()->bellAttachmentType);
+	}
+
+	/**
+	 * @deprecated
+	 * @throws BlockStateDeserializeException
+	 */
+	public function readStairShape() : StairShape{
+		return $this->readUnitEnum(BlockStateNames::MC_CORNER, ValueMappings::getInstance()->stairShape);
 	}
 
 	/**

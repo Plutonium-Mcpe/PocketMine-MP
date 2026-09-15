@@ -21,19 +21,32 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\world\sound;
+namespace pocketmine\block;
 
-use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\ClientboundUpdateSoundDataPacket;
-use pocketmine\network\mcpe\protocol\types\sound\StopSoundData;
+use pocketmine\entity\Entity;
+use pocketmine\player\Player;
 
-class RecordStopSound implements Sound{
+class StrawBed extends BedBase{
 
-	public function __construct(private int $serverSoundHandle){}
+	public function setsRespawnPoint() : bool{
+		return false;
+	}
 
-	public function encode(Vector3 $pos) : array{
-		$stop = new StopSoundData();
+	public function onSleepEnd(Player $player) : void{
+		//a straw bed is single use so it falls apart once someone has been in it
+		$world = $this->position->getWorld();
+		if(($other = $this->getOtherHalf()) !== null){
+			$world->setBlock($other->position, VanillaBlocks::AIR());
+		}
+		$world->setBlock($this->position, VanillaBlocks::AIR());
+	}
 
-		return [ClientboundUpdateSoundDataPacket::create($this->serverSoundHandle, $stop, $stop, $stop, $stop, $stop, $stop, $stop)];
+	public function onEntityLand(Entity $entity) : ?float{
+		//straw isn't bouncy like wool is
+		return null;
+	}
+
+	public function getMaxStackSize() : int{
+		return 16;
 	}
 }

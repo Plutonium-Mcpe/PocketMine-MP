@@ -21,19 +21,17 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\world\sound;
+namespace pocketmine\block;
 
-use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\ClientboundUpdateSoundDataPacket;
-use pocketmine\network\mcpe\protocol\types\sound\StopSoundData;
+use pocketmine\item\Item;
 
-class RecordStopSound implements Sound{
+class RedShrub extends DeadBush{
 
-	public function __construct(private int $serverSoundHandle){}
+	public function getDropsForCompatibleTool(Item $item) : array{
+		return [$this->asItem()];
+	}
 
-	public function encode(Vector3 $pos) : array{
-		$stop = new StopSoundData();
-
-		return [ClientboundUpdateSoundDataPacket::create($this->serverSoundHandle, $stop, $stop, $stop, $stop, $stop, $stop, $stop)];
+	public function getDropsForIncompatibleTool(Item $item) : array{
+		return [];
 	}
 }

@@ -21,19 +21,37 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\world\sound;
+namespace pocketmine\block\utils;
 
-use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\ClientboundUpdateSoundDataPacket;
-use pocketmine\network\mcpe\protocol\types\sound\StopSoundData;
+use pocketmine\math\Facing;
 
-class RecordStopSound implements Sound{
+/**
+ * Implemented by blocks which connect to their horizontal neighbours, such as fences and glass panes.
+ */
+interface HorizontalConnections{
 
-	public function __construct(private int $serverSoundHandle){}
+	/**
+	 * @return int[]
+	 * @see Facing
+	 */
+	public function getConnections() : array;
 
-	public function encode(Vector3 $pos) : array{
-		$stop = new StopSoundData();
+	public function isConnected(int $facing) : bool;
 
-		return [ClientboundUpdateSoundDataPacket::create($this->serverSoundHandle, $stop, $stop, $stop, $stop, $stop, $stop, $stop)];
-	}
+	/**
+	 * @return $this
+	 *
+	 * @see Facing
+	 */
+	public function setConnected(int $facing, bool $value) : self;
+
+	/**
+	 * @param int[] $connections
+	 *
+	 * @return $this
+	 *
+	 * @see Facing
+	 */
+	public function setConnections(array $connections) : self;
+
 }

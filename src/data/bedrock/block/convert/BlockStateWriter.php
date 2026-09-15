@@ -25,6 +25,7 @@ namespace pocketmine\data\bedrock\block\convert;
 
 use pocketmine\block\utils\BellAttachmentType;
 use pocketmine\block\utils\SlabType;
+use pocketmine\block\utils\StairShape;
 use pocketmine\block\utils\WallConnectionType;
 use pocketmine\data\bedrock\block\BlockLegacyMetadata;
 use pocketmine\data\bedrock\block\BlockStateData;
@@ -258,6 +259,14 @@ final class BlockStateWriter{
 	 */
 	public function writeBellAttachmentType(BellAttachmentType $attachmentType) : self{
 		return $this->writeUnitEnum(BlockStateNames::ATTACHMENT, ValueMappings::getInstance()->bellAttachmentType, $attachmentType);
+	}
+
+	/**
+	 * @deprecated
+	 * @return $this
+	 */
+	public function writeStairShape(StairShape $shape) : self{
+		return $this->writeUnitEnum(BlockStateNames::MC_CORNER, ValueMappings::getInstance()->stairShape, $shape);
 	}
 
 	/**

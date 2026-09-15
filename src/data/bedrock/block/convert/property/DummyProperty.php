@@ -36,7 +36,8 @@ use function is_string;
 final class DummyProperty implements Property{
 	public function __construct(
 		private string $name,
-		private bool|int|string $value
+		private bool|int|string $value,
+		private bool $optional = false
 	){}
 
 	public function getName() : string{
@@ -44,6 +45,9 @@ final class DummyProperty implements Property{
 	}
 
 	public function deserialize(object $block, BlockStateReader $in) : void{
+		if($this->optional && !$in->hasProperty($this->name)){
+			return;
+		}
 		$in->ignored($this->name);
 	}
 

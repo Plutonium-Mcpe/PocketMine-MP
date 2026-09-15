@@ -62,6 +62,8 @@ use const JSON_THROW_ON_ERROR;
  * Handles the initial login phase of the session. This handler is used as the initial state.
  */
 class LoginPacketHandler extends PacketHandler{
+	use PacketViolationWarningTrait;
+
 	/**
 	 * @phpstan-param \Closure(PlayerInfo) : void $playerInfoConsumer
 	 * @phpstan-param \Closure(bool $isAuthenticated, bool $authRequired, Translatable|string|null $error, ?string $clientPubKey) : void $authCallback
@@ -138,13 +140,19 @@ class LoginPacketHandler extends PacketHandler{
 	}
 
 	private function processLoginCommon(LoginPacket $packet, string $username, UuidInterface $legacyUuid, string $xuid) : ?bool{
+		$clientData = $this->parseClientData($packet->clientDataJwt);
+
+		if($username === ""){
+			//clients which aren't signed into Xbox Live don't have a gamertag to put in their token, so the only name
+			//they send is the local profile name in the client data
+			$username = $clientData->ThirdPartyName;
+		}
+
 		if(!Player::isValidUserName($username)){
 			$this->session->disconnectWithError(KnownTranslationFactory::disconnectionScreen_invalidName());
 
 			return null;
 		}
-
-		$clientData = $this->parseClientData($packet->clientDataJwt);
 
 		try{
 			$skin = $this->session->getTypeConverter()->getSkinAdapter()->fromSkinData(ClientDataToSkinDataHelper::fromClientData($clientData));

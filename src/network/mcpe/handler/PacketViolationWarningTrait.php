@@ -21,19 +21,26 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\world\sound;
+namespace pocketmine\network\mcpe\handler;
 
-use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\ClientboundUpdateSoundDataPacket;
-use pocketmine\network\mcpe\protocol\types\sound\StopSoundData;
+use pocketmine\network\mcpe\protocol\PacketViolationWarningPacket;
+use function strlen;
 
-class RecordStopSound implements Sound{
+trait PacketViolationWarningTrait{
 
-	public function __construct(private int $serverSoundHandle){}
+	public function handlePacketViolationWarning(PacketViolationWarningPacket $packet) : bool{
+		$message = $packet->getMessage();
+		//the message comes straight from the client, so anything longer than this is dropped to keep a malicious
+		//client from flooding the debug log
+		if(strlen($message) > 100){
+			return true;
+		}
 
-	public function encode(Vector3 $pos) : array{
-		$stop = new StopSoundData();
-
-		return [ClientboundUpdateSoundDataPacket::create($this->serverSoundHandle, $stop, $stop, $stop, $stop, $stop, $stop, $stop)];
+		$this->session->getLogger()->debug(
+			"Client reported packet violation (type " . $packet->getType() .
+			", severity " . $packet->getSeverity() .
+			", packet ID " . $packet->getPacketId() . "): " . $message
+		);
+		return true;
 	}
 }

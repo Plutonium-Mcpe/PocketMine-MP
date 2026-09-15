@@ -867,8 +867,34 @@ public const MOSS_BLOCK = 10759;
 	public const FLOWERING_AZALEA = 10833;
 	public const KELP = 10834;
 	public const SEAGRASS = 10835;
+	public const WOOL_SLAB = 10836;
+	public const WOOL_STAIRS = 10837;
+	public const CONCRETE_SLAB = 10838;
+	public const CONCRETE_STAIRS = 10839;
+	public const RED_SHRUB = 10840;
+	public const SHELF_MUSHROOM = 10841;
+	public const STRAW_BED = 10842;
+	public const POPLAR_BUTTON = 10843;
+	public const POPLAR_CEILING_CENTER_HANGING_SIGN = 10844;
+	public const POPLAR_CEILING_EDGES_HANGING_SIGN = 10845;
+	public const POPLAR_DOOR = 10846;
+	public const POPLAR_FENCE = 10847;
+	public const POPLAR_FENCE_GATE = 10848;
+	public const POPLAR_LOG = 10849;
+	public const POPLAR_PLANKS = 10850;
+	public const POPLAR_PRESSURE_PLATE = 10851;
+	public const POPLAR_SIGN = 10852;
+	public const POPLAR_SLAB = 10853;
+	public const POPLAR_STAIRS = 10854;
+	public const POPLAR_TRAPDOOR = 10855;
+	public const POPLAR_WALL_HANGING_SIGN = 10856;
+	public const POPLAR_WALL_SIGN = 10857;
+	public const POPLAR_WOOD = 10858;
+	public const ORANGE_POPLAR_LEAVES = 10859;
+	public const RED_POPLAR_LEAVES = 10860;
+	public const YELLOW_POPLAR_LEAVES = 10861;
 
-	public const FIRST_UNUSED_BLOCK_ID = 10836;
+	public const FIRST_UNUSED_BLOCK_ID = 10862;
 
 	private static int $nextDynamicId = self::FIRST_UNUSED_BLOCK_ID;
 
