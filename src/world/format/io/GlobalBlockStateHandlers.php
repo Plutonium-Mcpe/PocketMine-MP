@@ -33,6 +33,7 @@ use pocketmine\data\bedrock\block\upgrade\BlockDataUpgrader;
 use pocketmine\data\bedrock\block\upgrade\BlockIdMetaUpgrader;
 use pocketmine\data\bedrock\block\upgrade\BlockStateUpgrader;
 use pocketmine\data\bedrock\block\upgrade\BlockStateUpgradeSchemaUtils;
+use pocketmine\data\bedrock\block\upgrade\HorizontalConnectionUpgradeSchema;
 use pocketmine\data\bedrock\block\upgrade\LegacyBlockIdToStringIdMap;
 use pocketmine\utils\Filesystem;
 use Symfony\Component\Filesystem\Path;
@@ -76,6 +77,7 @@ final class GlobalBlockStateHandlers{
 				Path::join(BEDROCK_BLOCK_UPGRADE_SCHEMA_PATH, 'nbt_upgrade_schema'),
 				PHP_INT_MAX
 			));
+			$blockStateUpgrader->addSchema(HorizontalConnectionUpgradeSchema::create());
 			self::$blockDataUpgrader = new BlockDataUpgrader(
 				BlockIdMetaUpgrader::loadFromString(
 					Filesystem::fileGetContents(Path::join(

@@ -21,32 +21,29 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\world\sound;
 
-use pocketmine\entity\Entity;
-use pocketmine\player\Player;
+use pocketmine\entity\object\Cushion;
+use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
+use pocketmine\network\mcpe\protocol\types\LevelSoundEvent;
 
-class StrawBed extends BedBase{
+class CushionPlaceSound implements Sound{
 
-	public function setsRespawnPoint() : bool{
-		return false;
-	}
+	public function __construct(
+		private int $entityId
+	){}
 
-	public function onSleepEnd(Player $player) : void{
-		//a straw bed is single use so it falls apart once someone has been in it
-		$world = $this->position->getWorld();
-		if(($other = $this->getOtherHalf()) !== null){
-			$world->setBlock($other->position, VanillaBlocks::AIR());
-		}
-		$world->setBlock($this->position, VanillaBlocks::AIR());
-	}
-
-	public function onEntityLand(Entity $entity) : ?float{
-		//straw isn't bouncy like wool is
-		return null;
-	}
-
-	public function getMaxStackSize() : int{
-		return 16;
+	public function encode(Vector3 $pos) : array{
+		return [LevelSoundEventPacket::create(
+			LevelSoundEvent::SPAWN,
+			$pos,
+			-1,
+			Cushion::getNetworkTypeId(),
+			false,
+			false,
+			$this->entityId,
+			null
+		)];
 	}
 }
