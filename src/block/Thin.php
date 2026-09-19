@@ -34,7 +34,7 @@ use function count;
 /**
  * Thin blocks behave like glass panes. They connect to full-cube blocks horizontally adjacent to them if possible.
  */
-class Thin extends Transparent implements HorizontalConnections{
+class Thin extends Transparent implements HorizontalConnections, StateDeriving{
 	use HorizontalConnectionsTrait;
 
 	public function readStateFromWorld() : Block{
@@ -46,9 +46,13 @@ class Thin extends Transparent implements HorizontalConnections{
 	}
 
 	public function onNearbyBlockChange() : void{
-		if($this->recalculateConnections()){
+		if($this->deriveStateFromWorld()){
 			$this->position->getWorld()->setBlock($this->position, $this);
 		}
+	}
+
+	public function deriveStateFromWorld() : bool{
+		return $this->recalculateConnections();
 	}
 
 	protected function canConnectTo(int $facing) : bool{

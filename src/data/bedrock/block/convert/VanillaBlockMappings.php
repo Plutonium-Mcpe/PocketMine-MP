@@ -1581,10 +1581,10 @@ final class VanillaBlockMappings{
 			new BoolProperty(StateNames::DISARMED_BIT, fn(Tripwire $b) => $b->isDisarmed(), fn(Tripwire $b, bool $v) => $b->setDisarmed($v)),
 			new BoolProperty(StateNames::SUSPENDED_BIT, fn(Tripwire $b) => $b->isSuspended(), fn(Tripwire $b, bool $v) => $b->setSuspended($v)),
 			new BoolProperty(StateNames::POWERED_BIT, fn(Tripwire $b) => $b->isTriggered(), fn(Tripwire $b, bool $v) => $b->setTriggered($v)),
-			new DummyProperty(StateNames::MC_CONNECTION_NORTH, false, optional: true),
-			new DummyProperty(StateNames::MC_CONNECTION_SOUTH, false, optional: true),
-			new DummyProperty(StateNames::MC_CONNECTION_WEST, false, optional: true),
-			new DummyProperty(StateNames::MC_CONNECTION_EAST, false, optional: true),
+			new BoolProperty(StateNames::MC_CONNECTION_NORTH, fn(Tripwire $b) => $b->isConnectedTo(Facing::NORTH), fn(Tripwire $b, bool $v) => $b->setConnection(Facing::NORTH, $v), defaultWhenMissing: false),
+			new BoolProperty(StateNames::MC_CONNECTION_SOUTH, fn(Tripwire $b) => $b->isConnectedTo(Facing::SOUTH), fn(Tripwire $b, bool $v) => $b->setConnection(Facing::SOUTH, $v), defaultWhenMissing: false),
+			new BoolProperty(StateNames::MC_CONNECTION_WEST, fn(Tripwire $b) => $b->isConnectedTo(Facing::WEST), fn(Tripwire $b, bool $v) => $b->setConnection(Facing::WEST, $v), defaultWhenMissing: false),
+			new BoolProperty(StateNames::MC_CONNECTION_EAST, fn(Tripwire $b) => $b->isConnectedTo(Facing::EAST), fn(Tripwire $b, bool $v) => $b->setConnection(Facing::EAST, $v), defaultWhenMissing: false),
 		]));
 		$reg->mapModel(Model::create(Blocks::TRIPWIRE_HOOK(), Ids::TRIPWIRE_HOOK)->properties([
 			new BoolProperty(StateNames::ATTACHED_BIT, fn(TripwireHook $b) => $b->isConnected(), fn(TripwireHook $b, bool $v) => $b->setConnected($v)),

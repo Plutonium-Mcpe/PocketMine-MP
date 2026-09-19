@@ -36,7 +36,7 @@ use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\world\BlockTransaction;
 
-class Stair extends Transparent implements HorizontalFacing{
+class Stair extends Transparent implements HorizontalFacing, StateDeriving{
 	use HorizontalFacingTrait;
 
 	protected bool $upsideDown = false;
@@ -57,16 +57,22 @@ class Stair extends Transparent implements HorizontalFacing{
 	}
 
 	public function onNearbyBlockChange() : void{
-		if($this->recalculateShape()){
+		if($this->deriveStateFromWorld()){
 			$this->position->getWorld()->setBlock($this->position, $this);
 		}
 	}
 
-	protected function recalculateShape() : bool{
+	public function deriveStateFromWorld() : bool{
 		$clockwise = Facing::rotateY($this->facing, true);
-		if(($backFacing = $this->getPossibleCornerFacing(false)) !== null){
+		if(
+			($backFacing = $this->getPossibleCornerFacing(false)) !== null &&
+			$this->canTakeShape(Facing::opposite($backFacing))
+		){
 			$shape = $backFacing === $clockwise ? StairShape::OUTER_RIGHT : StairShape::OUTER_LEFT;
-		}elseif(($frontFacing = $this->getPossibleCornerFacing(true)) !== null){
+		}elseif(
+			($frontFacing = $this->getPossibleCornerFacing(true)) !== null &&
+			$this->canTakeShape($frontFacing)
+		){
 			$shape = $frontFacing === $clockwise ? StairShape::INNER_RIGHT : StairShape::INNER_LEFT;
 		}else{
 			$shape = StairShape::STRAIGHT;
@@ -142,6 +148,11 @@ class Stair extends Transparent implements HorizontalFacing{
 			$side->upsideDown === $this->upsideDown &&
 			Facing::axis($side->facing) !== Facing::axis($this->facing) //perpendicular
 		) ? $side->facing : null;
+	}
+
+	private function canTakeShape(int $facing) : bool{
+		$side = $this->getSide($facing);
+		return !($side instanceof Stair) || $side->facing !== $this->facing || $side->upsideDown !== $this->upsideDown;
 	}
 
 	public function place(BlockTransaction $tx, Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, ?Player $player = null) : bool{

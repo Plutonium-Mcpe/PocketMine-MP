@@ -787,7 +787,7 @@
         "TORCHFLOWER": 1,
         "TORCHFLOWER_CROP": 2,
         "TRAPPED_CHEST": 4,
-        "TRIPWIRE": 16,
+        "TRIPWIRE": 256,
         "TRIPWIRE_HOOK": 16,
         "TUFF": 1,
         "TUFF_BRICKS": 1,

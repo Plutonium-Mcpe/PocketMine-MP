@@ -31,7 +31,7 @@ use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Facing;
 use function count;
 
-class Fence extends Transparent implements HorizontalConnections{
+class Fence extends Transparent implements HorizontalConnections, StateDeriving{
 	use HorizontalConnectionsTrait;
 
 	public function getThickness() : float{
@@ -47,9 +47,13 @@ class Fence extends Transparent implements HorizontalConnections{
 	}
 
 	public function onNearbyBlockChange() : void{
-		if($this->recalculateConnections()){
+		if($this->deriveStateFromWorld()){
 			$this->position->getWorld()->setBlock($this->position, $this);
 		}
+	}
+
+	public function deriveStateFromWorld() : bool{
+		return $this->recalculateConnections();
 	}
 
 	protected function canConnectTo(int $facing) : bool{

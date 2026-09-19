@@ -29,6 +29,8 @@ use pocketmine\block\FenceGate;
 use pocketmine\block\RuntimeBlockStateRegistry;
 use pocketmine\block\Stair;
 use pocketmine\block\Thin;
+use pocketmine\block\Tripwire;
+use pocketmine\block\TripwireHook;
 use pocketmine\block\utils\StairShape;
 use pocketmine\block\utils\SupportType;
 use pocketmine\block\VanillaBlocks;
@@ -80,7 +82,7 @@ final class HorizontalConnectionPaletteFixer{
 			foreach($subChunk->getBlockLayers() as $layer){
 				foreach($layer->getPalette() as $stateId){
 					$probe = $registry->fromStateId($stateId);
-					if($probe instanceof Stair || $probe instanceof Fence || $probe instanceof Thin){
+					if($probe instanceof Stair || $probe instanceof Fence || $probe instanceof Thin || $probe instanceof Tripwire){
 						return true;
 					}
 				}
@@ -103,7 +105,7 @@ final class HorizontalConnectionPaletteFixer{
 		foreach($subChunk->getBlockLayers() as $layer){
 			foreach($layer->getPalette() as $stateId){
 				$probe = $registry->fromStateId($stateId);
-				if($probe instanceof Stair || $probe instanceof Fence || $probe instanceof Thin){
+				if($probe instanceof Stair || $probe instanceof Fence || $probe instanceof Thin || $probe instanceof Tripwire){
 					$scan = true;
 					break 2;
 				}
@@ -120,7 +122,7 @@ final class HorizontalConnectionPaletteFixer{
 				for($y = 0; $y < SubChunk::EDGE_LENGTH; ++$y){
 					$oldId = $subChunk->getBlockStateId($x, $y, $z);
 					$block = $registry->fromStateId($oldId);
-					if(!$block instanceof Stair && !$block instanceof Fence && !$block instanceof Thin){
+					if(!$block instanceof Stair && !$block instanceof Fence && !$block instanceof Thin && !$block instanceof Tripwire){
 						continue;
 					}
 
@@ -155,6 +157,11 @@ final class HorizontalConnectionPaletteFixer{
 			foreach(Facing::HORIZONTAL as $facing){
 				$side = self::neighbor($subChunks, $x, $y, $z, $facing, $registry, $neighbourChunks);
 				$block->setConnected($facing, self::canConnect($block, $facing, $side));
+			}
+		}elseif($block instanceof Tripwire){
+			foreach(Facing::HORIZONTAL as $facing){
+				$side = self::neighbor($subChunks, $x, $y, $z, $facing, $registry, $neighbourChunks);
+				$block->setConnection($facing, $side instanceof Tripwire || $side instanceof TripwireHook);
 			}
 		}
 
@@ -208,11 +215,17 @@ final class HorizontalConnectionPaletteFixer{
 	private static function stairShape(Stair $stair, array $subChunks, int $x, int $y, int $z, RuntimeBlockStateRegistry $registry, ?\Closure $neighbourChunks) : StairShape{
 		$clockwise = Facing::rotateY($stair->getFacing(), true);
 		$backFacing = self::possibleCornerFacing($stair, $subChunks, $x, $y, $z, $registry, false, $neighbourChunks);
-		if($backFacing !== null){
+		if(
+			$backFacing !== null &&
+			self::canTakeStairShape($stair, $subChunks, $x, $y, $z, $registry, Facing::opposite($backFacing), $neighbourChunks)
+		){
 			return $backFacing === $clockwise ? StairShape::OUTER_RIGHT : StairShape::OUTER_LEFT;
 		}
 		$frontFacing = self::possibleCornerFacing($stair, $subChunks, $x, $y, $z, $registry, true, $neighbourChunks);
-		if($frontFacing !== null){
+		if(
+			$frontFacing !== null &&
+			self::canTakeStairShape($stair, $subChunks, $x, $y, $z, $registry, $frontFacing, $neighbourChunks)
+		){
 			return $frontFacing === $clockwise ? StairShape::INNER_RIGHT : StairShape::INNER_LEFT;
 		}
 		return StairShape::STRAIGHT;
@@ -238,6 +251,16 @@ final class HorizontalConnectionPaletteFixer{
 			$side->isUpsideDown() === $stair->isUpsideDown() &&
 			Facing::axis($side->getFacing()) !== Facing::axis($stair->getFacing())
 		) ? $side->getFacing() : null;
+	}
+
+	/**
+	 * @param SubChunk[] $subChunks
+	 * @phpstan-param array<int, SubChunk> $subChunks
+	 * @phpstan-param (\Closure(int, int) : ?array<int, SubChunk>)|null $neighbourChunks
+	 */
+	private static function canTakeStairShape(Stair $stair, array $subChunks, int $x, int $y, int $z, RuntimeBlockStateRegistry $registry, int $facing, ?\Closure $neighbourChunks) : bool{
+		$side = self::neighbor($subChunks, $x, $y, $z, $facing, $registry, $neighbourChunks);
+		return !($side instanceof Stair) || $side->getFacing() !== $stair->getFacing() || $side->isUpsideDown() !== $stair->isUpsideDown();
 	}
 
 	private static function canConnect(Block $block, int $facing, Block $side) : bool{

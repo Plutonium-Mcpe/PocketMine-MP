@@ -33,7 +33,7 @@ use pocketmine\math\Facing;
 /**
  * @phpstan-type WallConnectionSet array<Facing::NORTH|Facing::EAST|Facing::SOUTH|Facing::WEST, WallConnectionType>
  */
-class Wall extends Transparent{
+class Wall extends Transparent implements StateDeriving{
 
 	/**
 	 * @var WallConnectionType[]
@@ -89,9 +89,13 @@ class Wall extends Transparent{
 	}
 
 	public function onNearbyBlockChange() : void{
-		if($this->recalculateConnections()){
+		if($this->deriveStateFromWorld()){
 			$this->position->getWorld()->setBlock($this->position, $this);
 		}
+	}
+
+	public function deriveStateFromWorld() : bool{
+		return $this->recalculateConnections();
 	}
 
 	protected function recalculateConnections() : bool{
