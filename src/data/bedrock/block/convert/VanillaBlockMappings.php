@@ -83,7 +83,6 @@ use pocketmine\block\Sapling;
 use pocketmine\block\SculkSensor;
 use pocketmine\block\SculkShrieker;
 use pocketmine\block\SeaPickle;
-use pocketmine\block\Seagrass;
 use pocketmine\block\ShelfMushroom;
 use pocketmine\block\SmallDripleaf;
 use pocketmine\block\SnowLayer;

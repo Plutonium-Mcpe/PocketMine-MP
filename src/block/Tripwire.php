@@ -27,6 +27,7 @@ use pocketmine\data\runtime\RuntimeDataDescriber;
 use pocketmine\item\Item;
 use pocketmine\item\VanillaItems;
 use pocketmine\math\Facing;
+use function in_array;
 
 class Tripwire extends Flowable implements StateDeriving{
 	protected bool $triggered = false;

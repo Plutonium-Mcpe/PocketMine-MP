@@ -71,7 +71,6 @@ abstract class BedBase extends Transparent implements HorizontalFacing{
 
 	/**
 	 * Returns whether sleeping in this bed moves the player's respawn point onto it.
-	 * @return bool
 	 */
 	public function setsRespawnPoint() : bool{
 		return true;
