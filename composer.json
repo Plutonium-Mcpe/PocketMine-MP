@@ -7,10 +7,6 @@
    "repositories": [
       {
          "type": "vcs",
-         "url": "https://github.com/Plutonium-Mcpe/BedrockData.git"
-      },
-      {
-         "type": "vcs",
          "url": "https://github.com/altayofficial/BedrockData.git",
          "no-api": true
       },

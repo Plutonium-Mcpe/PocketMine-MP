@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3a01d145cd71a8cff154d127db5a24a1",
+    "content-hash": "01a2422d7e505129e3d9175d329dd12d",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -325,12 +325,12 @@
             "version": "1.17.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/pmmp/BedrockItemUpgradeSchema.git",
+                "url": "https://github.com/opencollab-incubator/BedrockItemUpgradeSchema.git",
                 "reference": "e19685d2e7e76eb7446115c556df34e5d627d072"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockItemUpgradeSchema/zipball/e19685d2e7e76eb7446115c556df34e5d627d072",
+                "url": "https://api.github.com/repos/opencollab-incubator/BedrockItemUpgradeSchema/zipball/e19685d2e7e76eb7446115c556df34e5d627d072",
                 "reference": "e19685d2e7e76eb7446115c556df34e5d627d072",
                 "shasum": ""
             },
