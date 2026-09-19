@@ -28,7 +28,6 @@ use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\data\bedrock\block\BlockStateData;
 use pocketmine\data\bedrock\block\BlockStateDeserializeException;
 use pocketmine\data\bedrock\block\convert\UnsupportedBlockStateException;
-use pocketmine\data\bedrock\block\upgrade\HorizontalConnectionPaletteFixer;
 use pocketmine\data\bedrock\WorldDataVersions;
 use pocketmine\nbt\LittleEndianNbtSerializer;
 use pocketmine\nbt\NBT;
@@ -76,6 +75,8 @@ use function unpack;
 use const LEVELDB_ZLIB_RAW_COMPRESSION;
 
 class LevelDB extends BaseWorldProvider implements WritableWorldProvider{
+
+	private const DERIVED_BLOCK_STATES_DATA_VERSION = 2;
 
 	protected const FINALISATION_NEEDS_INSTATICKING = 0;
 	protected const FINALISATION_NEEDS_POPULATION = 1;
@@ -675,7 +676,11 @@ class LevelDB extends BaseWorldProvider implements WritableWorldProvider{
 			return null;
 		}
 
-		//TODO: read PM_DATA_VERSION - we'll need it to fix up old chunks
+		$pmDataVersion = 0;
+		$rawPmDataVersion = $this->db->get($index . ChunkDataKey::PM_DATA_VERSION);
+		if($rawPmDataVersion !== false && strlen($rawPmDataVersion) === 8){
+			$pmDataVersion = Binary::readLLong($rawPmDataVersion);
+		}
 
 		$logger = new \PrefixedLogger($this->logger, "Loading chunk x=$chunkX z=$chunkZ v$chunkVersion");
 
@@ -740,12 +745,6 @@ class LevelDB extends BaseWorldProvider implements WritableWorldProvider{
 				throw new CorruptedChunkException("don't know how to decode chunk format version $chunkVersion");
 		}
 
-		//the upgrade schema can only fill the connection properties with their defaults, so a chunk
-		//saved before they existed still has to have the real values worked out from its blocks
-		if($outdatedBlockStates && HorizontalConnectionPaletteFixer::fix($subChunks, $this->neighbourSubChunkLoader($chunkX, $chunkZ))){
-			$hasBeenUpgraded = true;
-		}
-
 		$nbt = new LittleEndianNbtSerializer();
 
 		$entities = [];
@@ -779,62 +778,12 @@ class LevelDB extends BaseWorldProvider implements WritableWorldProvider{
 		return new LoadedChunkData(
 			data: new ChunkData($subChunks, $terrainPopulated, $entities, $tiles),
 			upgraded: $hasBeenUpgraded,
-			fixerFlags: LoadedChunkData::FIXER_FLAG_ALL //TODO: fill this by version rather than just setting all flags
+			//The schema can only add defaults for states which depend on neighbouring blocks. They must
+			//be recomputed after this chunk and its neighbours have entered the world.
+			fixerFlags: $outdatedBlockStates || $pmDataVersion < self::DERIVED_BLOCK_STATES_DATA_VERSION ?
+				LoadedChunkData::FIXER_FLAG_DERIVED_BLOCK_STATES :
+				LoadedChunkData::FIXER_FLAG_NONE
 		);
-	}
-
-	/**
-	 * Reads the chunks around the one being loaded, so that the blocks on its edges can see what they
-	 * connect to. Nothing is upgraded or saved here: the neighbour is read for its blocks alone, and
-	 * gets its own turn when it is loaded properly.
-	 *
-	 * @phpstan-return \Closure(int, int) : ?array<int, SubChunk>
-	 */
-	private function neighbourSubChunkLoader(int $chunkX, int $chunkZ) : \Closure{
-		/** @phpstan-var array<string, array<int, SubChunk>|null> $loaded */
-		$loaded = [];
-
-		return function(int $offsetX, int $offsetZ) use ($chunkX, $chunkZ, &$loaded) : ?array{
-			$key = "$offsetX:$offsetZ";
-			if(!array_key_exists($key, $loaded)){
-				$loaded[$key] = $this->deserializeNeighbourSubChunks($chunkX + $offsetX, $chunkZ + $offsetZ);
-			}
-			return $loaded[$key];
-		};
-	}
-
-	/**
-	 * @return SubChunk[]|null
-	 * @phpstan-return array<int, SubChunk>|null
-	 */
-	private function deserializeNeighbourSubChunks(int $chunkX, int $chunkZ) : ?array{
-		$chunkVersion = $this->readVersion($chunkX, $chunkZ);
-		if($chunkVersion === null){
-			return null;
-		}
-
-		$index = LevelDB::chunkIndex($chunkX, $chunkZ);
-		$logger = new \PrefixedLogger($this->logger, "Reading neighbour chunk x=$chunkX z=$chunkZ v$chunkVersion");
-		$ignoredUpgrade = false;
-		try{
-			if($chunkVersion >= ChunkVersion::v1_0_0 && $chunkVersion <= self::CURRENT_LEVEL_CHUNK_VERSION){
-				return $this->deserializeAllSubChunkData(
-					$index,
-					$chunkVersion,
-					$ignoredUpgrade,
-					$this->deserializeLegacyExtraData($index, $chunkVersion, $logger),
-					$this->deserializeBiomeData($index, $chunkVersion, $logger),
-					$logger
-				);
-			}
-			if($chunkVersion >= ChunkVersion::v0_9_0 && $chunkVersion < ChunkVersion::v1_0_0){
-				return $this->deserializeLegacyTerrainData($index, $chunkVersion, $logger);
-			}
-		}catch(CorruptedChunkException $e){
-			//a neighbour that cannot be read is one nothing can be said to connect to
-			$logger->debug("Not reading neighbour chunk: " . $e->getMessage());
-		}
-		return null;
 	}
 
 	public function saveChunk(int $chunkX, int $chunkZ, ChunkData $chunkData, int $dirtyFlags) : void{
@@ -843,7 +792,9 @@ class LevelDB extends BaseWorldProvider implements WritableWorldProvider{
 		$write = new \LevelDBWriteBatch();
 
 		$write->put($index . ChunkDataKey::NEW_VERSION, chr(self::CURRENT_LEVEL_CHUNK_VERSION));
-		$write->put($index . ChunkDataKey::PM_DATA_VERSION, Binary::writeLLong(VersionInfo::WORLD_DATA_VERSION));
+		if(($dirtyFlags & Chunk::DIRTY_FLAG_DATA_VERSION) !== 0){
+			$write->put($index . ChunkDataKey::PM_DATA_VERSION, Binary::writeLLong(VersionInfo::WORLD_DATA_VERSION));
+		}
 
 		$subChunks = $chunkData->getSubChunks();
 

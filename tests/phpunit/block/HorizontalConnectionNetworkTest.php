@@ -62,6 +62,18 @@ class HorizontalConnectionNetworkTest extends TestCase{
 		self::assertSame(0, $this->byteState($states, BlockStateNames::MC_CONNECTION_SOUTH));
 	}
 
+	public function testTripwireWritesConnectionBits() : void{
+		$tripwire = VanillaBlocks::TRIPWIRE()
+			->setConnection(Facing::NORTH, true)
+			->setConnection(Facing::EAST, true);
+		$states = GlobalBlockStateHandlers::getSerializer()->serialize($tripwire->getStateId())->getStates();
+
+		self::assertSame(1, $this->byteState($states, BlockStateNames::MC_CONNECTION_NORTH));
+		self::assertSame(1, $this->byteState($states, BlockStateNames::MC_CONNECTION_EAST));
+		self::assertSame(0, $this->byteState($states, BlockStateNames::MC_CONNECTION_SOUTH));
+		self::assertSame(0, $this->byteState($states, BlockStateNames::MC_CONNECTION_WEST));
+	}
+
 	public function testLegacyEmptyFenceDeserializes() : void{
 		$data = GlobalBlockStateHandlers::getUpgrader()->getBlockStateUpgrader()->upgrade(
 			new BlockStateData(BlockTypeNames::SPRUCE_FENCE, [], 18168865)
@@ -115,6 +127,22 @@ class HorizontalConnectionNetworkTest extends TestCase{
 		self::assertSame(StairShape::INNER_RIGHT, $fixedEast->getShape());
 	}
 
+	public function testPaletteFixerDoesNotMakeACornerBlockedByMatchingStairs() : void{
+		$east = VanillaBlocks::OAK_STAIRS()->setFacing(Facing::EAST)->setShape(StairShape::STRAIGHT);
+		$south = VanillaBlocks::OAK_STAIRS()->setFacing(Facing::SOUTH)->setShape(StairShape::STRAIGHT);
+		$layer = new PalettedBlockArray(Block::EMPTY_STATE_ID);
+		$layer->set(5, 4, 4, $east->getStateId());
+		$layer->set(4, 4, 4, $south->getStateId());
+		$layer->set(5, 4, 5, $east->getStateId());
+		$subChunk = new SubChunk(Block::EMPTY_STATE_ID, [$layer], new PalettedBlockArray(BiomeIds::OCEAN));
+
+		self::assertFalse(HorizontalConnectionPaletteFixer::fix([0 => $subChunk]));
+
+		$fixedEast = RuntimeBlockStateRegistry::getInstance()->fromStateId($subChunk->getBlockStateId(5, 4, 4));
+		self::assertInstanceOf(Stair::class, $fixedEast);
+		self::assertSame(StairShape::STRAIGHT, $fixedEast->getShape());
+	}
+
 	public function testPaletteFixerConnectsAdjacentFences() : void{
 		$fence = VanillaBlocks::OAK_FENCE();
 		$layer = new PalettedBlockArray(Block::EMPTY_STATE_ID);
@@ -130,6 +158,23 @@ class HorizontalConnectionNetworkTest extends TestCase{
 		self::assertInstanceOf(WoodenFence::class, $east);
 		self::assertTrue($west->isConnected(Facing::EAST));
 		self::assertTrue($east->isConnected(Facing::WEST));
+	}
+
+	public function testPaletteFixerConnectsAdjacentTripwire() : void{
+		$tripwire = VanillaBlocks::TRIPWIRE();
+		$layer = new PalettedBlockArray(Block::EMPTY_STATE_ID);
+		$layer->set(4, 4, 4, $tripwire->getStateId());
+		$layer->set(5, 4, 4, $tripwire->getStateId());
+		$subChunk = new SubChunk(Block::EMPTY_STATE_ID, [$layer], new PalettedBlockArray(BiomeIds::OCEAN));
+
+		self::assertTrue(HorizontalConnectionPaletteFixer::fix([0 => $subChunk]));
+
+		$west = RuntimeBlockStateRegistry::getInstance()->fromStateId($subChunk->getBlockStateId(4, 4, 4));
+		$east = RuntimeBlockStateRegistry::getInstance()->fromStateId($subChunk->getBlockStateId(5, 4, 4));
+		self::assertInstanceOf(Tripwire::class, $west);
+		self::assertInstanceOf(Tripwire::class, $east);
+		self::assertTrue($west->isConnectedTo(Facing::EAST));
+		self::assertTrue($east->isConnectedTo(Facing::WEST));
 	}
 
 	public function testPaletteFixerConnectsFencesAcrossAChunkBorder() : void{

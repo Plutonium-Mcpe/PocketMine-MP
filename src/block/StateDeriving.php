@@ -21,26 +21,19 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\world\format\io;
+namespace pocketmine\block;
 
 /**
- * Encapsulates information returned when loading a chunk. This includes more information than saving a chunk, since the
- * data might have been upgraded or need post-processing.
+ * Implemented by blocks which store state derived from their neighbours.
+ *
+ * @internal
  */
-final class LoadedChunkData{
-	public const FIXER_FLAG_NONE = 0;
-	public const FIXER_FLAG_DERIVED_BLOCK_STATES = 1 << 0;
-	public const FIXER_FLAG_ALL = ~0;
+interface StateDeriving{
 
-	public function __construct(
-		private ChunkData $data,
-		private bool $upgraded,
-		private int $fixerFlags
-	){}
-
-	public function getData() : ChunkData{ return $this->data; }
-
-	public function isUpgraded() : bool{ return $this->upgraded; }
-
-	public function getFixerFlags() : int{ return $this->fixerFlags; }
+	/**
+	 * Recomputes the derived part of this block's state from the world.
+	 *
+	 * @return bool whether the state changed
+	 */
+	public function deriveStateFromWorld() : bool;
 }

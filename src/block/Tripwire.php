@@ -26,18 +26,22 @@ namespace pocketmine\block;
 use pocketmine\data\runtime\RuntimeDataDescriber;
 use pocketmine\item\Item;
 use pocketmine\item\VanillaItems;
+use pocketmine\math\Facing;
 
-class Tripwire extends Flowable{
+class Tripwire extends Flowable implements StateDeriving{
 	protected bool $triggered = false;
 	protected bool $suspended = false; //unclear usage, makes hitbox bigger if set
 	protected bool $connected = false;
 	protected bool $disarmed = false;
+	/** @var int[] facing => facing */
+	protected array $connections = [];
 
 	protected function describeBlockOnlyState(RuntimeDataDescriber $w) : void{
 		$w->bool($this->triggered);
 		$w->bool($this->suspended);
 		$w->bool($this->connected);
 		$w->bool($this->disarmed);
+		$w->horizontalFacingFlags($this->connections);
 	}
 
 	public function isTriggered() : bool{ return $this->triggered; }
@@ -70,6 +74,42 @@ class Tripwire extends Flowable{
 	public function setDisarmed(bool $disarmed) : self{
 		$this->disarmed = $disarmed;
 		return $this;
+	}
+
+	public function isConnectedTo(int $facing) : bool{
+		return isset($this->connections[$facing]);
+	}
+
+	/** @return $this */
+	public function setConnection(int $facing, bool $connected) : self{
+		if(!in_array($facing, Facing::HORIZONTAL, true)){
+			throw new \InvalidArgumentException("Facing must be horizontal");
+		}
+		if($connected){
+			$this->connections[$facing] = $facing;
+		}else{
+			unset($this->connections[$facing]);
+		}
+		return $this;
+	}
+
+	public function onNearbyBlockChange() : void{
+		if($this->deriveStateFromWorld()){
+			$this->position->getWorld()->setBlock($this->position, $this);
+		}
+	}
+
+	public function deriveStateFromWorld() : bool{
+		$changed = false;
+		foreach(Facing::HORIZONTAL as $facing){
+			$side = $this->getSide($facing);
+			$connected = $side instanceof Tripwire || $side instanceof TripwireHook;
+			if($connected !== isset($this->connections[$facing])){
+				$this->setConnection($facing, $connected);
+				$changed = true;
+			}
+		}
+		return $changed;
 	}
 
 	public function asItem() : Item{
