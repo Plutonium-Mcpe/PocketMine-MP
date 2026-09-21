@@ -28,6 +28,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\network\mcpe\cache\CraftingDataCache;
 use pocketmine\network\mcpe\cache\StaticPacketCache;
+use pocketmine\network\mcpe\convert\BlockTranslator;
 use pocketmine\network\mcpe\InventoryManager;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\ItemRegistryPacket;
@@ -127,7 +128,7 @@ class PreSpawnPacketHandler extends PacketHandler{
 				sprintf("%s %s", VersionInfo::NAME, VersionInfo::VERSION()->getFullVersion(true)),
 				Uuid::fromString(Uuid::NIL),
 				false,
-				false,
+				BlockTranslator::$blockNetworkIdsAreHashes,
 				new NetworkPermissions(disableClientSounds: true),
 				null, //serverJoinInformation
 				new ServerTelemetryData("", "", "", ""),

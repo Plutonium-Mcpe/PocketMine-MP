@@ -42,7 +42,7 @@ final class BlockTranslator{
 	 * error. Set once at boot (before any player connects) from plugin config; a global mode flag
 	 * keeps the change to a single point and stays trivially reversible without touching call sites.
 	 */
-	public static bool $blockNetworkIdsAreHashes = false;
+	public static bool $blockNetworkIdsAreHashes = true;
 
 	/**
 	 * @var int[]
