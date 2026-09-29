@@ -4,12 +4,14 @@ namespace pocketmine\world\format;
 
 final class PalettedBlockArray{
     /**
-     * @param list<int> $palette
+     * @param list<int>|string $palette
      */
-    public static function fromData(int $bitsPerBlock, string $wordArray, array $palette): PalettedBlockArray {}
+    public static function fromData(int $bitsPerBlock, string $wordArray, array|string $palette): PalettedBlockArray {}
 
     /**
      * @return list<int>
      */
     public function getPalette(): array {}
+
+    public function getPaletteBytes(): string {}
 }
