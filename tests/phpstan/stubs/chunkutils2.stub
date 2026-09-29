@@ -15,3 +15,48 @@ final class PalettedBlockArray{
 
     public function getPaletteBytes(): string {}
 }
+
+class SubChunk{
+    public const COORD_BIT_SIZE = 4;
+    public const COORD_MASK = 15;
+    public const EDGE_LENGTH = 16;
+
+    /**
+     * @param list<PalettedBlockArray> $blockLayers
+     */
+    public function __construct(int $emptyBlockId, array $blockLayers, PalettedBlockArray $biomes, ?LightArray $skyLight = null, ?LightArray $blockLight = null){}
+
+    public function isEmptyAuthoritative(): bool {}
+
+    public function isEmptyFast(): bool {}
+
+    public function getEmptyBlockId(): int {}
+
+    public function getBlockStateId(int $x, int $y, int $z): int {}
+
+    public function setBlockStateId(int $x, int $y, int $z, int $block): void {}
+
+    /**
+     * @return list<PalettedBlockArray>
+     */
+    public function getBlockLayers(): array {}
+
+    public function getHighestBlockAt(int $x, int $z): ?int {}
+
+    public function getBiomeArray(): PalettedBlockArray {}
+
+    public function getBlockSkyLightArray(): LightArray {}
+
+    public function setBlockSkyLightArray(LightArray $data): void {}
+
+    public function getBlockLightArray(): LightArray {}
+
+    public function setBlockLightArray(LightArray $data): void {}
+
+    /**
+     * @return mixed[]
+     */
+    public function __debugInfo(): array {}
+
+    public function collectGarbage(): void {}
+}
