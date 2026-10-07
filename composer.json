@@ -24,7 +24,7 @@
    "require": {
       "php": "^8.2",
       "php-64bit": "*",
-      "ext-chunkutils2": "^0.3.1",
+      "ext-chunkutils2": "^0.4.0",
       "ext-crypto": "^0.3.1",
       "ext-ctype": "*",
       "ext-curl": "*",

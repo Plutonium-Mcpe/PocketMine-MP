@@ -30,11 +30,8 @@ use pmmp\encoding\ByteBufferWriter;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\PalettedBlockArray;
 use pocketmine\world\format\SubChunk;
-use function array_values;
 use function count;
-use function pack;
 use function strlen;
-use function unpack;
 
 /**
  * This class provides a serializer used for transmitting chunks between threads.
@@ -48,12 +45,10 @@ final class FastChunkSerializer{
 	}
 
 	private static function serializePalettedArray(ByteBufferWriter $stream, PalettedBlockArray $array) : void{
-		$wordArray = $array->getWordArray();
-		$palette = $array->getPalette();
+		$serialPalette = $array->getPaletteBytes();
 
 		Byte::writeUnsigned($stream, $array->getBitsPerBlock());
-		$stream->writeByteArray($wordArray);
-		$serialPalette = pack("L*", ...$palette);
+		$stream->writeByteArray($array->getWordArray());
 		BE::writeUnsignedInt($stream, strlen($serialPalette));
 		$stream->writeByteArray($serialPalette);
 	}
@@ -91,11 +86,7 @@ final class FastChunkSerializer{
 		$bitsPerBlock = Byte::readUnsigned($stream);
 		$words = $stream->readByteArray(PalettedBlockArray::getExpectedWordArraySize($bitsPerBlock));
 		$paletteSize = BE::readUnsignedInt($stream);
-		/** @var int[] $unpackedPalette */
-		$unpackedPalette = unpack("L*", $stream->readByteArray($paletteSize)); //unpack() will never fail here
-		$palette = array_values($unpackedPalette);
-
-		return PalettedBlockArray::fromData($bitsPerBlock, $words, $palette);
+		return PalettedBlockArray::fromData($bitsPerBlock, $words, $stream->readByteArray($paletteSize));
 	}
 
 	/**
