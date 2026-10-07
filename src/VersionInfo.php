@@ -31,9 +31,9 @@ use function str_repeat;
 
 final class VersionInfo{
 	public const NAME = "PocketMine-MP";
-	public const BASE_VERSION = "5.118.8";
+	public const BASE_VERSION = "5.119.0-BETA1";
 	public const IS_DEVELOPMENT_BUILD = false;
-	public const BUILD_CHANNEL = "stable";
+	public const BUILD_CHANNEL = "beta";
 	public const GITHUB_URL = "https://github.com/pmmp/PocketMine-MP";
 
 	/**
