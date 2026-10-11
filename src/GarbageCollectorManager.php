@@ -40,12 +40,21 @@ use function sprintf;
  * The GC trigger behaviour in this class was adapted from Zend/zend_gc.c as of PHP 8.3.14.
  */
 final class GarbageCollectorManager{
-	//TODO: These values could be adjusted to better suit PM, but for now we just want to mirror PHP GC to minimize
-	//behavioural changes.
+	//These values mirror PHP's own GC, which is tuned for short-lived requests where the live object
+	//graph is small. A server keeps worlds, chunks, entities and players alive for hours, and walking
+	//that graph is what a collection actually costs: production measurements over 37 consecutive runs
+	//give 155 ms on average with almost no correlation to the number of roots (R² = 0.23 against root
+	//count, and runs that collected nothing still cost 83 ms). The cost is therefore per RUN, not per
+	//root, so the only thing that reduces it is running less often.
+	//
+	//PHP's step of 10,000 cannot get there: the buffer refills 45,000 roots in 200 ms, so the
+	//threshold is overtaken as fast as it grows and collection settles into a run every few hundred
+	//milliseconds — 150 ms of frozen main thread each time, which players feel as a stutter while the
+	//TPS average hides it.
 	private const GC_THRESHOLD_TRIGGER = 100;
 	private const GC_THRESHOLD_MAX = 1_000_000_000;
 	private const GC_THRESHOLD_DEFAULT = 10_001;
-	private const GC_THRESHOLD_STEP = 10_000;
+	private const GC_THRESHOLD_STEP = 100_000;
 
 	private int $threshold = self::GC_THRESHOLD_DEFAULT;
 	private int $collectionTimeTotalNs = 0;
