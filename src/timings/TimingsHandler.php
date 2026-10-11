@@ -128,6 +128,10 @@ class TimingsHandler{
 			}
 		}
 
+		if(TimingsTimeline::hasData()){
+			$result = [...$result, ...TimingsTimeline::printSection()];
+		}
+
 		return $result;
 	}
 
@@ -221,6 +225,7 @@ class TimingsHandler{
 
 	private static function internalReload() : void{
 		TimingsRecord::reset();
+		TimingsTimeline::reset();
 		if(self::$enabled){
 			self::$timingStart = hrtime(true);
 		}
