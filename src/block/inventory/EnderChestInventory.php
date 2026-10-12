@@ -34,6 +34,7 @@ use pocketmine\world\Position;
 use pocketmine\world\sound\EnderChestCloseSound;
 use pocketmine\world\sound\EnderChestOpenSound;
 use pocketmine\world\sound\Sound;
+use function max;
 
 /**
  * EnderChestInventory is not a real inventory; it's just a gateway to the player's ender inventory.
@@ -82,7 +83,12 @@ class EnderChestInventory extends DelegateInventory implements BlockInventory{
 		$this->animatedBlockInventoryTrait_onClose($who);
 		$enderChest = $this->getHolder()->getWorld()->getTile($this->getHolder());
 		if($enderChest instanceof EnderChest){
-			$enderChest->setViewerCount($enderChest->getViewerCount() - 1);
+			//The tile is looked up again here, so it may not be the one Block\EnderChest::onInteract()
+			//counted on when the window was opened: unloading and reloading the chunk, or breaking and
+			//replacing the block, leaves a fresh tile whose count is already zero. Decrementing that threw,
+			//which killed the packet handler, disconnected the player, and threw a second time from the
+			//disconnect path, which closes the window again.
+			$enderChest->setViewerCount(max(0, $enderChest->getViewerCount() - 1));
 		}
 	}
 }
