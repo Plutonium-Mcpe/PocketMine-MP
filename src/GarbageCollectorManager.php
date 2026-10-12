@@ -51,10 +51,19 @@ final class GarbageCollectorManager{
 	//threshold is overtaken as fast as it grows and collection settles into a run every few hundred
 	//milliseconds — 150 ms of frozen main thread each time, which players feel as a stutter while the
 	//TPS average hides it.
+	//
+	//Climbing and falling must not share a step, and the floor must stay above what a single tick
+	//accumulates. With both at 100,000 one productive run dropped the threshold the whole way back to
+	//10,001, a busy server crossed that again 20 ms later, and the collection that followed found
+	//nothing and still cost 55 ms. Every useful run dragged a sterile one behind it, and when several
+	//runs in a row collected something the threshold stayed pinned to the floor and the collector ran
+	//every tick: five runs and 348 ms of frozen main thread within the same second, measured in
+	//production.
 	private const GC_THRESHOLD_TRIGGER = 100;
 	private const GC_THRESHOLD_MAX = 1_000_000_000;
-	private const GC_THRESHOLD_DEFAULT = 10_001;
-	private const GC_THRESHOLD_STEP = 100_000;
+	private const GC_THRESHOLD_DEFAULT = 100_001;
+	private const GC_THRESHOLD_STEP_UP = 100_000;
+	private const GC_THRESHOLD_STEP_DOWN = 10_000;
 
 	private int $threshold = self::GC_THRESHOLD_DEFAULT;
 	private int $collectionTimeTotalNs = 0;
@@ -72,16 +81,19 @@ final class GarbageCollectorManager{
 		$this->timings = new TimingsHandler("Cyclic Garbage Collector", $parentTimings);
 	}
 
-	private function adjustGcThreshold(int $cyclesCollected, int $rootsAfterGC) : void{
-		//TODO Very simple heuristic for dynamic GC buffer resizing:
-		//If there are "too few" collections, increase the collection threshold
-		//by a fixed step
-		//Adapted from zend_gc.c/gc_adjust_threshold() as of PHP 8.3.14
-		if($cyclesCollected < self::GC_THRESHOLD_TRIGGER || $rootsAfterGC >= $this->threshold){
-			$this->threshold = min(self::GC_THRESHOLD_MAX, $this->threshold + self::GC_THRESHOLD_STEP);
-		}elseif($this->threshold > self::GC_THRESHOLD_DEFAULT){
-			$this->threshold = max(self::GC_THRESHOLD_DEFAULT, $this->threshold - self::GC_THRESHOLD_STEP);
+	/**
+	 * Threshold a collection leaves behind, given what it found.
+	 * Adapted from zend_gc.c/gc_adjust_threshold() as of PHP 8.3.14.
+	 */
+	public static function nextThreshold(int $threshold, int $cyclesCollected, int $rootsAfterGC) : int{
+		if($cyclesCollected < self::GC_THRESHOLD_TRIGGER || $rootsAfterGC >= $threshold){
+			return min(self::GC_THRESHOLD_MAX, $threshold + self::GC_THRESHOLD_STEP_UP);
 		}
+		if($threshold > self::GC_THRESHOLD_DEFAULT){
+			return max(self::GC_THRESHOLD_DEFAULT, $threshold - self::GC_THRESHOLD_STEP_DOWN);
+		}
+
+		return $threshold;
 	}
 
 	public function getThreshold() : int{ return $this->threshold; }
@@ -101,7 +113,7 @@ final class GarbageCollectorManager{
 		$end = hrtime(true);
 
 		$rootsAfter = gc_status()["roots"];
-		$this->adjustGcThreshold($cycles, $rootsAfter);
+		$this->threshold = self::nextThreshold($this->threshold, $cycles, $rootsAfter);
 
 		$this->timings->stopTiming();
 
