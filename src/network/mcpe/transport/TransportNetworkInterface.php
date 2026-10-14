@@ -105,11 +105,11 @@ class TransportNetworkInterface implements AdvancedNetworkInterface, TransportLi
 			ZlibCompressor::getInstance(),
 			$this->typeConverter,
 			$session->getAddress(),
-			$session->getPort(),
-			//NetherNet connections are already encrypted at the DTLS layer, vanilla clients
-			//do not use Bedrock-layer encryption on top of it
-			$this->rakNetFraming,
-			$session->getAuthenticatedPublicKey()
+			$session->getPort()
+			//Altay passe ici une bascule de chiffrement par session et la cle publique
+			//authentifiee. Notre NetworkSession ne les prend pas : le chiffrement reste
+			//gouverne par network.enable-encryption, et l'identite reste filtree au niveau
+			//du transport par network.nethernet.require-identity.
 		);
 		$this->sessions[$session->getId()] = $networkSession;
 		$this->transportSessions[$session->getId()] = $session;
