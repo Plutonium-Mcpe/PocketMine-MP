@@ -54,6 +54,8 @@
       "pocketmine/bedrock-block-upgrade-schema": "~5.2.0+bedrock-1.21.110",
       "altayofficial/bedrock-data": "dev-bedrock-1.26.60",
       "altayofficial/bedrock-protocol": "dev-bedrock-1.26.60",
+      "altayofficial/network": "~1.2.0",
+      "altayofficial/webrtc": "^1.2.0",
       "pocketmine/bedrock-item-upgrade-schema": "~1.17.0+bedrock-1.26.20",
       "pocketmine/binaryutils": "^0.2.1",
       "pocketmine/callback-validator": "~1.0.4",
@@ -65,6 +67,7 @@
       "pocketmine/raklib": "~1.2.0",
       "pocketmine/raklib-ipc": "~1.0.0",
       "pocketmine/snooze": "^0.5.0",
+      "react/http": "^1.11",
       "ramsey/uuid": "~4.9.0",
       "symfony/filesystem": "~6.4.0"
    },
