@@ -445,7 +445,7 @@ final class CommonProperties{
 				$stateName,
 				fn(HorizontalConnections $b) => $b->isConnected($facing),
 				fn(HorizontalConnections $b, bool $v) => $b->setConnected($facing, $v),
-				defaultWhenMissing: false
+				missingDefault: false
 			);
 		}
 		$this->horizontalConnectionProperties = $horizontalConnectionProperties;
