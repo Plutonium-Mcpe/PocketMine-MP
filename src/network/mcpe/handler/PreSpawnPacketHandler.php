@@ -77,13 +77,8 @@ class PreSpawnPacketHandler extends PacketHandler{
 
 			$typeConverter = $this->session->getTypeConverter();
 
-			$this->session->getLogger()->debug("Preparing JigsawStructureDataPacket");
-			$this->session->sendDataPacket(JigsawStructureDataPacket::create(new CacheableNbt(CompoundTag::create()
-				->setTag("processors", new ListTag([], NBT::TAG_Compound))
-				->setTag("template_pools", new ListTag([], NBT::TAG_Compound))
-				->setTag("jigsaws", new ListTag([], NBT::TAG_Compound))
-				->setTag("structure_sets", new ListTag([], NBT::TAG_Compound))
-			)), true);
+			$this->session->getLogger()->debug("Sending JigsawStructureDataPacket");
+			$this->session->sendDataPacket(StaticPacketCache::getInstance()->getJigsawStructureData(), true);
 
 			$this->session->getLogger()->debug("Preparing VoxelShapesPacket");
 			$this->session->sendDataPacket(StaticPacketCache::getInstance()->getVoxelShapes(), true);
