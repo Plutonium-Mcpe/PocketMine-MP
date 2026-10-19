@@ -23,26 +23,20 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\transport;
 
+use altay\network\nethernet\auth\TokenTrust;
 use altay\network\nethernet\Credentials;
 use altay\network\nethernet\IceServer;
 use altay\network\nethernet\NetherNetTransport;
 use altay\network\nethernet\ServerData;
-use altay\network\nethernet\auth\TokenTrust;
 use altay\network\transport\Transport;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
-use function dirname;
-use function file_exists;
-use function getenv;
-use function putenv;
-use const PHP_BINARY;
-use const PHP_OS_FAMILY;
 
 final class NetherNetTransportFactory implements TransportFactory{
 
 	/**
-	 * @param string[] $iceServers
-	 * @param string[] $iceInterfaces
-	 * @param string[] $advertisedAddresses
+	 * @param string[]             $iceServers
+	 * @param string[]             $iceInterfaces
+	 * @param string[]             $advertisedAddresses
 	 * @param array{int, int}|null $udpPortRange
 	 */
 	public function __construct(
