@@ -26,8 +26,10 @@ namespace pocketmine\network\mcpe\convert;
 use pocketmine\data\bedrock\block\BlockStateData;
 use pocketmine\data\bedrock\block\BlockTypeNames;
 use pocketmine\nbt\BigEndianNbtSerializer;
+use pocketmine\nbt\NBT;
 use pocketmine\nbt\NbtDataException;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\Tag;
 use pocketmine\utils\Utils;
 use function array_key_first;
 use function count;
@@ -36,6 +38,10 @@ use function is_array;
 use function is_int;
 use function is_string;
 use function json_decode;
+use function ord;
+use function strlen;
+use function substr;
+use function unpack;
 use function zlib_decode;
 use const JSON_THROW_ON_ERROR;
 
@@ -173,27 +179,100 @@ final class BlockStateDictionary{
 	public function getStates() : array{ return $this->states; }
 
 	/**
+	 * Walks the "blocks" list of the gzipped big-endian NBT block palette one entry at a time.
+	 *
+	 * Decoding the whole tree up front peaks at ~50 MB for a 4.5 MB palette, and every async worker that serializes
+	 * chunks builds this dictionary, so we only ever hold one entry in memory here.
+	 *
+	 * @return \Generator<int, Tag, void, void>
+	 */
+	private static function streamBlocksFromString(string $blockPaletteContents) : \Generator{
+		$raw = zlib_decode($blockPaletteContents);
+		if($raw === false){
+			throw new \InvalidArgumentException("Failed to decompress block palette");
+		}
+		$length = strlen($raw);
+		$serializer = new BigEndianNbtSerializer();
+
+		$readName = static function(int &$offset) use ($raw, $length) : string{
+			if($offset + 2 > $length){
+				throw new \InvalidArgumentException("Unexpected end of block palette");
+			}
+			$unpacked = unpack("n", $raw, $offset);
+			if($unpacked === false){
+				throw new \InvalidArgumentException("Unexpected end of block palette");
+			}
+			$nameLength = $unpacked[1];
+			$name = substr($raw, $offset + 2, $nameLength);
+			$offset += 2 + $nameLength;
+			return $name;
+		};
+
+		$offset = 0;
+		if($length === 0 || ord($raw[$offset++]) !== NBT::TAG_Compound){
+			throw new \InvalidArgumentException("Block palette root must be a TAG_Compound");
+		}
+		$readName($offset);
+
+		try{
+			while($offset < $length){
+				$type = ord($raw[$offset++]);
+				if($type === NBT::TAG_End){
+					break;
+				}
+				$name = $readName($offset);
+				if($name !== "blocks" || $type !== NBT::TAG_List){
+					//not ours, decode it only to step over it
+					$serializer->readHeadless($raw, $type, $offset);
+					continue;
+				}
+
+				if($offset + 5 > $length){
+					throw new \InvalidArgumentException("Unexpected end of block palette");
+				}
+				$elementType = ord($raw[$offset]);
+				$unpacked = unpack("N", $raw, $offset + 1);
+				if($unpacked === false){
+					throw new \InvalidArgumentException("Unexpected end of block palette");
+				}
+				$count = $unpacked[1];
+				$offset += 5;
+				if($count > 0 && $elementType !== NBT::TAG_Compound){
+					throw new \InvalidArgumentException("Expected \"blocks\" to be a list of TAG_Compound");
+				}
+				for($i = 0; $i < $count; ++$i){
+					yield $i => $serializer->readHeadless($raw, NBT::TAG_Compound, $offset);
+				}
+				return;
+			}
+		}catch(NbtDataException $e){
+			throw new \InvalidArgumentException("Corrupted block palette: " . $e->getMessage(), 0, $e);
+		}
+		throw new \InvalidArgumentException("Missing \"blocks\" list in block palette");
+	}
+
+	/**
+	 * Turns one streamed palette entry into its BlockStateData.
+	 */
+	private static function blockStateFromTag(int $i, Tag $blockTag) : BlockStateData{
+		if(!($blockTag instanceof CompoundTag)){
+			throw new \InvalidArgumentException("Invalid block palette entry at offset $i, expected TAG_Compound, got " . get_debug_type($blockTag));
+		}
+		$stateTag = $blockTag->getCompoundTag(BlockStateData::TAG_STATES) ??
+			throw new \InvalidArgumentException("Missing states for block palette entry $i");
+		return BlockStateData::current($blockTag->getString(BlockStateData::TAG_NAME), $stateTag->getValue());
+	}
+
+	/**
 	 * @return BlockStateData[]
 	 * @phpstan-return list<BlockStateData>
 	 *
 	 * @throws NbtDataException
 	 */
 	public static function loadPaletteFromString(string $blockPaletteContents) : array{
-		$paletteRaw = zlib_decode($blockPaletteContents);
-		if($paletteRaw === false){
-			throw new \InvalidArgumentException("Failed to decompress block palette");
-		}
-		$blocks = (new BigEndianNbtSerializer())->read($paletteRaw)->mustGetCompoundTag()->getListTag("blocks") ??
-			throw new \InvalidArgumentException("Missing \"blocks\" list in block palette");
-
 		$states = [];
-		foreach($blocks as $i => $blockTag){
-			if(!($blockTag instanceof CompoundTag)){
-				throw new \InvalidArgumentException("Invalid block palette entry at offset $i, expected TAG_Compound, got " . get_debug_type($blockTag));
-			}
-			$stateTag = $blockTag->getCompoundTag(BlockStateData::TAG_STATES) ??
-				throw new \InvalidArgumentException("Missing states for block palette entry $i");
-			$states[] = BlockStateData::current($blockTag->getString(BlockStateData::TAG_NAME), $stateTag->getValue());
+		foreach(self::streamBlocksFromString($blockPaletteContents) as $i => $blockTag){
+			$states[] = self::blockStateFromTag($i, $blockTag);
 		}
 
 		return $states;
@@ -217,7 +296,8 @@ final class BlockStateDictionary{
 			}
 		}
 
-		foreach(self::loadPaletteFromString($blockPaletteContents) as $i => $state){
+		foreach(self::streamBlocksFromString($blockPaletteContents) as $i => $blockTag){
+			$state = self::blockStateFromTag($i, $blockTag);
 			$meta = $metaMap[$i] ?? null;
 			if($meta === null){
 				throw new \InvalidArgumentException("Missing associated meta value for state $i (" . $state->toNbt() . ")");
@@ -226,7 +306,8 @@ final class BlockStateDictionary{
 				throw new \InvalidArgumentException("Invalid metaMap offset $i, expected int, got " . get_debug_type($meta));
 			}
 			$uniqueName = $uniqueNames[$state->getName()] ??= $state->getName();
-			$entries[$i] = new BlockStateDictionaryEntry($uniqueName, $state->getStates(), $meta);
+			//le generateur rend des cles 0..n-1 dans l'ordre, l'ajout en fin garde la meme liste
+			$entries[] = new BlockStateDictionaryEntry($uniqueName, $state->getStates(), $meta);
 		}
 
 		return new self($entries);
