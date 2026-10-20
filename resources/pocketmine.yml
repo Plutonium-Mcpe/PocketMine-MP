@@ -56,6 +56,13 @@ memory:
     #This only affects the main thread. Other threads should fire their own collections
     period: 36000
 
+    #Number of GC root candidates to let pile up before collecting cycles.
+    #A collection's cost follows this number, NOT the heap size: measured, the same heap
+    #collects in the same time at constant roots, while five times more roots costs five
+    #times longer. A high value therefore does not reduce the work, it concentrates it into
+    #one long freeze. Lower it to trade a rare 130ms stall for frequent sub-tick pauses.
+    cycle-threshold: 25001
+
   #Settings controlling memory dump handling.
   memory-dump:
     #Dump memory from async workers as well as the main thread. If you have issues with segfaults when dumping memory, disable this setting.

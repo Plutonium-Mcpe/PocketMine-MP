@@ -75,6 +75,7 @@ final class YmlServerProperties{
 	public const MEMORY_CONTINUOUS_TRIGGER = 'memory.continuous-trigger';
 	public const MEMORY_CONTINUOUS_TRIGGER_RATE = 'memory.continuous-trigger-rate';
 	public const MEMORY_GARBAGE_COLLECTION = 'memory.garbage-collection';
+	public const MEMORY_GARBAGE_COLLECTION_CYCLE_THRESHOLD = 'memory.garbage-collection.cycle-threshold';
 	public const MEMORY_GARBAGE_COLLECTION_PERIOD = 'memory.garbage-collection.period';
 	public const MEMORY_GLOBAL_LIMIT = 'memory.global-limit';
 	public const MEMORY_MAIN_HARD_LIMIT = 'memory.main-hard-limit';

@@ -61,7 +61,20 @@ final class GarbageCollectorManager{
 	//production.
 	private const GC_THRESHOLD_TRIGGER = 100;
 	private const GC_THRESHOLD_MAX = 1_000_000_000;
-	private const GC_THRESHOLD_DEFAULT = 100_001;
+	/**
+	 * Plafond de racines avant collecte.
+	 *
+	 * La durée d'une collecte suit le NOMBRE DE RACINES, pas la taille du tas : mesuré sur
+	 * ce PHP, un tas de 50 000 à 800 000 objets coûte la même chose à racines constantes,
+	 * tandis que passer de 20 000 à 100 000 racines multiplie la durée par cinq. Un seuil
+	 * haut ne réduit donc pas le travail, il le concentre : à 100 000 racines un serveur de
+	 * production gèle 130 ms d'un coup, soit près de trois tics.
+	 *
+	 * Abaisser le seuil ne change pas le total collecté, seulement sa granularité — des
+	 * pauses plus fréquentes mais qui tiennent dans un tic. Réglable par
+	 * memory.garbage-collection.cycle-threshold pour revenir en arrière sans rebâtir.
+	 */
+	private const GC_THRESHOLD_DEFAULT = 25_001;
 	private const GC_THRESHOLD_STEP_UP = 100_000;
 	private const GC_THRESHOLD_STEP_DOWN = 10_000;
 
@@ -75,7 +88,9 @@ final class GarbageCollectorManager{
 	public function __construct(
 		\Logger $logger,
 		?TimingsHandler $parentTimings,
+		int $threshold = self::GC_THRESHOLD_DEFAULT
 	){
+		$this->threshold = max(self::GC_THRESHOLD_TRIGGER, $threshold);
 		gc_disable();
 		$this->logger = new \PrefixedLogger($logger, "Cyclic Garbage Collector");
 		$this->timings = new TimingsHandler("Cyclic Garbage Collector", $parentTimings);
@@ -95,6 +110,8 @@ final class GarbageCollectorManager{
 
 		return $threshold;
 	}
+
+	public static function getDefaultThreshold() : int{ return self::GC_THRESHOLD_DEFAULT; }
 
 	public function getThreshold() : int{ return $this->threshold; }
 
