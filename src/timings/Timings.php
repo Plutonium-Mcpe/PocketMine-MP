@@ -56,6 +56,8 @@ abstract class Timings{
 	public static TimingsHandler $playerNetworkSendEncrypt;
 	public static TimingsHandler $playerNetworkSendInventorySync;
 	public static TimingsHandler $playerNetworkSendPreSpawnGameData;
+	public static TimingsHandler $playerNetworkSendBatchEncode;
+	public static TimingsHandler $playerNetworkSendTransport;
 	public static TimingsHandler $playerNetworkReceive;
 	public static TimingsHandler $playerNetworkReceiveDecompress;
 	public static TimingsHandler $playerNetworkReceiveDecrypt;
@@ -160,6 +162,8 @@ abstract class Timings{
 		self::$playerNetworkSendEncrypt = new TimingsHandler("Player Network Send - Encryption", self::$playerNetworkSend);
 		self::$playerNetworkSendInventorySync = new TimingsHandler("Player Network Send - Inventory Sync", self::$playerNetworkSend);
 		self::$playerNetworkSendPreSpawnGameData = new TimingsHandler("Player Network Send - Pre-Spawn Game Data", self::$playerNetworkSend);
+		self::$playerNetworkSendBatchEncode = new TimingsHandler("Player Network Send - Batch Encode", self::$playerNetworkSend);
+		self::$playerNetworkSendTransport = new TimingsHandler("Player Network Send - Transport", self::$playerNetworkSend);
 
 		self::$playerNetworkReceive = new TimingsHandler("Player Network Receive", self::$connection);
 		self::$playerNetworkReceiveDecompress = new TimingsHandler("Player Network Receive - Decompression", self::$playerNetworkReceive);

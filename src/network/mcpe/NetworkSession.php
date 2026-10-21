@@ -681,8 +681,10 @@ class NetworkSession{
 					$syncMode = false;
 				}
 
+				Timings::$playerNetworkSendBatchEncode->startTiming();
 				$stream = new ByteBufferWriter();
 				PacketBatch::encodeRaw($stream, $this->sendBuffer);
+				Timings::$playerNetworkSendBatchEncode->stopTiming();
 
 				if($this->enableCompression){
 					$batch = $this->server->prepareBatch($stream->getData(), $this->compressor, $syncMode, Timings::$playerNetworkSendCompressSessionBuffer);
@@ -787,7 +789,12 @@ class NetworkSession{
 		}else{
 			$ackReceiptId = null;
 		}
-		$this->sender->send($payload, $immediate, $ackReceiptId);
+		Timings::$playerNetworkSendTransport->startTiming();
+		try{
+			$this->sender->send($payload, $immediate, $ackReceiptId);
+		}finally{
+			Timings::$playerNetworkSendTransport->stopTiming();
+		}
 	}
 
 	/**
