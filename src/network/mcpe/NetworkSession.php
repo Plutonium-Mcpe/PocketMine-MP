@@ -581,7 +581,7 @@ class NetworkSession{
 	/**
 	 * @phpstan-param PromiseResolver<true>|null $ackReceiptResolver
 	 */
-	private function sendDataPacketInternal(ClientboundPacket $packet, bool $immediate, ?PromiseResolver $ackReceiptResolver, ?string $encoded = null) : bool{
+	private function sendDataPacketInternal(ClientboundPacket $packet, bool $immediate, ?PromiseResolver $ackReceiptResolver) : bool{
 		if(!$this->connected){
 			return false;
 		}
@@ -607,14 +607,10 @@ class NetworkSession{
 			if($ackReceiptResolver !== null){
 				$this->sendBufferAckPromises[] = $ackReceiptResolver;
 			}
-			if($encoded !== null && $packets === [$packet]){
-				$this->addToSendBuffer($encoded);
-			}else{
-				$writer = new ByteBufferWriter();
-				foreach($packets as $evPacket){
-					$writer->clear(); //memory reuse let's gooooo
-					$this->addToSendBuffer(self::encodePacketTimed($writer, $evPacket));
-				}
+			$writer = new ByteBufferWriter();
+			foreach($packets as $evPacket){
+				$writer->clear(); //memory reuse let's gooooo
+				$this->addToSendBuffer(self::encodePacketTimed($writer, $evPacket));
 			}
 			if($immediate){
 				$this->flushGamePacketQueue();
@@ -628,13 +624,6 @@ class NetworkSession{
 
 	public function sendDataPacket(ClientboundPacket $packet, bool $immediate = false) : bool{
 		return $this->sendDataPacketInternal($packet, $immediate, null);
-	}
-
-	/**
-	 * @internal
-	 */
-	public function sendEncodedDataPacket(ClientboundPacket $packet, string $encoded, bool $immediate = false) : bool{
-		return $this->sendDataPacketInternal($packet, $immediate, null, $encoded);
 	}
 
 	/**
