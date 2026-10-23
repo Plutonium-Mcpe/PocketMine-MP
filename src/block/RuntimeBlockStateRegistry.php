@@ -124,6 +124,14 @@ class RuntimeBlockStateRegistry{
 	}
 
 	/**
+	 * Cache of {@link overridesBlockMethod()} results for calculateCollisionInfo(), which only depend on the block
+	 * class: without it, every state of every block paid for two closures and two reflections.
+	 * @var bool[]
+	 * @phpstan-var array<class-string<Block>, bool>
+	 */
+	private static array $collisionMayOverflowByClass = [];
+
+	/**
 	 * A big ugly hack to set up fast paths for handling collisions on blocks with common shapes.
 	 * The information returned here is stored in RuntimeBlockStateRegistry->collisionInfo, and is used during entity
 	 * collision box calculations to avoid complex logic and unnecessary block object allocations.
@@ -133,10 +141,10 @@ class RuntimeBlockStateRegistry{
 	 * major version. For now, this hack nets major performance wins.
 	 */
 	private static function calculateCollisionInfo(Block $block) : int{
-		if(
+		if(self::$collisionMayOverflowByClass[$block::class] ??= (
 			self::overridesBlockMethod($block->getModelPositionOffset(...)) ||
 			self::overridesBlockMethod($block->readStateFromWorld(...))
-		){
+		)){
 			//getModelPositionOffset() might cause AABBs to shift outside the cell
 			//readStateFromWorld() might cause overflow in ways we can't predict just by looking at known states
 			//TODO: excluding overriders of readStateFromWorld() also excludes blocks with tiles that don't do anything
