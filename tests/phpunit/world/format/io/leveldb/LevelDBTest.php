@@ -6,7 +6,7 @@
  *     / \  | | |_ __ _ _   _
  *    / _ \ | | __/ _` | | | |
  *   / ___ \| | || (_| | |_| |
- *  /_/   \_\_\__\__,_|\__, |
+ *  /_/   \_\_|\__\__,_|\__, |
  *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify

@@ -1126,12 +1126,7 @@ class World implements ChunkManager{
 					);
 					$packets[] = UpdateBlockPacket::create(
 						$blockPosition,
-						//lookupStateIdFromData() returns a dictionary index; it must be run through the
-						//translator so that in hash mode the fake-state packet writes a hash like every
-						//other block runtime ID, instead of a raw index the client can't resolve.
-						$blockTranslator->networkStateIdToNetworkId(
-							$blockTranslator->getBlockStateDictionary()->lookupStateIdFromData($fakeStateData) ?? throw new AssumptionFailedError("Unmapped fake blockstate data: " . $fakeStateData->toNbt())
-						),
+						$blockTranslator->getBlockStateDictionary()->lookupStateIdFromData($fakeStateData) ?? throw new AssumptionFailedError("Unmapped fake blockstate data: " . $fakeStateData->toNbt()),
 						UpdateBlockPacket::FLAG_NETWORK,
 						UpdateBlockPacket::DATA_LAYER_NORMAL
 					);

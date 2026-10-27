@@ -50,7 +50,6 @@ use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\EntityEventBroadcaster;
 use pocketmine\network\mcpe\NetworkBroadcastUtils;
-use pocketmine\network\mcpe\protocol\SetActorLinkPacket;
 use pocketmine\network\mcpe\protocol\AddActorPacket;
 use pocketmine\network\mcpe\protocol\MoveActorAbsolutePacket;
 use pocketmine\network\mcpe\protocol\SetActorLinkPacket;
@@ -87,8 +86,6 @@ use function fmod;
 use function get_class;
 use function min;
 use function sin;
-use function array_key_first;
-use function array_values;
 use function spl_object_id;
 use const M_PI_2;
 

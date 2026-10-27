@@ -62,6 +62,7 @@ use pocketmine\block\Froglight;
 use pocketmine\block\FrostedIce;
 use pocketmine\block\GlazedTerracotta;
 use pocketmine\block\Hopper;
+use pocketmine\block\Kelp;
 use pocketmine\block\Lantern;
 use pocketmine\block\Leaves;
 use pocketmine\block\Lectern;
@@ -73,6 +74,7 @@ use pocketmine\block\NetherVines;
 use pocketmine\block\NetherWartPlant;
 use pocketmine\block\PinkPetals;
 use pocketmine\block\PitcherCrop;
+use pocketmine\block\PointedDripstone;
 use pocketmine\block\PoweredRail;
 use pocketmine\block\Rail;
 use pocketmine\block\RedMushroomBlock;
@@ -82,6 +84,8 @@ use pocketmine\block\RedstoneTorch;
 use pocketmine\block\RedstoneWire;
 use pocketmine\block\RespawnAnchor;
 use pocketmine\block\Sapling;
+use pocketmine\block\SculkSensor;
+use pocketmine\block\SculkShrieker;
 use pocketmine\block\SeaPickle;
 use pocketmine\block\ShelfMushroom;
 use pocketmine\block\SmallDripleaf;
@@ -101,6 +105,7 @@ use pocketmine\block\utils\ChiseledBookshelfSlot;
 use pocketmine\block\utils\CopperOxidation;
 use pocketmine\block\utils\DirtType;
 use pocketmine\block\utils\DripleafState;
+use pocketmine\block\utils\DripstoneThickness;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\utils\FroglightType;
 use pocketmine\block\utils\HorizontalFacing;
@@ -226,6 +231,7 @@ final class VanillaBlockMappings{
 		$reg->mapSimple(Blocks::DIORITE(), Ids::DIORITE);
 		$reg->mapSimple(Blocks::DRAGON_EGG(), Ids::DRAGON_EGG);
 		$reg->mapSimple(Blocks::DRIED_KELP(), Ids::DRIED_KELP_BLOCK);
+		$reg->mapSimple(Blocks::DRIPSTONE(), Ids::DRIPSTONE_BLOCK);
 		$reg->mapSimple(Blocks::ELEMENT_ACTINIUM(), Ids::ELEMENT_89);
 		$reg->mapSimple(Blocks::ELEMENT_ALUMINUM(), Ids::ELEMENT_13);
 		$reg->mapSimple(Blocks::ELEMENT_AMERICIUM(), Ids::ELEMENT_95);
@@ -389,6 +395,8 @@ final class VanillaBlockMappings{
 		$reg->mapSimple(Blocks::MELON(), Ids::MELON_BLOCK);
 		$reg->mapSimple(Blocks::MONSTER_SPAWNER(), Ids::MOB_SPAWNER);
 		$reg->mapSimple(Blocks::MOSSY_COBBLESTONE(), Ids::MOSSY_COBBLESTONE);
+		$reg->mapSimple(Blocks::MOSS_BLOCK(), Ids::MOSS_BLOCK);
+		$reg->mapSimple(Blocks::MOSS_CARPET(), Ids::MOSS_CARPET);
 		$reg->mapSimple(Blocks::MOSSY_STONE_BRICKS(), Ids::MOSSY_STONE_BRICKS);
 		$reg->mapSimple(Blocks::MUD(), Ids::MUD);
 		$reg->mapSimple(Blocks::MUD_BRICKS(), Ids::MUD_BRICKS);
@@ -1512,6 +1520,16 @@ final class VanillaBlockMappings{
 			new IntProperty(StateNames::GROWTH, 0, 7, fn(PinkPetals $b) => $b->getCount(), fn(PinkPetals $b, int $v) => $b->setCount(min($v, PinkPetals::MAX_COUNT)), offset: 1),
 			$commonProperties->horizontalFacingCardinal
 		]));
+		$reg->mapModel(Model::create(Blocks::POINTED_DRIPSTONE(), Ids::POINTED_DRIPSTONE)->properties([
+			new BoolProperty(StateNames::HANGING, fn(PointedDripstone $b) => $b->isHanging(), fn(PointedDripstone $b, bool $v) => $b->setHanging($v)),
+			new ValueFromStringProperty(StateNames::DRIPSTONE_THICKNESS, EnumFromRawStateMap::string(DripstoneThickness::class, fn(DripstoneThickness $case) => match ($case) {
+				DripstoneThickness::BASE => StringValues::DRIPSTONE_THICKNESS_BASE,
+				DripstoneThickness::FRUSTUM => StringValues::DRIPSTONE_THICKNESS_FRUSTUM,
+				DripstoneThickness::MERGE => StringValues::DRIPSTONE_THICKNESS_MERGE,
+				DripstoneThickness::MIDDLE => StringValues::DRIPSTONE_THICKNESS_MIDDLE,
+				DripstoneThickness::TIP => StringValues::DRIPSTONE_THICKNESS_TIP,
+			}), fn(PointedDripstone $b) => $b->getThickness(), fn(PointedDripstone $b, DripstoneThickness $v) => $b->setThickness($v)),
+		]));
 		$reg->mapModel(Model::create(Blocks::POWERED_RAIL(), Ids::GOLDEN_RAIL)->properties([
 			new BoolProperty(StateNames::RAIL_DATA_BIT, fn(PoweredRail $b) => $b->isPowered(), fn(PoweredRail $b, bool $v) => $b->setPowered($v)), //TODO: shared with ActivatorRail
 			new IntProperty(StateNames::RAIL_DIRECTION, 0, 5, fn(StraightOnlyRail $b) => $b->getShape(), fn(StraightOnlyRail $b, int $v) => $b->setShape($v)) //TODO: shared with ActivatorRail
@@ -1553,6 +1571,20 @@ final class VanillaBlockMappings{
 		]));
 
 		//S
+		$reg->mapModel(Model::create(Blocks::SCULK_SENSOR(), Ids::SCULK_SENSOR)->properties([
+			new IntProperty(StateNames::SCULK_SENSOR_PHASE, 0, 2, fn(SculkSensor $b) => $b->getPhase(), fn(SculkSensor $b, int $v) => $b->setPhase($v))
+		]));
+		$reg->mapModel(Model::create(Blocks::SCULK_SHRIEKER(), Ids::SCULK_SHRIEKER)->properties([
+			new BoolProperty(StateNames::ACTIVE, fn(SculkShrieker $b) => $b->isActive(), fn(SculkShrieker $b, bool $v) => $b->setActive($v)),
+			new BoolProperty(StateNames::CAN_SUMMON, fn(SculkShrieker $b) => $b->canSummon(), fn(SculkShrieker $b, bool $v) => $b->setCanSummon($v))
+		]));
+		$reg->mapModel(Model::create(Blocks::SCULK_VEIN(), Ids::SCULK_VEIN)->properties([$commonProperties->multiFacingFlags]));
+		$reg->mapModel(Model::create(Blocks::KELP(), Ids::KELP)->properties([
+			new IntProperty(StateNames::KELP_AGE, 0, 25, fn(Kelp $b) => $b->getAge(), fn(Kelp $b, int $v) => $b->setAge($v))
+		]));
+		$reg->mapModel(Model::create(Blocks::SEAGRASS(), Ids::SEAGRASS)->properties([
+			new DummyProperty(StateNames::SEA_GRASS_TYPE, StringValues::SEA_GRASS_TYPE_DEFAULT)
+		]));
 		$reg->mapModel(Model::create(Blocks::SHELF_MUSHROOM(), Ids::SHELF_MUSHROOM)->properties([
 			new IntProperty(StateNames::GROWTH, 0, ShelfMushroom::MAX_AGE, fn(ShelfMushroom $b) => $b->getAge(), fn(ShelfMushroom $b, int $v) => $b->setAge($v)),
 			$commonProperties->horizontalFacingCardinal

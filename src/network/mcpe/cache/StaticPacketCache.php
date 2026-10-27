@@ -42,7 +42,19 @@ use pocketmine\network\mcpe\protocol\types\SerializableVoxelShape;
 use pocketmine\network\mcpe\protocol\VoxelShapesPacket;
 use pocketmine\utils\Filesystem;
 use pocketmine\utils\SingletonTrait;
+use function array_is_list;
+use function array_unique;
+use function array_values;
+use function count;
+use function intdiv;
+use function is_array;
+use function is_int;
+use function is_string;
+use function json_decode;
+use function sort;
 use function zlib_decode;
+use const SORT_NUMERIC;
+use const SORT_REGULAR;
 
 class StaticPacketCache{
 	use SingletonTrait;

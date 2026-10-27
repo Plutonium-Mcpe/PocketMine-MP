@@ -174,7 +174,6 @@ class NetworkSession{
 	private int $connectTime;
 	private ?CompoundTag $cachedOfflinePlayerData = null;
 
-
 	/**
 	 * @var string[]
 	 * @phpstan-var list<string>

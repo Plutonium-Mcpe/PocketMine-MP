@@ -909,8 +909,17 @@ final class BlockTypeIds{
 	public const ORANGE_POPLAR_LEAVES = 10876;
 	public const RED_POPLAR_LEAVES = 10877;
 	public const YELLOW_POPLAR_LEAVES = 10878;
+	public const MOSS_BLOCK = 10879;
+	public const MOSS_CARPET = 10880;
+	public const DRIPSTONE = 10881;
+	public const POINTED_DRIPSTONE = 10882;
+	public const SCULK_VEIN = 10883;
+	public const SCULK_SENSOR = 10884;
+	public const SCULK_SHRIEKER = 10885;
+	public const KELP = 10886;
+	public const SEAGRASS = 10887;
 
-	public const FIRST_UNUSED_BLOCK_ID = 10879;
+	public const FIRST_UNUSED_BLOCK_ID = 10888;
 
 	private static int $nextDynamicId = self::FIRST_UNUSED_BLOCK_ID;
 

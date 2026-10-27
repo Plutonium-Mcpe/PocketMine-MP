@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "418fc749d86ffc64a9e43d4128141716",
+    "content-hash": "3f6656b3a461a8db5d9e6151cae07c21",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -80,14 +80,10 @@
                 "shasum": ""
             },
             "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "CC0-1.0"
             ],
             "description": "Blobs of data generated from Minecraft: Bedrock Edition, used by Altayz",
-            "support": {
-                "source": "https://github.com/altayofficial/BedrockData/tree/6.10.0+bedrock-1.26.60"
-            },
             "time": "2026-10-27T15:45:01+00:00"
         },
         {
@@ -96,12 +92,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/altayofficial/BedrockProtocol.git",
-                "reference": "3f074f2a0b02bffcfdb116b60c0159d7dd88950b"
+                "reference": "db84cbf34c7784ca496382857a701505c0ac64ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/altayofficial/BedrockProtocol/zipball/3f074f2a0b02bffcfdb116b60c0159d7dd88950b",
-                "reference": "3f074f2a0b02bffcfdb116b60c0159d7dd88950b",
+                "url": "https://api.github.com/repos/altayofficial/BedrockProtocol/zipball/db84cbf34c7784ca496382857a701505c0ac64ef",
+                "reference": "db84cbf34c7784ca496382857a701505c0ac64ef",
                 "shasum": ""
             },
             "require": {
@@ -127,16 +123,21 @@
                     "pocketmine\\network\\mcpe\\protocol\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "pocketmine\\network\\mcpe\\protocol\\": "tests/phpunit/"
+                }
+            },
+            "scripts": {
+                "update-create-methods": [
+                    "@php tools/generate-create-static-methods.php"
+                ]
+            },
             "license": [
                 "LGPL-3.0"
             ],
             "description": "An implementation of the Minecraft: Bedrock Edition protocol in PHP",
-            "support": {
-                "issues": "https://github.com/altayofficial/BedrockProtocol/issues",
-                "source": "https://github.com/altayofficial/BedrockProtocol/tree/61.0.0+bedrock-1.26.60"
-            },
-            "time": "2026-10-27T14:32:29+00:00"
+            "time": "2026-10-27T15:39:59+00:00"
         },
         {
             "name": "altayofficial/dtls",
@@ -210,14 +211,15 @@
                     "pocketmine\\nbt\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "pocketmine\\nbt\\": "tests/phpunit/"
+                }
+            },
             "license": [
                 "LGPL-3.0"
             ],
             "description": "PHP library for working with Named Binary Tags",
-            "support": {
-                "source": "https://github.com/altayofficial/NBT/tree/1.3.0"
-            },
             "time": "2026-07-22T13:04:40+00:00"
         },
         {
@@ -377,25 +379,25 @@
         },
         {
             "name": "brick/math",
-            "version": "0.13.1",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/brick/math.git",
-                "reference": "fc7ed316430118cc7836bf45faff18d5dfc8de04"
+                "reference": "2effe05d2177c451b86c6a073196a4034c02f211"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/brick/math/zipball/fc7ed316430118cc7836bf45faff18d5dfc8de04",
-                "reference": "fc7ed316430118cc7836bf45faff18d5dfc8de04",
+                "url": "https://api.github.com/repos/brick/math/zipball/2effe05d2177c451b86c6a073196a4034c02f211",
+                "reference": "2effe05d2177c451b86c6a073196a4034c02f211",
                 "shasum": ""
             },
             "require": {
-                "php": "^8.1"
+                "php": "^8.2"
             },
             "require-dev": {
-                "php-coveralls/php-coveralls": "^2.2",
-                "phpunit/phpunit": "^10.1",
-                "vimeo/psalm": "6.8.8"
+                "phpstan/phpstan": "2.2.13",
+                "phpstan/phpstan-phpunit": "2.0.18",
+                "phpunit/phpunit": "^11.5"
             },
             "type": "library",
             "autoload": {
@@ -425,7 +427,7 @@
             ],
             "support": {
                 "issues": "https://github.com/brick/math/issues",
-                "source": "https://github.com/brick/math/tree/0.13.1"
+                "source": "https://github.com/brick/math/tree/1.0.0"
             },
             "funding": [
                 {
@@ -433,7 +435,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-03-29T13:50:30+00:00"
+            "time": "2026-09-12T10:28:18+00:00"
         },
         {
             "name": "evenement/evenement",
@@ -3809,11 +3811,11 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.1",
+        "php": "^8.2",
         "php-64bit": "*",
         "ext-chunkutils2": "^0.3.1",
         "ext-ctype": "*",
@@ -3840,9 +3842,9 @@
         "ext-zlib": ">=1.2.11",
         "composer-runtime-api": "^2.0"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "platform-overrides": {
-        "php": "8.1.0"
+        "php": "8.2.0"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }

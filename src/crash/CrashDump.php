@@ -37,6 +37,7 @@ use pocketmine\utils\Utils;
 use pocketmine\VersionInfo;
 use pocketmine\YmlServerProperties;
 use function array_map;
+use function array_values;
 use function base64_encode;
 use function basename;
 use function error_get_last;
