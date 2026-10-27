@@ -157,8 +157,6 @@ class InGamePacketHandler extends PacketHandler{
 	protected float $lastRightClickTime = 0.0;
 	protected ?UseItemTransactionData $lastRightClickData = null;
 
-	private int $lastEarlyConsumableReleaseTick = -1000;
-
 	private int $lastTransactionRightClickItemUseTick = -1000;
 
 	protected ?Vector3 $lastPlayerAuthInputPosition = null;
@@ -724,9 +722,6 @@ class InGamePacketHandler extends PacketHandler{
 			if($this->player->isUsingItem() || $this->player->isAwaitingConsumableRelease()){
 				return true;
 			}
-			if($this->player->getServer()->getTick() - $this->lastEarlyConsumableReleaseTick < 10){
-				return true;
-			}
 			if($this->player->useHeldItem()){
 				$this->discardHeldItemUsePredictions();
 			}
@@ -759,7 +754,6 @@ class InGamePacketHandler extends PacketHandler{
 				return true;
 			}
 			$this->player->clearAwaitingConsumableRelease();
-			$this->lastEarlyConsumableReleaseTick = $this->player->getServer()->getTick();
 			$this->player->setUsingItem(false);
 			$this->discardHeldItemUsePredictions();
 			return true;
