@@ -33,10 +33,10 @@ if [ "$PHP_BINARY" == "" ]; then
 fi
 
 if [ "$ALTAY_FILE" == "" ]; then
-	if [ -f ./Altay.phar ]; then
-		ALTAY_FILE="./Altay.phar"
+	if [ -f ./PocketMine-MP.phar ]; then
+		ALTAY_FILE="./PocketMine-MP.phar"
 	else
-		echo "Altay.phar not found"
+		echo "PocketMine-MP.phar not found"
 		echo "Downloads can be found at https://github.com/altayofficial/Altay/releases"
 		exit 1
 	fi
