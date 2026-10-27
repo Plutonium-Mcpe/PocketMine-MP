@@ -1,4 +1,4 @@
-# Main configuration file for PocketMine-MP
+# Main configuration file for Altay
 # These settings are the ones that cannot be included in server.properties
 # Some of these settings are safe, others can break your server if modified incorrectly
 # New settings/defaults won't appear automatically in this file when upgrading.
@@ -31,7 +31,7 @@ memory:
 
   #Main thread soft memory limit in megabytes. Set to 0 to disable
   #This will trigger low-memory-triggers and fire an event to free memory when the usage goes over this
-  main-limit: 768
+  main-limit: 0
 
   #Main thread hard memory limit in megabytes. Set to 0 to disable
   #This will stop the server when the limit is surpassed
@@ -66,19 +66,17 @@ memory:
     chunk-radius: 4
 
 network:
-  # Network transport
-  # Options: raknet or nethernet
-  transport: raknet
   #Settings for the NetherNet transport.
   nethernet:
     #Name shown to players the first time their client is asked to trust this server's identity.
     #Leave empty to use the MOTD.
     identity-domain: ""
     #Reject connections that do not carry a signed identity assertion. That signature is what ties a
-    #connection to the account it logs in with, so "auto" requires it from players joining by address
-    #whenever xbox-auth is on, and never from players who found the server on the local network,
-    #where clients do not sign. true or false apply to both. If players cannot join, the debug log
-    #names every connection that arrived without one.
+    #connection to the account it logs in with, and without it a captured login can be replayed, so
+    #"auto" requires it from everyone whenever xbox-auth is on. Clients that do not sign their offers
+    #on the local network cannot join then; set this to false to let them in anyway. true or false
+    #apply to everyone. If players cannot join, the debug log names every connection that arrived
+    #without one.
     require-identity: auto
     #STUN and TURN servers used to find a path to players who cannot be reached directly.
     #Host candidates are enough on a local network, so this can be left empty there.
@@ -98,9 +96,13 @@ network:
     #above the player count when everyone arrives through one address, such as behind a proxy.
     max-pending-negotiations: 64
     max-negotiations-per-address: 32
-    #Of the addresses gathered above, the ones players joining by address can actually reach. The
-    #others are kept out of the answer, so those players do not spend a connectivity check on each.
-    #Leave empty to offer every gathered address.
+    #Seconds a player has from sending their offer until the connection is up. Players relayed over
+    #TURN or on slow mobile links need longer than players on the local network.
+    handshake-timeout: 30
+    #The addresses players joining by address can actually reach. Gathered addresses that are not
+    #listed are kept out of the answer, so those players do not spend a connectivity check on each,
+    #and a listed address that was never gathered, such as the public address of a forwarded port,
+    #is offered on the same port as the gathered ones. Leave empty to offer every gathered address.
     advertise-addresses: []
     #TCP port the join endpoint listens on, which is where the Servers tab asks for the MOTD and
     #posts its offer. Set to 0 to serve it on the server port.
@@ -108,6 +110,10 @@ network:
     #UDP ports a player's media may use, written as "first-last" and at least 100 ports wide. Leave
     #empty to let the system pick, which is fine until the ports have to be forwarded.
     udp-port-range: ""
+    #One UDP port every player's media shares, so it is the only one that has to be forwarded. This
+    #wins over udp-port-range. It may be the server port as long as enable-query is off, since query
+    #listens on that one. Set to 0 to give each player a port of their own.
+    udp-port: 0
     #Log what the ICE, DTLS and SCTP layers have to say about every connection, which is a line per
     #datagram and only worth turning on while taking a failing connection apart. Needs debug level 2.
     verbose-logging: false
@@ -128,12 +134,6 @@ network:
   async-compression-threshold: 10000
   #Experimental. Use UPnP to automatically port forward
   upnp-forwarding: false
-  #Maximum size in bytes of packets sent over the network (default 1492 bytes). Packets larger than this will be
-  #fragmented or split into smaller parts. Clients can request MTU sizes up to but not more than this number.
-  max-mtu-size: 1492
-  #Enable encryption of Minecraft network traffic. This has an impact on performance, but prevents hackers from stealing sessions and pretending to be other players.
-  #DO NOT DISABLE THIS unless you understand the risks involved.
-  enable-encryption: true
 
 debug:
   #If > 1, it will show debug messages in the console
@@ -183,12 +183,12 @@ auto-report:
   send-settings: true
   send-phpinfo: false
   use-https: true
-  host: crash.pmmp.io
+  host: crash.getaltay.org
 
 anonymous-statistics:
-  #Sends anonymous statistics for data aggregation, plugin usage tracking
-  enabled: false #TODO: re-enable this when we have a new stats host
-  host: stats.pocketmine.net
+  #Sends anonymous statistics to bStats for data aggregation
+  #https://bstats.org/plugin/server-implementation/Altay/34140
+  enabled: true
 
 timings:
   #Choose the host to use for viewing your timings results.

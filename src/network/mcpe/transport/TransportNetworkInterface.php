@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -47,17 +49,12 @@ use pocketmine\player\GameMode;
 use pocketmine\Server;
 use pocketmine\utils\Utils;
 use function addcslashes;
-use function base64_encode;
 use function implode;
 use function rtrim;
-use function substr;
 
 class TransportNetworkInterface implements AdvancedNetworkInterface, TransportListener{
 
-	private const MCPE_PACKET_ID = "\xfe";
-
 	private Network $network;
-	private bool $rakNetFraming;
 
 	/** @var NetworkSession[] */
 	private array $sessions = [];
@@ -70,9 +67,7 @@ class TransportNetworkInterface implements AdvancedNetworkInterface, TransportLi
 		private PacketBroadcaster $packetBroadcaster,
 		private EntityEventBroadcaster $entityEventBroadcaster,
 		private TypeConverter $typeConverter
-	){
-		$this->rakNetFraming = $transport->getName() === "raknet";
-	}
+	){}
 
 	public function start() : void{
 		try{
@@ -99,17 +94,14 @@ class TransportNetworkInterface implements AdvancedNetworkInterface, TransportLi
 			$this->server,
 			$this->network->getSessionManager(),
 			PacketPool::getInstance(),
-			new TransportPacketSender($session, $this, $this->rakNetFraming),
+			new TransportPacketSender($session, $this),
 			$this->packetBroadcaster,
 			$this->entityEventBroadcaster,
 			ZlibCompressor::getInstance(),
 			$this->typeConverter,
 			$session->getAddress(),
-			$session->getPort()
-			//Altay passe ici une bascule de chiffrement par session et la cle publique
-			//authentifiee. Notre NetworkSession ne les prend pas : le chiffrement reste
-			//gouverne par network.enable-encryption, et l'identite reste filtree au niveau
-			//du transport par network.nethernet.require-identity.
+			$session->getPort(),
+			$session->getAuthenticatedPublicKey()
 		);
 		$this->sessions[$session->getId()] = $networkSession;
 		$this->transportSessions[$session->getId()] = $session;
@@ -140,23 +132,14 @@ class TransportNetworkInterface implements AdvancedNetworkInterface, TransportLi
 	public function onPacketReceive(Transport $transport, TransportSession $session, string $payload) : void{
 		$sessionId = $session->getId();
 		if(isset($this->sessions[$sessionId])){
-			if($this->rakNetFraming){
-				if($payload === "" || $payload[0] !== self::MCPE_PACKET_ID){
-					$this->sessions[$sessionId]->getLogger()->debug("Non-FE packet received: " . base64_encode($payload));
-					return;
-				}
-				$buf = substr($payload, 1);
-			}else{
-				if($payload === ""){
-					return;
-				}
-				$buf = $payload;
+			if($payload === ""){
+				return;
 			}
 			$networkSession = $this->sessions[$sessionId];
 			$address = $networkSession->getIp();
 			$name = $networkSession->getDisplayName();
 			try{
-				$networkSession->handleEncoded($buf);
+				$networkSession->handleEncoded($payload);
 			}catch(PacketHandlingException $e){
 				$logger = $networkSession->getLogger();
 

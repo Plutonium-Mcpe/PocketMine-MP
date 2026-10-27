@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -63,7 +65,9 @@ final class NetherNetTransportFactory implements TransportFactory{
 		private ?string $tlsKeyPath = null,
 		private int $maxPendingNegotiations = 64,
 		private int $maxNegotiationsPerAddress = 32,
-		private bool $verboseLogging = false
+		private bool $verboseLogging = false,
+		private int $handshakeTimeout = NetherNetTransport::DEFAULT_HANDSHAKE_TIMEOUT,
+		private ?int $udpPort = null
 	){}
 
 	public function getName() : string{
@@ -100,8 +104,8 @@ final class NetherNetTransportFactory implements TransportFactory{
 			),
 			bindAddress: $this->bindAddress,
 			port: $this->port,
-			//vanilla clients do not attach identity assertions to the offers they broadcast on the
-			//local network, so holding them to one is left to the operator
+			//the assertion is what binds the login chain on NetherNet, so it is held to the same
+			//policy on the local network as by address unless the operator says otherwise
 			requireIdentity: $this->requireIdentity,
 			credentials: $this->credentials(),
 			//the server list reaches a NetherNet server over HTTP on the server port, the same way
@@ -126,6 +130,8 @@ final class NetherNetTransportFactory implements TransportFactory{
 			verboseLogging: $this->verboseLogging
 		);
 		$transport->setNegotiationLimits($this->maxPendingNegotiations, $this->maxNegotiationsPerAddress);
+		$transport->setHandshakeTimeout($this->handshakeTimeout);
+		$transport->setUdpPort($this->udpPort);
 		return $transport;
 	}
 }

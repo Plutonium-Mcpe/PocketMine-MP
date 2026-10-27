@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -57,8 +59,13 @@ final class CraftingManagerFromDataHelper{
 	private const NETWORK_RECIPE_TYPE_SMITHING_TRIM = 7;
 
 	private const NETWORK_INGREDIENT_WILDCARD_META = 0x7fff;
+	//name-based ingredients use -1 instead of 0x7fff to accept any meta
+	private const NETWORK_INGREDIENT_ANY_META = -1;
+
+	private const LEGACY_ALIAS_MAX_META = 15;
 
 	public static function deserializeItemStack(ItemStackData $data) : ?Item{
+		//count, name, block_name, block_states, meta, nbt, can_place_on, can_destroy
 		$blockStatesTag = null;
 		if(isset($data->block_states)){
 			$blockStatesTag = (new LittleEndianNbtSerializer())
@@ -81,6 +88,10 @@ final class CraftingManagerFromDataHelper{
 	}
 
 	/**
+	 * Deserializes an item stack described by string ID + meta (aux value), the way network recipe and creative data
+	 * describes items. For blockitems without explicit blockstates, the blockstate is looked up from the network
+	 * block palette using the meta value.
+	 *
 	 * @param string[] $canPlaceOn
 	 * @param string[] $canDestroy
 	 */
@@ -92,11 +103,13 @@ final class CraftingManagerFromDataHelper{
 			if($blockStatesTag !== null){
 				$blockStateData = BlockStateData::current($blockName, $blockStatesTag->getValue());
 			}else{
+				//no explicit blockstates - look up the default (or meta-mapped) state from the network block palette
 				$dictionary = TypeConverter::getInstance()->getBlockTranslator()->getBlockStateDictionary();
 				$stateId = $dictionary->lookupStateIdFromIdMeta($blockName, $meta ?? 0)
 					?? $dictionary->lookupStateIdFromIdMeta($blockName, 0)
 					?? $dictionary->lookupDefaultStateIdFromId($blockName);
 				if($stateId === null){
+					//unknown block
 					return null;
 				}
 				$blockStateData = $dictionary->generateDataFromStateId($stateId);
@@ -123,8 +136,35 @@ final class CraftingManagerFromDataHelper{
 		try{
 			return GlobalItemDataHandlers::getDeserializer()->deserializeStack($itemStackData);
 		}catch(ItemTypeDeserializeException){
+			//probably unknown item
 			return null;
 		}
+	}
+
+	private static function deserializeComplexAliasIngredient(string $aliasName) : ?RecipeIngredient{
+		$idMetaUpgrader = GlobalItemDataHandlers::getUpgrader()->getIdMetaUpgrader();
+
+		$items = [];
+		$seenIds = [];
+		for($meta = 0; $meta <= self::LEGACY_ALIAS_MAX_META; $meta++){
+			[$newId,] = $idMetaUpgrader->upgrade($aliasName, $meta);
+			if(isset($seenIds[$newId])){
+				continue;
+			}
+			$seenIds[$newId] = true;
+
+			$item = self::deserializeItemStackFromFields($newId, 0, 1, null, null);
+			if($item !== null){ //unknown items (e.g. deprecated placeholders) are skipped
+				$items[] = $item;
+			}
+		}
+
+		if(count($items) === 0){
+			return null;
+		}
+		return count($items) === 1 ?
+			new ExactRecipeIngredient($items[0]) :
+			new ComplexAliasRecipeIngredient($aliasName, $items);
 	}
 
 	/**
@@ -137,6 +177,7 @@ final class CraftingManagerFromDataHelper{
 		}
 		$count = $data["count"] ?? 1;
 		if($count !== 1){
+			//every case we've seen so far where this isn't the case, it's been a bug and the count was ignored anyway
 			throw new SavedDataLoadingException("Recipe inputs should have a count of exactly 1");
 		}
 
@@ -145,6 +186,13 @@ final class CraftingManagerFromDataHelper{
 				throw new SavedDataLoadingException("item_tag ingredient should have a string itemTag");
 			}
 			return new TagWildcardRecipeIngredient($data["itemTag"]);
+		}
+
+		if($type === "complex_alias"){
+			if(!isset($data["name"]) || !is_string($data["name"])){
+				throw new SavedDataLoadingException("complex_alias ingredient should have a string name");
+			}
+			return self::deserializeComplexAliasIngredient($data["name"]);
 		}
 
 		if($type !== "default" && $type !== "name"){
@@ -159,12 +207,16 @@ final class CraftingManagerFromDataHelper{
 			throw new SavedDataLoadingException("default ingredient auxValue should be an int");
 		}
 
-		if($meta === self::NETWORK_INGREDIENT_WILDCARD_META || $meta === -1){
+		if($meta === self::NETWORK_INGREDIENT_WILDCARD_META || $meta === self::NETWORK_INGREDIENT_ANY_META){
+			//this could be an unimplemented item, but it doesn't really matter, since the item shouldn't be able to
+			//be obtained anyway - filtering unknown items is only really important for outputs, to prevent players
+			//obtaining them
 			return new MetaWildcardRecipeIngredient($data["itemId"]);
 		}
 
 		$itemStack = self::deserializeItemStackFromFields($data["itemId"], $meta, 1, null, null);
 		if($itemStack === null){
+			//probably unknown item
 			return null;
 		}
 		return new ExactRecipeIngredient($itemStack);
@@ -230,7 +282,7 @@ final class CraftingManagerFromDataHelper{
 				throw new SavedDataLoadingException("Shapeless recipe input should be an object");
 			}
 			$input = self::deserializeNetworkIngredient($inputData);
-			if($input === null){
+			if($input === null){ //unknown or unsupported input
 				return;
 			}
 			$inputs[] = $input;
@@ -241,11 +293,12 @@ final class CraftingManagerFromDataHelper{
 				throw new SavedDataLoadingException("Shapeless recipe output should be an object");
 			}
 			$output = self::deserializeNetworkItemStack($outputData);
-			if($output === null){
+			if($output === null){ //unknown output item
 				return;
 			}
 			$outputs[] = $output;
 		}
+		//TODO: check unlocking requirements - our current system doesn't support this
 
 		if($recipeType instanceof FurnaceType){
 			if(count($inputs) !== 1 || count($outputs) !== 1){
@@ -269,7 +322,7 @@ final class CraftingManagerFromDataHelper{
 	 * @param mixed[] $recipe
 	 */
 	private static function loadShapedRecipe(CraftingManager $manager, array $recipe) : void{
-		if(($recipe["block"] ?? null) !== "crafting_table"){
+		if(($recipe["block"] ?? null) !== "crafting_table"){ //TODO: filter others out for now to avoid breaking economics
 			return;
 		}
 		if(!isset($recipe["input"]) || !is_array($recipe["input"]) || !isset($recipe["output"]) || !is_array($recipe["output"]) || !isset($recipe["shape"]) || !is_array($recipe["shape"])){
@@ -281,7 +334,7 @@ final class CraftingManagerFromDataHelper{
 				throw new SavedDataLoadingException("Shaped recipe input should be a map of symbol => ingredient");
 			}
 			$input = self::deserializeNetworkIngredient($inputData);
-			if($input === null){
+			if($input === null){ //unknown or unsupported input
 				return;
 			}
 			$inputs[$symbol] = $input;
@@ -292,7 +345,7 @@ final class CraftingManagerFromDataHelper{
 				throw new SavedDataLoadingException("Shaped recipe output should be an object");
 			}
 			$output = self::deserializeNetworkItemStack($outputData);
-			if($output === null){
+			if($output === null){ //unknown output item
 				return;
 			}
 			$outputs[] = $output;
@@ -304,6 +357,7 @@ final class CraftingManagerFromDataHelper{
 			}
 			$shape[] = $row;
 		}
+		//TODO: check unlocking requirements - our current system doesn't support this
 		$manager->registerShapedRecipe(new ShapedRecipe(
 			$shape,
 			$inputs,
@@ -325,7 +379,7 @@ final class CraftingManagerFromDataHelper{
 		}
 
 		$mapper = new \JsonMapper();
-		$mapper->bStrictObjectTypeChecking = false;
+		$mapper->bStrictObjectTypeChecking = false; //to allow hydrating ItemStackData - since this is only used for offline data it's safe
 		$mapper->bExceptionOnUndefinedProperty = true;
 		$mapper->bExceptionOnMissingData = true;
 
@@ -343,6 +397,9 @@ final class CraftingManagerFromDataHelper{
 		return $result;
 	}
 
+	/**
+	 * Builds a CraftingManager from a bedrock-network-data recipes.json file.
+	 */
 	public static function make(string $filePath) : CraftingManager{
 		$data = json_decode(Filesystem::fileGetContents($filePath), true);
 		if(
@@ -371,6 +428,7 @@ final class CraftingManagerFromDataHelper{
 					case self::NETWORK_RECIPE_TYPE_MULTI:
 					case self::NETWORK_RECIPE_TYPE_SMITHING_TRANSFORM:
 					case self::NETWORK_RECIPE_TYPE_SMITHING_TRIM:
+						//TODO: not supported by the crafting system yet
 						break;
 				}
 			}catch(SavedDataLoadingException $e){
@@ -410,11 +468,13 @@ final class CraftingManagerFromDataHelper{
 				throw new SavedDataLoadingException("Invalid container mix at index $i");
 			}
 			$reagent = self::deserializeItemStackFromFields($mix["reagentId"], null, 1, null, null);
+			//TODO: this is a really awful way to just check if an ID is recognized ...
 			if(
 				$reagent === null ||
 				self::deserializeItemStackFromFields($mix["inputId"], null, 1, null, null) === null ||
 				self::deserializeItemStackFromFields($mix["outputId"], null, 1, null, null) === null
 			){
+				//unknown item
 				continue;
 			}
 			$result->registerPotionContainerChangeRecipe(new PotionContainerChangeRecipe(
@@ -423,8 +483,6 @@ final class CraftingManagerFromDataHelper{
 				$mix["outputId"]
 			));
 		}
-
-		$result = AnvilCraftingManagerDataFiller::fillData($result);
 
 		return $result;
 	}

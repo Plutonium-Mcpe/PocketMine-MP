@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -38,19 +40,20 @@ use const JSON_THROW_ON_ERROR;
 
 class LegacySkinAdapter implements SkinAdapter{
 
-	protected const DEFAULT_GEOMETRY_NAME = "geometry.humanoid.custom";
-
-	protected const SLIM_GEOMETRY_NAME_SUFFIX = "Slim";
-
-	protected const GEOMETRY_ENGINE_VERSION = "0.0.0";
+	private const DEFAULT_GEOMETRY_NAME = "geometry.humanoid.custom";
+	private const SLIM_GEOMETRY_NAME_SUFFIX = "Slim";
 
 	/**
-	 * Since 1.26.40 the client refuses a skin whose geometry payload is an empty string. An empty JSON object is
-	 * the way to say "this skin doesn't ship its own geometry": the client then resolves it by name from its own
-	 * resources. Sending a hand-written humanoid model instead loses the bones the client attaches things to
-	 * (rightItem/leftItem for held items, helmet/sleeves/pants for armour), so held items render on nobody.
+	 * Since 1.26.40 the client refuses a skin whose geometry payload is an empty string. An empty JSON object is the
+	 * way to say "this skin doesn't ship its own geometry".
 	 */
-	protected const EMPTY_GEOMETRY_DATA = "{}";
+	private const EMPTY_GEOMETRY_DATA = "{}";
+
+	/**
+	 * The client sends this for its own skins and expects to get it back. SkinData defaults to the current game
+	 * version, which makes the client parse the geometry with the wrong engine and silently drop the skin.
+	 */
+	private const GEOMETRY_ENGINE_VERSION = "0.0.0";
 
 	public function toSkinData(Skin $skin) : SkinData{
 		$capeData = $skin->getCapeData();
@@ -62,7 +65,6 @@ class LegacySkinAdapter implements SkinAdapter{
 		$geometryData = $skin->getGeometryData();
 		return new SkinData(
 			$skin->getSkinId(),
-			"", //TODO: playfab ID
 			json_encode(["geometry" => ["default" => $geometryName]], JSON_THROW_ON_ERROR),
 			SkinImage::fromLegacy($skin->getSkinData()), [],
 			$capeImage,

@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -45,11 +47,7 @@ use pocketmine\network\mcpe\compression\CompressBatchPromise;
 use pocketmine\network\mcpe\compression\Compressor;
 use pocketmine\network\mcpe\compression\DecompressionException;
 use pocketmine\network\mcpe\convert\TypeConverter;
-use pocketmine\network\mcpe\encryption\DecryptionException;
-use pocketmine\network\mcpe\encryption\EncryptionContext;
-use pocketmine\network\mcpe\encryption\PrepareEncryptionTask;
 use pocketmine\network\mcpe\handler\DeathPacketHandler;
-use pocketmine\network\mcpe\handler\HandshakePacketHandler;
 use pocketmine\network\mcpe\handler\InGamePacketHandler;
 use pocketmine\network\mcpe\handler\LoginPacketHandler;
 use pocketmine\network\mcpe\handler\PacketHandler;
@@ -78,7 +76,6 @@ use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\network\mcpe\protocol\serializer\AvailableCommandsPacketAssembler;
 use pocketmine\network\mcpe\protocol\serializer\PacketBatch;
 use pocketmine\network\mcpe\protocol\ServerboundPacket;
-use pocketmine\network\mcpe\protocol\ServerToClientHandshakePacket;
 use pocketmine\network\mcpe\protocol\SetDifficultyPacket;
 use pocketmine\network\mcpe\protocol\SetPlayerGameTypePacket;
 use pocketmine\network\mcpe\protocol\SetSpawnPositionPacket;
@@ -97,6 +94,7 @@ use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\network\mcpe\protocol\types\command\CommandPermissions;
 use pocketmine\network\mcpe\protocol\types\CompressionAlgorithm;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
+use pocketmine\network\mcpe\protocol\types\DisconnectReason;
 use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
 use pocketmine\network\mcpe\protocol\types\PlayerPermissions;
 use pocketmine\network\mcpe\protocol\UpdateAbilitiesPacket;
@@ -152,6 +150,8 @@ class NetworkSession{
 
 	private const INCOMING_PACKET_BATCH_HARD_LIMIT = 300;
 
+	private const LOGIN_TIMEOUT_SECONDS = 10;
+
 	private PacketRateLimiter $packetBatchLimiter;
 	private PacketRateLimiter $gamePacketLimiter;
 
@@ -173,8 +173,6 @@ class NetworkSession{
 	private bool $authenticated = false;
 	private int $connectTime;
 	private ?CompoundTag $cachedOfflinePlayerData = null;
-
-	private ?EncryptionContext $cipher = null;
 
 	/**
 	 * @var string[]
@@ -220,7 +218,8 @@ class NetworkSession{
 		private Compressor $compressor,
 		private TypeConverter $typeConverter,
 		private string $ip,
-		private int $port
+		private int $port,
+		private ?string $expectedIdentityPublicKey = null
 	){
 		$this->logger = new \PrefixedLogger($this->server->getLogger(), $this->getLogPrefix());
 
@@ -394,18 +393,6 @@ class NetworkSession{
 		Timings::$playerNetworkReceive->startTiming();
 		try{
 			$this->packetBatchLimiter->decrement();
-
-			if($this->cipher !== null){
-				Timings::$playerNetworkReceiveDecrypt->startTiming();
-				try{
-					$payload = $this->cipher->decrypt($payload);
-				}catch(DecryptionException $e){
-					$this->logger->debug("Encrypted packet: " . base64_encode($payload));
-					throw PacketHandlingException::wrap($e, "Packet decryption error");
-				}finally{
-					Timings::$playerNetworkReceiveDecrypt->stopTiming();
-				}
-			}
 
 			if(strlen($payload) < 1){
 				throw new PacketHandlingException("No bytes in payload");
@@ -775,12 +762,6 @@ class NetworkSession{
 	 * @phpstan-param list<PromiseResolver<true>> $ackPromises
 	 */
 	private function sendEncoded(string $payload, bool $immediate, array $ackPromises) : void{
-		if($this->cipher !== null){
-			Timings::$playerNetworkSendEncrypt->startTiming();
-			$payload = $this->cipher->encrypt($payload);
-			Timings::$playerNetworkSendEncrypt->stopTiming();
-		}
-
 		if(count($ackPromises) > 0){
 			$ackReceiptId = $this->nextAckReceiptId++;
 			$this->ackPromisesByReceiptId[$ackReceiptId] = $ackPromises;
@@ -832,13 +813,13 @@ class NetworkSession{
 		$this->invManager = null;
 	}
 
-	private function sendDisconnectPacket(Translatable|string $message) : void{
+	private function sendDisconnectPacket(Translatable|string $message, DisconnectReason $reason = DisconnectReason::UNKNOWN) : void{
 		if($message instanceof Translatable){
 			$translated = $this->server->getLanguage()->translate($message);
 		}else{
 			$translated = $message;
 		}
-		$this->sendDataPacket(DisconnectPacket::create(0, $translated, ""));
+		$this->sendDataPacket(DisconnectPacket::create($reason->value, $translated, ""));
 	}
 
 	/**
@@ -852,9 +833,7 @@ class NetworkSession{
 			if($notify){
 				$this->sendDisconnectPacket($disconnectScreenMessage ?? $reason);
 			}
-			if($this->player !== null){
-				$this->player->onPostDisconnect($reason, null);
-			}
+			$this->player?->onPostDisconnect($reason, null);
 		}, $reason);
 	}
 
@@ -919,6 +898,8 @@ class NetworkSession{
 				$error = "Expected XUID but none found";
 			}elseif($clientPubKey === null){
 				$error = "Missing client public key"; //failsafe
+			}elseif($this->expectedIdentityPublicKey !== null && base64_encode($clientPubKey) !== $this->expectedIdentityPublicKey){
+				$error = "Login identity does not match the transport identity assertion";
 			}
 		}
 
@@ -992,21 +973,8 @@ class NetworkSession{
 			}
 		}
 
-		if(EncryptionContext::$ENABLED){
-			$this->server->getAsyncPool()->submitTask(new PrepareEncryptionTask($clientPubKey, function(string $encryptionKey, string $handshakeJwt) : void{
-				if(!$this->connected){
-					return;
-				}
-				$this->sendDataPacket(ServerToClientHandshakePacket::create($handshakeJwt), true); //make sure this gets sent before encryption is enabled
-
-				$this->cipher = EncryptionContext::fakeGCM($encryptionKey);
-
-				$this->setHandler(new HandshakePacketHandler($this->onServerLoginSuccess(...)));
-				$this->logger->debug("Enabled encryption");
-			}));
-		}else{
-			$this->onServerLoginSuccess();
-		}
+		//NetherNet already encrypts everything at the DTLS layer, so there is no Bedrock handshake on top
+		$this->onServerLoginSuccess();
 	}
 
 	private function onServerLoginSuccess() : void{
@@ -1414,7 +1382,7 @@ class NetworkSession{
 		}
 
 		if($this->info === null){
-			if(time() >= $this->connectTime + 10){
+			if(time() >= $this->connectTime + self::LOGIN_TIMEOUT_SECONDS){
 				$this->disconnectWithError(KnownTranslationFactory::pocketmine_disconnect_error_loginTimeout());
 			}
 

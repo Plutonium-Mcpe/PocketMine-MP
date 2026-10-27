@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -302,6 +304,9 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	protected string $locale = "en_US";
 
 	protected int $startAction = -1;
+
+	private int $ignoreChargeableClickAirUntilTick = -1;
+	private bool $awaitingConsumableRelease = false;
 
 	/**
 	 * @phpstan-var array<int|string, int>
@@ -762,6 +767,22 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	 */
 	public function getItemUseDuration() : int{
 		return $this->startAction === -1 ? -1 : ($this->server->getTick() - $this->startAction);
+	}
+
+	public function shouldIgnoreChargeableClickAir() : bool{
+		return $this->server->getTick() <= $this->ignoreChargeableClickAirUntilTick;
+	}
+
+	public function ignoreChargeableClickAirForTicks(int $ticks) : void{
+		$this->ignoreChargeableClickAirUntilTick = $this->server->getTick() + $ticks;
+	}
+
+	public function isAwaitingConsumableRelease() : bool{
+		return $this->awaitingConsumableRelease;
+	}
+
+	public function clearAwaitingConsumableRelease() : void{
+		$this->awaitingConsumableRelease = false;
 	}
 
 	/**
@@ -1569,6 +1590,13 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 				$this->fireTicks = 1;
 			}
 
+			$item = $this->getInventory()->getItemInHand();
+			if($item instanceof ConsumableItem && $this->isUsingItem()){
+				if($this->getItemUseDuration() >= $item->getMinUseDuration()){
+					$this->consumeHeldItem();
+				}
+			}
+
 			if(!$this->isSpectator() && $this->isAlive()){
 				Timings::$playerCheckNearEntities->startTiming();
 				$this->checkNearEntities();
@@ -1745,6 +1773,9 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	public function useHeldItem() : bool{
 		$directionVector = $this->getDirectionVector();
 		$item = $this->inventory->getItemInHand();
+		if($item instanceof ConsumableItem && $this->awaitingConsumableRelease){
+			return false;
+		}
 		$oldItem = clone $item;
 
 		$ev = new PlayerItemUseEvent($this, $item, $directionVector);
@@ -1767,7 +1798,10 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 		$this->resetItemCooldown($oldItem);
 		$this->returnItemsFromAction($oldItem, $item, $returnedItems);
 
-		$this->setUsingItem($item instanceof Releasable && $item->canStartUsingItem($this));
+		$this->setUsingItem(
+			$item instanceof Releasable &&
+			($result === ItemUseResult::NONE && $item->canStartUsingItem($this))
+		);
 
 		return true;
 	}
@@ -1780,6 +1814,10 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	public function consumeHeldItem() : bool{
 		$slot = $this->inventory->getItemInHand();
 		if($slot instanceof ConsumableItem){
+			if($this->getItemUseDuration() < $slot->getMinUseDuration()){
+				return false;
+			}
+
 			$oldItem = clone $slot;
 
 			$residue = $slot->getResidue();
@@ -1795,6 +1833,7 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 
 			$this->setUsingItem(false);
 			$this->resetItemCooldown($oldItem);
+			$this->awaitingConsumableRelease = true;
 
 			$slot->pop();
 			$this->returnItemsFromAction($oldItem, $slot, $ev->getResidue());
@@ -1814,6 +1853,10 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 		try{
 			$item = $this->inventory->getItemInHand();
 			if(!$this->isUsingItem() || $this->hasItemCooldown($item)){
+				return false;
+			}
+
+			if($item instanceof Releasable && $this->getItemUseDuration() < $item->getMinUseDuration()){
 				return false;
 			}
 

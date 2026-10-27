@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -32,6 +34,7 @@ use pocketmine\block\utils\FroglightType;
 use pocketmine\block\utils\LeverFacing;
 use pocketmine\block\utils\MobHeadType;
 use pocketmine\block\utils\MushroomBlockType;
+use pocketmine\block\utils\RedstoneWireConnection;
 use pocketmine\block\utils\StairShape;
 use pocketmine\data\bedrock\block\BlockLegacyMetadata as LegacyMeta;
 use pocketmine\data\bedrock\block\BlockStateStringValues as StringValues;
@@ -62,6 +65,8 @@ final class ValueMappings{
 	public readonly EnumFromRawStateMap $leverFacing;
 	/** @phpstan-var EnumFromRawStateMap<StairShape, string> */
 	public readonly EnumFromRawStateMap $stairShape;
+	/** @phpstan-var EnumFromRawStateMap<RedstoneWireConnection, string> */
+	public readonly EnumFromRawStateMap $redstoneWireConnection;
 
 	/** @phpstan-var EnumFromRawStateMap<MushroomBlockType, int> */
 	public readonly EnumFromRawStateMap $mushroomBlockType;
@@ -177,6 +182,12 @@ final class ValueMappings{
 			StairShape::INNER_RIGHT => StringValues::MC_CORNER_INNER_RIGHT,
 			StairShape::OUTER_LEFT => StringValues::MC_CORNER_OUTER_LEFT,
 			StairShape::OUTER_RIGHT => StringValues::MC_CORNER_OUTER_RIGHT,
+		});
+		//all four sides share the same three values, so any one side's constants will do
+		$this->redstoneWireConnection = EnumFromRawStateMap::string(RedstoneWireConnection::class, fn(RedstoneWireConnection $case) => match ($case) {
+			RedstoneWireConnection::NONE => StringValues::REDSTONE_NORTH_NONE,
+			RedstoneWireConnection::SIDE => StringValues::REDSTONE_NORTH_SIDE,
+			RedstoneWireConnection::UP => StringValues::REDSTONE_NORTH_UP,
 		});
 
 		$this->mushroomBlockType = EnumFromRawStateMap::int(
