@@ -23,20 +23,26 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\transport;
 
-use altay\network\nethernet\auth\TokenTrust;
 use altay\network\nethernet\Credentials;
 use altay\network\nethernet\IceServer;
 use altay\network\nethernet\NetherNetTransport;
 use altay\network\nethernet\ServerData;
+use altay\network\nethernet\auth\TokenTrust;
 use altay\network\transport\Transport;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
+use function dirname;
+use function file_exists;
+use function getenv;
+use function putenv;
+use const PHP_BINARY;
+use const PHP_OS_FAMILY;
 
 final class NetherNetTransportFactory implements TransportFactory{
 
 	/**
-	 * @param string[]             $iceServers
-	 * @param string[]             $iceInterfaces
-	 * @param string[]             $advertisedAddresses
+	 * @param string[] $iceServers
+	 * @param string[] $iceInterfaces
+	 * @param string[] $advertisedAddresses
 	 * @param array{int, int}|null $udpPortRange
 	 */
 	public function __construct(
@@ -63,7 +69,9 @@ final class NetherNetTransportFactory implements TransportFactory{
 		private ?string $tlsKeyPath = null,
 		private int $maxPendingNegotiations = 64,
 		private int $maxNegotiationsPerAddress = 32,
-		private bool $verboseLogging = false
+		private bool $verboseLogging = false,
+		private int $handshakeTimeout = NetherNetTransport::DEFAULT_HANDSHAKE_TIMEOUT,
+		private ?int $udpPort = null
 	){}
 
 	public function getName() : string{
@@ -100,8 +108,8 @@ final class NetherNetTransportFactory implements TransportFactory{
 			),
 			bindAddress: $this->bindAddress,
 			port: $this->port,
-			//vanilla clients do not attach identity assertions to the offers they broadcast on the
-			//local network, so holding them to one is left to the operator
+			//the assertion is what binds the login chain on NetherNet, so it is held to the same
+			//policy on the local network as by address unless the operator says otherwise
 			requireIdentity: $this->requireIdentity,
 			credentials: $this->credentials(),
 			//the server list reaches a NetherNet server over HTTP on the server port, the same way
@@ -126,6 +134,8 @@ final class NetherNetTransportFactory implements TransportFactory{
 			verboseLogging: $this->verboseLogging
 		);
 		$transport->setNegotiationLimits($this->maxPendingNegotiations, $this->maxNegotiationsPerAddress);
+		$transport->setHandshakeTimeout($this->handshakeTimeout);
+		$transport->setUdpPort($this->udpPort);
 		return $transport;
 	}
 }

@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -38,7 +40,6 @@ final class YmlServerProperties{
 	public const ALIASES = 'aliases';
 	public const ANONYMOUS_STATISTICS = 'anonymous-statistics';
 	public const ANONYMOUS_STATISTICS_ENABLED = 'anonymous-statistics.enabled';
-	public const ANONYMOUS_STATISTICS_HOST = 'anonymous-statistics.host';
 	public const AUTO_REPORT = 'auto-report';
 	public const AUTO_REPORT_ENABLED = 'auto-report.enabled';
 	public const AUTO_REPORT_HOST = 'auto-report.host';
@@ -88,10 +89,9 @@ final class YmlServerProperties{
 	public const NETWORK_ASYNC_COMPRESSION_THRESHOLD = 'network.async-compression-threshold';
 	public const NETWORK_BATCH_THRESHOLD = 'network.batch-threshold';
 	public const NETWORK_COMPRESSION_LEVEL = 'network.compression-level';
-	public const NETWORK_ENABLE_ENCRYPTION = 'network.enable-encryption';
-	public const NETWORK_MAX_MTU_SIZE = 'network.max-mtu-size';
 	public const NETWORK_NETHERNET = 'network.nethernet';
 	public const NETWORK_NETHERNET_ADVERTISE_ADDRESSES = 'network.nethernet.advertise-addresses';
+	public const NETWORK_NETHERNET_HANDSHAKE_TIMEOUT = 'network.nethernet.handshake-timeout';
 	public const NETWORK_NETHERNET_ICE_PASSWORD = 'network.nethernet.ice-password';
 	public const NETWORK_NETHERNET_ICE_SERVERS = 'network.nethernet.ice-servers';
 	public const NETWORK_NETHERNET_ICE_USERNAME = 'network.nethernet.ice-username';
@@ -104,9 +104,9 @@ final class YmlServerProperties{
 	public const NETWORK_NETHERNET_SIGNALLING_PORT = 'network.nethernet.signalling-port';
 	public const NETWORK_NETHERNET_TLS_CERTIFICATE = 'network.nethernet.tls-certificate';
 	public const NETWORK_NETHERNET_TLS_KEY = 'network.nethernet.tls-key';
+	public const NETWORK_NETHERNET_UDP_PORT = 'network.nethernet.udp-port';
 	public const NETWORK_NETHERNET_UDP_PORT_RANGE = 'network.nethernet.udp-port-range';
 	public const NETWORK_NETHERNET_VERBOSE_LOGGING = 'network.nethernet.verbose-logging';
-	public const NETWORK_TRANSPORT = 'network.transport';
 	public const NETWORK_UPNP_FORWARDING = 'network.upnp-forwarding';
 	public const PLAYER = 'player';
 	public const PLAYER_SAVE_PLAYER_DATA = 'player.save-player-data';
@@ -117,7 +117,6 @@ final class YmlServerProperties{
 	public const SETTINGS_ASYNC_WORKERS = 'settings.async-workers';
 	public const SETTINGS_ENABLE_DEV_BUILDS = 'settings.enable-dev-builds';
 	public const SETTINGS_ENABLE_PROFILING = 'settings.enable-profiling';
-	public const SETTINGS_ENABLE_TIMELINE_PROFILING = 'settings.enable-timeline-profiling';
 	public const SETTINGS_FORCE_LANGUAGE = 'settings.force-language';
 	public const SETTINGS_PROFILE_REPORT_TRIGGER = 'settings.profile-report-trigger';
 	public const SETTINGS_QUERY_PLUGINS = 'settings.query-plugins';

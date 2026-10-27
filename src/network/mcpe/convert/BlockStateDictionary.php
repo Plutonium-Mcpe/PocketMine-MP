@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -26,22 +28,20 @@ namespace pocketmine\network\mcpe\convert;
 use pocketmine\data\bedrock\block\BlockStateData;
 use pocketmine\data\bedrock\block\BlockTypeNames;
 use pocketmine\nbt\BigEndianNbtSerializer;
-use pocketmine\nbt\NBT;
 use pocketmine\nbt\NbtDataException;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\Tag;
+use pocketmine\nbt\tag\ListTag;
+use pocketmine\nbt\TreeRoot;
+use pocketmine\network\mcpe\protocol\serializer\NetworkNbtSerializer;
 use pocketmine\utils\Utils;
 use function array_key_first;
+use function array_map;
 use function count;
 use function get_debug_type;
 use function is_array;
 use function is_int;
 use function is_string;
 use function json_decode;
-use function ord;
-use function strlen;
-use function substr;
-use function unpack;
 use function zlib_decode;
 use const JSON_THROW_ON_ERROR;
 
@@ -62,9 +62,9 @@ final class BlockStateDictionary{
 	private ?array $idMetaToStateIdLookupCache = null;
 
 	/**
-	 * @param BlockStateDictionaryEntry[] $states
+	 * @param BlockStateDictionaryEntry[] $states keyed by hashed network runtime ID
 	 *
-	 * @phpstan-param list<BlockStateDictionaryEntry> $states
+	 * @phpstan-param array<int, BlockStateDictionaryEntry> $states
 	 */
 	public function __construct(
 		private array $states
@@ -116,17 +116,6 @@ final class BlockStateDictionary{
 	}
 
 	/**
-	 * Returns the FNV1a-32 network hash of the blockstate at the given dictionary state ID, used as
-	 * the wire runtime ID when blockNetworkIdsAreHashes is enabled (see BlockStateDictionaryEntry).
-	 * The state ID is a dictionary index that always resolves (callers pass the result of a lookup or
-	 * the fallback state ID), so a missing entry is a programming error.
-	 */
-	public function getNetworkHashFromStateId(int $stateId) : int{
-		$entry = $this->states[$stateId] ?? throw new \InvalidArgumentException("Unknown blockstate ID $stateId");
-		return $entry->getNetworkRuntimeHash();
-	}
-
-	/**
 	 * Searches for the appropriate state ID which matches the given blockstate NBT.
 	 * Returns null if there were no matches.
 	 */
@@ -162,6 +151,11 @@ final class BlockStateDictionary{
 		};
 	}
 
+	/**
+	 * Returns any known state ID for the given block ID (preferring meta 0 when present).
+	 * Useful for recipe/creative deserialization where blockitems omit states but the network
+	 * metamap does not include meta 0 (e.g. directional blocks like chest/furnace).
+	 */
 	public function lookupDefaultStateIdFromId(string $id) : ?int{
 		$metas = $this->getIdMetaToStateIdLookup()[$id] ?? null;
 		return match(true){
@@ -179,110 +173,62 @@ final class BlockStateDictionary{
 	public function getStates() : array{ return $this->states; }
 
 	/**
-	 * Walks the "blocks" list of the gzipped big-endian NBT block palette one entry at a time.
-	 *
-	 * Decoding the whole tree up front peaks at ~50 MB for a 4.5 MB palette, and every async worker that serializes
-	 * chunks builds this dictionary, so we only ever hold one entry in memory here.
-	 *
-	 * @return \Generator<int, Tag, void, void>
-	 */
-	private static function streamBlocksFromString(string $blockPaletteContents) : \Generator{
-		$raw = zlib_decode($blockPaletteContents);
-		if($raw === false){
-			throw new \InvalidArgumentException("Failed to decompress block palette");
-		}
-		$length = strlen($raw);
-		$serializer = new BigEndianNbtSerializer();
-
-		$readName = static function(int &$offset) use ($raw, $length) : string{
-			if($offset + 2 > $length){
-				throw new \InvalidArgumentException("Unexpected end of block palette");
-			}
-			$unpacked = unpack("n", $raw, $offset);
-			if($unpacked === false){
-				throw new \InvalidArgumentException("Unexpected end of block palette");
-			}
-			$nameLength = $unpacked[1];
-			$name = substr($raw, $offset + 2, $nameLength);
-			$offset += 2 + $nameLength;
-			return $name;
-		};
-
-		$offset = 0;
-		if($length === 0 || ord($raw[$offset++]) !== NBT::TAG_Compound){
-			throw new \InvalidArgumentException("Block palette root must be a TAG_Compound");
-		}
-		$readName($offset);
-
-		try{
-			while($offset < $length){
-				$type = ord($raw[$offset++]);
-				if($type === NBT::TAG_End){
-					break;
-				}
-				$name = $readName($offset);
-				if($name !== "blocks" || $type !== NBT::TAG_List){
-					//not ours, decode it only to step over it
-					$serializer->readHeadless($raw, $type, $offset);
-					continue;
-				}
-
-				if($offset + 5 > $length){
-					throw new \InvalidArgumentException("Unexpected end of block palette");
-				}
-				$elementType = ord($raw[$offset]);
-				$unpacked = unpack("N", $raw, $offset + 1);
-				if($unpacked === false){
-					throw new \InvalidArgumentException("Unexpected end of block palette");
-				}
-				$count = $unpacked[1];
-				$offset += 5;
-				if($count > 0 && $elementType !== NBT::TAG_Compound){
-					throw new \InvalidArgumentException("Expected \"blocks\" to be a list of TAG_Compound");
-				}
-				for($i = 0; $i < $count; ++$i){
-					yield $i => $serializer->readHeadless($raw, NBT::TAG_Compound, $offset);
-				}
-				return;
-			}
-		}catch(NbtDataException $e){
-			throw new \InvalidArgumentException("Corrupted block palette: " . $e->getMessage(), 0, $e);
-		}
-		throw new \InvalidArgumentException("Missing \"blocks\" list in block palette");
-	}
-
-	/**
-	 * Turns one streamed palette entry into its BlockStateData.
-	 */
-	private static function blockStateFromTag(int $i, Tag $blockTag) : BlockStateData{
-		if(!($blockTag instanceof CompoundTag)){
-			throw new \InvalidArgumentException("Invalid block palette entry at offset $i, expected TAG_Compound, got " . get_debug_type($blockTag));
-		}
-		$stateTag = $blockTag->getCompoundTag(BlockStateData::TAG_STATES) ??
-			throw new \InvalidArgumentException("Missing states for block palette entry $i");
-		return BlockStateData::current($blockTag->getString(BlockStateData::TAG_NAME), $stateTag->getValue());
-	}
-
-	/**
 	 * @return BlockStateData[]
 	 * @phpstan-return list<BlockStateData>
 	 *
 	 * @throws NbtDataException
 	 */
 	public static function loadPaletteFromString(string $blockPaletteContents) : array{
-		$states = [];
-		foreach(self::streamBlocksFromString($blockPaletteContents) as $i => $blockTag){
-			$states[] = self::blockStateFromTag($i, $blockTag);
-		}
+		return array_map(
+			fn(TreeRoot $root) => BlockStateData::fromNbt($root->mustGetCompoundTag()),
+			(new NetworkNbtSerializer())->readMultiple($blockPaletteContents)
+		);
+	}
 
+	/**
+	 * Decompresses the gzipped big-endian NBT block palette (bedrock-network-data block_palette.nbt) and returns its
+	 * raw "blocks" list. Each entry carries its hashed network runtime ID (network_id), name and states.
+	 */
+	private static function loadBlocksFromString(string $blockPaletteContents) : ListTag{
+		$paletteRaw = zlib_decode($blockPaletteContents);
+		if($paletteRaw === false){
+			throw new \InvalidArgumentException("Failed to decompress block palette");
+		}
+		return (new BigEndianNbtSerializer())->read($paletteRaw)->mustGetCompoundTag()->getListTag("blocks") ??
+			throw new \InvalidArgumentException("Missing \"blocks\" list in block palette");
+	}
+
+	/**
+	 * Parses the gzipped big-endian NBT block palette into a list of block states, discarding network IDs and meta.
+	 * Used by codegen and tooling that only cares about the block type/state shapes.
+	 *
+	 * @return BlockStateData[]
+	 * @phpstan-return list<BlockStateData>
+	 */
+	public static function loadStatesFromPalette(string $blockPaletteContents) : array{
+		$states = [];
+		foreach(self::loadBlocksFromString($blockPaletteContents) as $i => $blockTag){
+			if(!($blockTag instanceof CompoundTag)){
+				throw new \InvalidArgumentException("Invalid block palette entry at offset $i, expected TAG_Compound, got " . get_debug_type($blockTag));
+			}
+			$stateTag = $blockTag->getCompoundTag(BlockStateData::TAG_STATES) ??
+				throw new \InvalidArgumentException("Missing states for palette entry $i");
+			$states[] = BlockStateData::current($blockTag->getString(BlockStateData::TAG_NAME), $stateTag->getValue());
+		}
 		return $states;
 	}
 
+	/**
+	 * Loads the dictionary from a gzipped big-endian NBT block palette (bedrock-network-data block_palette.nbt).
+	 * Each palette entry provides its hashed network runtime ID (network_id), which is used as the state ID.
+	 */
 	public static function loadFromString(string $blockPaletteContents, string $metaMapContents) : self{
 		$metaMap = json_decode($metaMapContents, flags: JSON_THROW_ON_ERROR);
 		if(!is_array($metaMap)){
 			throw new \InvalidArgumentException("Invalid metaMap, expected array for root type, got " . get_debug_type($metaMap));
 		}
+
+		$blocks = self::loadBlocksFromString($blockPaletteContents);
 
 		$entries = [];
 
@@ -296,18 +242,23 @@ final class BlockStateDictionary{
 			}
 		}
 
-		foreach(self::streamBlocksFromString($blockPaletteContents) as $i => $blockTag){
-			$state = self::blockStateFromTag($i, $blockTag);
+		foreach($blocks as $i => $blockTag){
+			if(!($blockTag instanceof CompoundTag)){
+				throw new \InvalidArgumentException("Invalid block palette entry at offset $i, expected TAG_Compound, got " . get_debug_type($blockTag));
+			}
 			$meta = $metaMap[$i] ?? null;
 			if($meta === null){
-				throw new \InvalidArgumentException("Missing associated meta value for state $i (" . $state->toNbt() . ")");
+				throw new \InvalidArgumentException("Missing associated meta value for state $i (" . $blockTag . ")");
 			}
 			if(!is_int($meta)){
 				throw new \InvalidArgumentException("Invalid metaMap offset $i, expected int, got " . get_debug_type($meta));
 			}
-			$uniqueName = $uniqueNames[$state->getName()] ??= $state->getName();
-			//le generateur rend des cles 0..n-1 dans l'ordre, l'ajout en fin garde la meme liste
-			$entries[] = new BlockStateDictionaryEntry($uniqueName, $state->getStates(), $meta);
+			$networkId = $blockTag->getInt("network_id");
+			$name = $blockTag->getString(BlockStateData::TAG_NAME);
+			$states = $blockTag->getCompoundTag(BlockStateData::TAG_STATES) ??
+				throw new \InvalidArgumentException("Missing states for palette entry $i");
+			$uniqueName = $uniqueNames[$name] ??= $name;
+			$entries[$networkId] = new BlockStateDictionaryEntry($uniqueName, $states->getValue(), $meta);
 		}
 
 		return new self($entries);

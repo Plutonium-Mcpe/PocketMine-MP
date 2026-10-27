@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -786,115 +788,129 @@ final class BlockTypeIds{
 	public const RESIN_BRICKS = 10756;
 	public const RESIN_CLUMP = 10757;
 	public const CHISELED_RESIN_BRICKS = 10758;
-public const MOSS_BLOCK = 10759;
-	public const MOSS_CARPET = 10760;
-	public const DRIPSTONE = 10761;
-	public const POINTED_DRIPSTONE = 10762;
-	public const SCULK_VEIN = 10763;
-	public const SCULK_SENSOR = 10764;
-	public const SCULK_SHRIEKER = 10765;
-	public const RESPAWN_ANCHOR = 10766;
+	public const RESPAWN_ANCHOR = 10759;
+	public const OMINOUS_BANNER = 10760;
+	public const OMINOUS_WALL_BANNER = 10761;
+	public const ACACIA_CEILING_CENTER_HANGING_SIGN = 10762;
+	public const ACACIA_CEILING_EDGES_HANGING_SIGN = 10763;
+	public const ACACIA_WALL_HANGING_SIGN = 10764;
+	public const BIRCH_CEILING_CENTER_HANGING_SIGN = 10765;
+	public const BIRCH_CEILING_EDGES_HANGING_SIGN = 10766;
+	public const BIRCH_WALL_HANGING_SIGN = 10767;
+	public const CHERRY_CEILING_CENTER_HANGING_SIGN = 10768;
+	public const CHERRY_CEILING_EDGES_HANGING_SIGN = 10769;
+	public const CHERRY_WALL_HANGING_SIGN = 10770;
+	public const CRIMSON_CEILING_CENTER_HANGING_SIGN = 10771;
+	public const CRIMSON_CEILING_EDGES_HANGING_SIGN = 10772;
+	public const CRIMSON_WALL_HANGING_SIGN = 10773;
+	public const DARK_OAK_CEILING_CENTER_HANGING_SIGN = 10774;
+	public const DARK_OAK_CEILING_EDGES_HANGING_SIGN = 10775;
+	public const DARK_OAK_WALL_HANGING_SIGN = 10776;
+	public const JUNGLE_CEILING_CENTER_HANGING_SIGN = 10777;
+	public const JUNGLE_CEILING_EDGES_HANGING_SIGN = 10778;
+	public const JUNGLE_WALL_HANGING_SIGN = 10779;
+	public const MANGROVE_CEILING_CENTER_HANGING_SIGN = 10780;
+	public const MANGROVE_CEILING_EDGES_HANGING_SIGN = 10781;
+	public const MANGROVE_WALL_HANGING_SIGN = 10782;
+	public const OAK_CEILING_CENTER_HANGING_SIGN = 10783;
+	public const OAK_CEILING_EDGES_HANGING_SIGN = 10784;
+	public const OAK_WALL_HANGING_SIGN = 10785;
+	public const PALE_OAK_CEILING_CENTER_HANGING_SIGN = 10786;
+	public const PALE_OAK_CEILING_EDGES_HANGING_SIGN = 10787;
+	public const PALE_OAK_WALL_HANGING_SIGN = 10788;
+	public const SPRUCE_CEILING_CENTER_HANGING_SIGN = 10789;
+	public const SPRUCE_CEILING_EDGES_HANGING_SIGN = 10790;
+	public const SPRUCE_WALL_HANGING_SIGN = 10791;
+	public const WARPED_CEILING_CENTER_HANGING_SIGN = 10792;
+	public const WARPED_CEILING_EDGES_HANGING_SIGN = 10793;
+	public const WARPED_WALL_HANGING_SIGN = 10794;
+	public const COPPER_BARS = 10795;
+	public const COPPER_CHAIN = 10796;
+	public const COPPER_LANTERN = 10797;
+	public const COPPER_TORCH = 10798;
+	public const CACTUS_FLOWER = 10799;
+	public const CRIMSON_FUNGUS = 10800;
+	public const CRIMSON_NYLIUM = 10801;
+	public const NETHER_SPROUTS = 10802;
+	public const WARPED_FUNGUS = 10803;
+	public const WARPED_NYLIUM = 10804;
+	public const INFESTED_DEEPSLATE = 10805;
+	public const STRUCTURE_VOID = 10806;
+	public const BAMBOO_BLOCK = 10807;
+	public const BAMBOO_BUTTON = 10808;
+	public const BAMBOO_CEILING_CENTER_HANGING_SIGN = 10809;
+	public const BAMBOO_CEILING_EDGES_HANGING_SIGN = 10810;
+	public const BAMBOO_DOOR = 10811;
+	public const BAMBOO_FENCE = 10812;
+	public const BAMBOO_FENCE_GATE = 10813;
+	public const BAMBOO_PLANKS = 10814;
+	public const BAMBOO_PRESSURE_PLATE = 10815;
+	public const BAMBOO_SIGN = 10816;
+	public const BAMBOO_SLAB = 10817;
+	public const BAMBOO_STAIRS = 10818;
+	public const BAMBOO_TRAPDOOR = 10819;
+	public const BAMBOO_WALL_HANGING_SIGN = 10820;
+	public const BAMBOO_WALL_SIGN = 10821;
+	public const BAMBOO_MOSAIC = 10822;
+	public const BAMBOO_MOSAIC_SLAB = 10823;
+	public const BAMBOO_MOSAIC_STAIRS = 10824;
+	public const AZALEA = 10825;
+	public const FLOWERING_AZALEA = 10826;
 
-	// --- Blocs Upstream (Décalés pour laisser la place aux blocs personnalisés) ---
-	public const OMINOUS_BANNER = 10767;
-	public const OMINOUS_WALL_BANNER = 10768;
-	public const ACACIA_CEILING_CENTER_HANGING_SIGN = 10769;
-	public const ACACIA_CEILING_EDGES_HANGING_SIGN = 10770;
-	public const ACACIA_WALL_HANGING_SIGN = 10771;
-	public const BIRCH_CEILING_CENTER_HANGING_SIGN = 10772;
-	public const BIRCH_CEILING_EDGES_HANGING_SIGN = 10773;
-	public const BIRCH_WALL_HANGING_SIGN = 10774;
-	public const CHERRY_CEILING_CENTER_HANGING_SIGN = 10775;
-	public const CHERRY_CEILING_EDGES_HANGING_SIGN = 10776;
-	public const CHERRY_WALL_HANGING_SIGN = 10777;
-	public const CRIMSON_CEILING_CENTER_HANGING_SIGN = 10778;
-	public const CRIMSON_CEILING_EDGES_HANGING_SIGN = 10779;
-	public const CRIMSON_WALL_HANGING_SIGN = 10780;
-	public const DARK_OAK_CEILING_CENTER_HANGING_SIGN = 10781;
-	public const DARK_OAK_CEILING_EDGES_HANGING_SIGN = 10782;
-	public const DARK_OAK_WALL_HANGING_SIGN = 10783;
-	public const JUNGLE_CEILING_CENTER_HANGING_SIGN = 10784;
-	public const JUNGLE_CEILING_EDGES_HANGING_SIGN = 10785;
-	public const JUNGLE_WALL_HANGING_SIGN = 10786;
-	public const MANGROVE_CEILING_CENTER_HANGING_SIGN = 10787;
-	public const MANGROVE_CEILING_EDGES_HANGING_SIGN = 10788;
-	public const MANGROVE_WALL_HANGING_SIGN = 10789;
-	public const OAK_CEILING_CENTER_HANGING_SIGN = 10790;
-	public const OAK_CEILING_EDGES_HANGING_SIGN = 10791;
-	public const OAK_WALL_HANGING_SIGN = 10792;
-	public const PALE_OAK_CEILING_CENTER_HANGING_SIGN = 10793;
-	public const PALE_OAK_CEILING_EDGES_HANGING_SIGN = 10794;
-	public const PALE_OAK_WALL_HANGING_SIGN = 10795;
-	public const SPRUCE_CEILING_CENTER_HANGING_SIGN = 10796;
-	public const SPRUCE_CEILING_EDGES_HANGING_SIGN = 10797;
-	public const SPRUCE_WALL_HANGING_SIGN = 10798;
-	public const WARPED_CEILING_CENTER_HANGING_SIGN = 10799;
-	public const WARPED_CEILING_EDGES_HANGING_SIGN = 10800;
-	public const WARPED_WALL_HANGING_SIGN = 10801;
-	public const COPPER_BARS = 10802;
-	public const COPPER_CHAIN = 10803;
-	public const COPPER_LANTERN = 10804;
-	public const COPPER_TORCH = 10805;
-	public const CACTUS_FLOWER = 10806;
-	public const CRIMSON_FUNGUS = 10807;
-	public const CRIMSON_NYLIUM = 10808;
-	public const NETHER_SPROUTS = 10809;
-	public const WARPED_FUNGUS = 10810;
-	public const WARPED_NYLIUM = 10811;
-	public const INFESTED_DEEPSLATE = 10812;
-	public const STRUCTURE_VOID = 10813;
+	public const SULFUR = 10827;
+	public const CHISELED_SULFUR = 10828;
+	public const POLISHED_SULFUR = 10829;
+	public const POLISHED_SULFUR_SLAB = 10830;
+	public const POLISHED_SULFUR_STAIRS = 10831;
+	public const POLISHED_SULFUR_WALL = 10832;
+	public const SULFUR_BRICKS = 10833;
+	public const SULFUR_BRICK_SLAB = 10834;
+	public const SULFUR_BRICK_STAIRS = 10835;
+	public const SULFUR_BRICK_WALL = 10836;
+	public const SULFUR_SLAB = 10837;
+	public const SULFUR_STAIRS = 10838;
+	public const SULFUR_WALL = 10839;
+	public const CINNABAR = 10840;
+	public const CHISELED_CINNABAR = 10841;
+	public const POLISHED_CINNABAR = 10842;
+	public const POLISHED_CINNABAR_SLAB = 10843;
+	public const POLISHED_CINNABAR_STAIRS = 10844;
+	public const POLISHED_CINNABAR_WALL = 10845;
+	public const CINNABAR_BRICKS = 10846;
+	public const CINNABAR_BRICK_SLAB = 10847;
+	public const CINNABAR_BRICK_STAIRS = 10848;
+	public const CINNABAR_BRICK_WALL = 10849;
+	public const CINNABAR_SLAB = 10850;
+	public const CINNABAR_STAIRS = 10851;
+	public const CINNABAR_WALL = 10852;
+	public const WOOL_SLAB = 10853;
+	public const WOOL_STAIRS = 10854;
+	public const CONCRETE_SLAB = 10855;
+	public const CONCRETE_STAIRS = 10856;
+	public const RED_SHRUB = 10857;
+	public const SHELF_MUSHROOM = 10858;
+	public const STRAW_BED = 10859;
+	public const POPLAR_BUTTON = 10860;
+	public const POPLAR_CEILING_CENTER_HANGING_SIGN = 10861;
+	public const POPLAR_CEILING_EDGES_HANGING_SIGN = 10862;
+	public const POPLAR_DOOR = 10863;
+	public const POPLAR_FENCE = 10864;
+	public const POPLAR_FENCE_GATE = 10865;
+	public const POPLAR_LOG = 10866;
+	public const POPLAR_PLANKS = 10867;
+	public const POPLAR_PRESSURE_PLATE = 10868;
+	public const POPLAR_SIGN = 10869;
+	public const POPLAR_SLAB = 10870;
+	public const POPLAR_STAIRS = 10871;
+	public const POPLAR_TRAPDOOR = 10872;
+	public const POPLAR_WALL_HANGING_SIGN = 10873;
+	public const POPLAR_WALL_SIGN = 10874;
+	public const POPLAR_WOOD = 10875;
+	public const ORANGE_POPLAR_LEAVES = 10876;
+	public const RED_POPLAR_LEAVES = 10877;
+	public const YELLOW_POPLAR_LEAVES = 10878;
 
-	// --- Blocs Bamboo & Azalea (Fusionnés depuis Upstream) ---
-	public const BAMBOO_BLOCK = 10814;
-	public const BAMBOO_BUTTON = 10815;
-	public const BAMBOO_CEILING_CENTER_HANGING_SIGN = 10816;
-	public const BAMBOO_CEILING_EDGES_HANGING_SIGN = 10817;
-	public const BAMBOO_DOOR = 10818;
-	public const BAMBOO_FENCE = 10819;
-	public const BAMBOO_FENCE_GATE = 10820;
-	public const BAMBOO_PLANKS = 10821;
-	public const BAMBOO_PRESSURE_PLATE = 10822;
-	public const BAMBOO_SIGN = 10823;
-	public const BAMBOO_SLAB = 10824;
-	public const BAMBOO_STAIRS = 10825;
-	public const BAMBOO_TRAPDOOR = 10826;
-	public const BAMBOO_WALL_HANGING_SIGN = 10827;
-	public const BAMBOO_WALL_SIGN = 10828;
-	public const BAMBOO_MOSAIC = 10829;
-	public const BAMBOO_MOSAIC_SLAB = 10830;
-	public const BAMBOO_MOSAIC_STAIRS = 10831;
-	public const AZALEA = 10832;
-	public const FLOWERING_AZALEA = 10833;
-	public const KELP = 10834;
-	public const SEAGRASS = 10835;
-	public const WOOL_SLAB = 10836;
-	public const WOOL_STAIRS = 10837;
-	public const CONCRETE_SLAB = 10838;
-	public const CONCRETE_STAIRS = 10839;
-	public const RED_SHRUB = 10840;
-	public const SHELF_MUSHROOM = 10841;
-	public const STRAW_BED = 10842;
-	public const POPLAR_BUTTON = 10843;
-	public const POPLAR_CEILING_CENTER_HANGING_SIGN = 10844;
-	public const POPLAR_CEILING_EDGES_HANGING_SIGN = 10845;
-	public const POPLAR_DOOR = 10846;
-	public const POPLAR_FENCE = 10847;
-	public const POPLAR_FENCE_GATE = 10848;
-	public const POPLAR_LOG = 10849;
-	public const POPLAR_PLANKS = 10850;
-	public const POPLAR_PRESSURE_PLATE = 10851;
-	public const POPLAR_SIGN = 10852;
-	public const POPLAR_SLAB = 10853;
-	public const POPLAR_STAIRS = 10854;
-	public const POPLAR_TRAPDOOR = 10855;
-	public const POPLAR_WALL_HANGING_SIGN = 10856;
-	public const POPLAR_WALL_SIGN = 10857;
-	public const POPLAR_WOOD = 10858;
-	public const ORANGE_POPLAR_LEAVES = 10859;
-	public const RED_POPLAR_LEAVES = 10860;
-	public const YELLOW_POPLAR_LEAVES = 10861;
-
-	public const FIRST_UNUSED_BLOCK_ID = 10862;
+	public const FIRST_UNUSED_BLOCK_ID = 10879;
 
 	private static int $nextDynamicId = self::FIRST_UNUSED_BLOCK_ID;
 

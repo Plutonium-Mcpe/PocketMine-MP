@@ -2,34 +2,38 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\handler;
 
+use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\network\mcpe\cache\CraftingDataCache;
 use pocketmine\network\mcpe\cache\StaticPacketCache;
-use pocketmine\network\mcpe\convert\BlockTranslator;
 use pocketmine\network\mcpe\InventoryManager;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\ItemRegistryPacket;
+use pocketmine\network\mcpe\protocol\JigsawStructureDataPacket;
 use pocketmine\network\mcpe\protocol\PlayerAuthInputPacket;
 use pocketmine\network\mcpe\protocol\RequestChunkRadiusPacket;
 use pocketmine\network\mcpe\protocol\ServerboundLoadingScreenPacket;
@@ -37,13 +41,14 @@ use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\types\BlockPosition;
 use pocketmine\network\mcpe\protocol\types\BoolGameRule;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
-use pocketmine\network\mcpe\protocol\types\DimensionIds;
 use pocketmine\network\mcpe\protocol\types\Experiments;
+use pocketmine\network\mcpe\protocol\types\DimensionIds;
 use pocketmine\network\mcpe\protocol\types\LevelSettings;
 use pocketmine\network\mcpe\protocol\types\NetworkPermissions;
 use pocketmine\network\mcpe\protocol\types\PlayerMovementSettings;
 use pocketmine\network\mcpe\protocol\types\ServerTelemetryData;
 use pocketmine\network\mcpe\protocol\types\SpawnSettings;
+use pocketmine\network\mcpe\protocol\VoxelShapesPacket;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\timings\Timings;
@@ -74,11 +79,16 @@ class PreSpawnPacketHandler extends PacketHandler{
 
 			$typeConverter = $this->session->getTypeConverter();
 
-			$this->session->getLogger()->debug("Sending JigsawStructureDataPacket");
-			$this->session->sendDataPacket(StaticPacketCache::getInstance()->getJigsawStructureData(), true);
+			$this->session->getLogger()->debug("Preparing JigsawStructureDataPacket");
+			$this->session->sendDataPacket(JigsawStructureDataPacket::create(new CacheableNbt(CompoundTag::create()
+				->setTag("processors", new ListTag([], NBT::TAG_Compound))
+				->setTag("template_pools", new ListTag([], NBT::TAG_Compound))
+				->setTag("jigsaws", new ListTag([], NBT::TAG_Compound))
+				->setTag("structure_sets", new ListTag([], NBT::TAG_Compound))
+			)), true); // TODO: Custom jigsaw structure support
 
 			$this->session->getLogger()->debug("Preparing VoxelShapesPacket");
-			$this->session->sendDataPacket(StaticPacketCache::getInstance()->getVoxelShapes(), true);
+			$this->session->sendDataPacket(StaticPacketCache::getInstance()->getVoxelShapes(), true); // TODO: Custom voxel shapes support
 
 			$this->session->getLogger()->debug("Preparing StartGamePacket");
 			$levelSettings = new LevelSettings();
@@ -90,6 +100,7 @@ class PreSpawnPacketHandler extends PacketHandler{
 			$levelSettings->hasAchievementsDisabled = true;
 			$levelSettings->time = $world->getTime();
 			$levelSettings->eduEditionOffer = 0;
+			$levelSettings->hasEduFeaturesEnabled = true; //hmm, the client only loads the chemistry pack with this on, otherwise the education blocks get no creative icon
 			$levelSettings->rainLevel = 0; //TODO: implement these properly
 			$levelSettings->lightningLevel = 0;
 			$levelSettings->commandsEnabled = true;
@@ -120,12 +131,12 @@ class PreSpawnPacketHandler extends PacketHandler{
 				sprintf("%s %s", VersionInfo::NAME, VersionInfo::VERSION()->getFullVersion(true)),
 				Uuid::fromString(Uuid::NIL),
 				false,
-				BlockTranslator::$blockNetworkIdsAreHashes,
+				true, //the dictionary uses hashed network IDs from block_palette.nbt
 				new NetworkPermissions(disableClientSounds: true),
-				null, //serverJoinInformation
+				null,
 				new ServerTelemetryData("", "", "", ""),
 				StaticPacketCache::getInstance()->getBlockDefinitions(),
-				0,
+				0
 			));
 
 			$this->session->getLogger()->debug("Sending items");
@@ -135,7 +146,7 @@ class PreSpawnPacketHandler extends PacketHandler{
 			$this->session->sendDataPacket(StaticPacketCache::getInstance()->getAvailableActorIdentifiers());
 
 			$this->session->getLogger()->debug("Sending biome definitions");
-			$this->session->sendDataPacket(StaticPacketCache::getInstance()->getBiomeDefs());
+			$this->session->sendDataPacket(StaticPacketCache::getInstance()->getBiomeDefinitionList());
 
 			$this->session->getLogger()->debug("Sending attributes");
 			$this->session->getEntityEventBroadcaster()->syncAttributes([$this->session], $this->player, $this->player->getAttributeMap()->getAll());
@@ -175,12 +186,6 @@ class PreSpawnPacketHandler extends PacketHandler{
 	public function handleRequestChunkRadius(RequestChunkRadiusPacket $packet) : bool{
 		$this->player->setViewDistance($packet->radius);
 
-		return true;
-	}
-
-	public function handlePlayerAuthInput(PlayerAuthInputPacket $packet) : bool{
-		//the client will send this every tick once we start sending chunks, but we don't handle it in this stage
-		//this is very spammy so we filter it out
 		return true;
 	}
 }

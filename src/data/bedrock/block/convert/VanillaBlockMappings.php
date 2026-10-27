@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -60,7 +62,6 @@ use pocketmine\block\Froglight;
 use pocketmine\block\FrostedIce;
 use pocketmine\block\GlazedTerracotta;
 use pocketmine\block\Hopper;
-use pocketmine\block\Kelp;
 use pocketmine\block\Lantern;
 use pocketmine\block\Leaves;
 use pocketmine\block\Lectern;
@@ -72,7 +73,6 @@ use pocketmine\block\NetherVines;
 use pocketmine\block\NetherWartPlant;
 use pocketmine\block\PinkPetals;
 use pocketmine\block\PitcherCrop;
-use pocketmine\block\PointedDripstone;
 use pocketmine\block\PoweredRail;
 use pocketmine\block\Rail;
 use pocketmine\block\RedMushroomBlock;
@@ -82,8 +82,6 @@ use pocketmine\block\RedstoneTorch;
 use pocketmine\block\RedstoneWire;
 use pocketmine\block\RespawnAnchor;
 use pocketmine\block\Sapling;
-use pocketmine\block\SculkSensor;
-use pocketmine\block\SculkShrieker;
 use pocketmine\block\SeaPickle;
 use pocketmine\block\ShelfMushroom;
 use pocketmine\block\SmallDripleaf;
@@ -103,7 +101,6 @@ use pocketmine\block\utils\ChiseledBookshelfSlot;
 use pocketmine\block\utils\CopperOxidation;
 use pocketmine\block\utils\DirtType;
 use pocketmine\block\utils\DripleafState;
-use pocketmine\block\utils\DripstoneThickness;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\utils\FroglightType;
 use pocketmine\block\utils\HorizontalFacing;
@@ -192,6 +189,8 @@ final class VanillaBlockMappings{
 		$reg->mapSimple(Blocks::CHISELED_SANDSTONE(), Ids::CHISELED_SANDSTONE);
 		$reg->mapSimple(Blocks::CHISELED_STONE_BRICKS(), Ids::CHISELED_STONE_BRICKS);
 		$reg->mapSimple(Blocks::CHISELED_TUFF(), Ids::CHISELED_TUFF);
+		$reg->mapSimple(Blocks::CHISELED_SULFUR(), Ids::CHISELED_SULFUR);
+		$reg->mapSimple(Blocks::CHISELED_CINNABAR(), Ids::CHISELED_CINNABAR);
 		$reg->mapSimple(Blocks::CHISELED_TUFF_BRICKS(), Ids::CHISELED_TUFF_BRICKS);
 		$reg->mapSimple(Blocks::CLAY(), Ids::CLAY);
 		$reg->mapSimple(Blocks::COAL(), Ids::COAL_BLOCK);
@@ -227,7 +226,6 @@ final class VanillaBlockMappings{
 		$reg->mapSimple(Blocks::DIORITE(), Ids::DIORITE);
 		$reg->mapSimple(Blocks::DRAGON_EGG(), Ids::DRAGON_EGG);
 		$reg->mapSimple(Blocks::DRIED_KELP(), Ids::DRIED_KELP_BLOCK);
-		$reg->mapSimple(Blocks::DRIPSTONE(), Ids::DRIPSTONE_BLOCK);
 		$reg->mapSimple(Blocks::ELEMENT_ACTINIUM(), Ids::ELEMENT_89);
 		$reg->mapSimple(Blocks::ELEMENT_ALUMINUM(), Ids::ELEMENT_13);
 		$reg->mapSimple(Blocks::ELEMENT_AMERICIUM(), Ids::ELEMENT_95);
@@ -390,8 +388,6 @@ final class VanillaBlockMappings{
 		$reg->mapSimple(Blocks::MANGROVE_ROOTS(), Ids::MANGROVE_ROOTS);
 		$reg->mapSimple(Blocks::MELON(), Ids::MELON_BLOCK);
 		$reg->mapSimple(Blocks::MONSTER_SPAWNER(), Ids::MOB_SPAWNER);
-		$reg->mapSimple(Blocks::MOSS_BLOCK(), Ids::MOSS_BLOCK);
-		$reg->mapSimple(Blocks::MOSS_CARPET(), Ids::MOSS_CARPET);
 		$reg->mapSimple(Blocks::MOSSY_COBBLESTONE(), Ids::MOSSY_COBBLESTONE);
 		$reg->mapSimple(Blocks::MOSSY_STONE_BRICKS(), Ids::MOSSY_STONE_BRICKS);
 		$reg->mapSimple(Blocks::MUD(), Ids::MUD);
@@ -416,6 +412,8 @@ final class VanillaBlockMappings{
 		$reg->mapSimple(Blocks::POLISHED_DIORITE(), Ids::POLISHED_DIORITE);
 		$reg->mapSimple(Blocks::POLISHED_GRANITE(), Ids::POLISHED_GRANITE);
 		$reg->mapSimple(Blocks::POLISHED_TUFF(), Ids::POLISHED_TUFF);
+		$reg->mapSimple(Blocks::POLISHED_SULFUR(), Ids::POLISHED_SULFUR);
+		$reg->mapSimple(Blocks::POLISHED_CINNABAR(), Ids::POLISHED_CINNABAR);
 		$reg->mapSimple(Blocks::PRISMARINE(), Ids::PRISMARINE);
 		$reg->mapSimple(Blocks::PRISMARINE_BRICKS(), Ids::PRISMARINE_BRICKS);
 		$reg->mapSimple(Blocks::QUARTZ_BRICKS(), Ids::QUARTZ_BRICKS);
@@ -451,6 +449,8 @@ final class VanillaBlockMappings{
 		$reg->mapSimple(Blocks::STONE(), Ids::STONE);
 		$reg->mapSimple(Blocks::STONE_BRICKS(), Ids::STONE_BRICKS);
 		$reg->mapSimple(Blocks::STRUCTURE_VOID(), Ids::STRUCTURE_VOID);
+		$reg->mapSimple(Blocks::SULFUR(), Ids::SULFUR);
+		$reg->mapSimple(Blocks::SULFUR_BRICKS(), Ids::SULFUR_BRICKS);
 		$reg->mapSimple(Blocks::TALL_GRASS(), Ids::SHORT_GRASS);  //no, this is not a typo - tall_grass is now the double block, just to be confusing :(
 		$reg->mapSimple(Blocks::TINTED_GLASS(), Ids::TINTED_GLASS);
 		$reg->mapSimple(Blocks::TORCHFLOWER(), Ids::TORCHFLOWER);
@@ -473,6 +473,8 @@ final class VanillaBlockMappings{
 		$reg->mapSimple(Blocks::WHITE_TULIP(), Ids::WHITE_TULIP);
 
 		$reg->mapSimple(Blocks::CACTUS_FLOWER(), Ids::CACTUS_FLOWER);
+		$reg->mapSimple(Blocks::CINNABAR(), Ids::CINNABAR);
+		$reg->mapSimple(Blocks::CINNABAR_BRICKS(), Ids::CINNABAR_BRICKS);
 		$reg->mapSimple(Blocks::CRIMSON_FUNGUS(), Ids::CRIMSON_FUNGUS);
 		$reg->mapSimple(Blocks::WARPED_FUNGUS(), Ids::WARPED_FUNGUS);
 		$reg->mapSimple(Blocks::NETHER_SPROUTS(), Ids::NETHER_SPROUTS);
@@ -641,14 +643,6 @@ final class VanillaBlockMappings{
 		$reg->mapModel(Model::create(Blocks::TORCHFLOWER_CROP(), Ids::TORCHFLOWER_CROP)->properties([
 			//TODO: this property can have values 0-7, but only 0-1 are valid
 			new IntProperty(StateNames::GROWTH, 0, 7, fn(TorchflowerCrop $b) => $b->isReady() ? 1 : 0, fn(TorchflowerCrop $b, int $v) => $b->setReady($v !== 0))
-		]));
-
-		$reg->mapModel(Model::create(Blocks::KELP(), Ids::KELP)->properties([
-			new IntProperty(StateNames::KELP_AGE, 0, 25, fn(Kelp $b) => $b->getAge(), fn(Kelp $b, int $v) => $b->setAge($v))
-		]));
-
-		$reg->mapModel(Model::create(Blocks::SEAGRASS(), Ids::SEAGRASS)->properties([
-			new DummyProperty(StateNames::SEA_GRASS_TYPE, StringValues::SEA_GRASS_TYPE_DEFAULT)
 		]));
 	}
 
@@ -940,6 +934,8 @@ final class VanillaBlockMappings{
 		$reg->mapSlab(Blocks::POLISHED_DIORITE_SLAB(), "polished_diorite");
 		$reg->mapSlab(Blocks::POLISHED_GRANITE_SLAB(), "polished_granite");
 		$reg->mapSlab(Blocks::POLISHED_TUFF_SLAB(), "polished_tuff");
+		$reg->mapSlab(Blocks::POLISHED_SULFUR_SLAB(), "polished_sulfur");
+		$reg->mapSlab(Blocks::POLISHED_CINNABAR_SLAB(), "polished_cinnabar");
 		$reg->mapSlab(Blocks::PRISMARINE_BRICKS_SLAB(), "prismarine_brick");
 		$reg->mapSlab(Blocks::PRISMARINE_SLAB(), "prismarine");
 		$reg->mapSlab(Blocks::PURPUR_SLAB(), "purpur");
@@ -956,6 +952,10 @@ final class VanillaBlockMappings{
 		$reg->mapSlab(Blocks::STONE_SLAB(), "normal_stone");
 		$reg->mapSlab(Blocks::TUFF_BRICK_SLAB(), "tuff_brick");
 		$reg->mapSlab(Blocks::TUFF_SLAB(), "tuff");
+		$reg->mapSlab(Blocks::SULFUR_SLAB(), "sulfur");
+		$reg->mapSlab(Blocks::SULFUR_BRICK_SLAB(), "sulfur_brick");
+		$reg->mapSlab(Blocks::CINNABAR_SLAB(), "cinnabar");
+		$reg->mapSlab(Blocks::CINNABAR_BRICK_SLAB(), "cinnabar_brick");
 	}
 
 	private static function registerStoneLikeStairMappings(BlockSerializerDeserializerRegistrar $reg) : void{
@@ -996,6 +996,12 @@ final class VanillaBlockMappings{
 		$reg->mapStairs(Blocks::STONE_STAIRS(), Ids::NORMAL_STONE_STAIRS);
 		$reg->mapStairs(Blocks::TUFF_BRICK_STAIRS(), Ids::TUFF_BRICK_STAIRS);
 		$reg->mapStairs(Blocks::TUFF_STAIRS(), Ids::TUFF_STAIRS);
+		$reg->mapStairs(Blocks::SULFUR_STAIRS(), Ids::SULFUR_STAIRS);
+		$reg->mapStairs(Blocks::SULFUR_BRICK_STAIRS(), Ids::SULFUR_BRICK_STAIRS);
+		$reg->mapStairs(Blocks::POLISHED_SULFUR_STAIRS(), Ids::POLISHED_SULFUR_STAIRS);
+		$reg->mapStairs(Blocks::CINNABAR_STAIRS(), Ids::CINNABAR_STAIRS);
+		$reg->mapStairs(Blocks::CINNABAR_BRICK_STAIRS(), Ids::CINNABAR_BRICK_STAIRS);
+		$reg->mapStairs(Blocks::POLISHED_CINNABAR_STAIRS(), Ids::POLISHED_CINNABAR_STAIRS);
 	}
 
 	private static function registerStoneLikeWallMappings(BlockSerializerDeserializerRegistrar $reg, CommonProperties $commonProperties) : void{
@@ -1003,6 +1009,8 @@ final class VanillaBlockMappings{
 			Ids::ANDESITE_WALL => Blocks::ANDESITE_WALL(),
 			Ids::BLACKSTONE_WALL => Blocks::BLACKSTONE_WALL(),
 			Ids::BRICK_WALL => Blocks::BRICK_WALL(),
+			Ids::CINNABAR_BRICK_WALL => Blocks::CINNABAR_BRICK_WALL(),
+			Ids::CINNABAR_WALL => Blocks::CINNABAR_WALL(),
 			Ids::COBBLED_DEEPSLATE_WALL => Blocks::COBBLED_DEEPSLATE_WALL(),
 			Ids::COBBLESTONE_WALL => Blocks::COBBLESTONE_WALL(),
 			Ids::DEEPSLATE_BRICK_WALL => Blocks::DEEPSLATE_BRICK_WALL(),
@@ -1016,7 +1024,9 @@ final class VanillaBlockMappings{
 			Ids::NETHER_BRICK_WALL => Blocks::NETHER_BRICK_WALL(),
 			Ids::POLISHED_BLACKSTONE_BRICK_WALL => Blocks::POLISHED_BLACKSTONE_BRICK_WALL(),
 			Ids::POLISHED_BLACKSTONE_WALL => Blocks::POLISHED_BLACKSTONE_WALL(),
+			Ids::POLISHED_CINNABAR_WALL => Blocks::POLISHED_CINNABAR_WALL(),
 			Ids::POLISHED_DEEPSLATE_WALL => Blocks::POLISHED_DEEPSLATE_WALL(),
+			Ids::POLISHED_SULFUR_WALL => Blocks::POLISHED_SULFUR_WALL(),
 			Ids::POLISHED_TUFF_WALL => Blocks::POLISHED_TUFF_WALL(),
 			Ids::PRISMARINE_WALL => Blocks::PRISMARINE_WALL(),
 			Ids::RED_NETHER_BRICK_WALL => Blocks::RED_NETHER_BRICK_WALL(),
@@ -1024,6 +1034,8 @@ final class VanillaBlockMappings{
 			Ids::RESIN_BRICK_WALL => Blocks::RESIN_BRICK_WALL(),
 			Ids::SANDSTONE_WALL => Blocks::SANDSTONE_WALL(),
 			Ids::STONE_BRICK_WALL => Blocks::STONE_BRICK_WALL(),
+			Ids::SULFUR_BRICK_WALL => Blocks::SULFUR_BRICK_WALL(),
+			Ids::SULFUR_WALL => Blocks::SULFUR_WALL(),
 			Ids::TUFF_BRICK_WALL => Blocks::TUFF_BRICK_WALL(),
 			Ids::TUFF_WALL => Blocks::TUFF_WALL()
 		] as $id => $block){
@@ -1310,10 +1322,12 @@ final class VanillaBlockMappings{
 	private static function register1to1CustomMappings(BlockSerializerDeserializerRegistrar $reg, CommonProperties $commonProperties) : void{
 		//TODO: some of these have repeated accessor refs, we might be able to deduplicate them
 
+		//blocks which connect to their horizontal neighbours
 		$reg->mapModel(Model::create(Blocks::NETHER_BRICK_FENCE(), Ids::NETHER_BRICK_FENCE)->properties($commonProperties->horizontalConnectionProperties));
 		$reg->mapModel(Model::create(Blocks::GLASS_PANE(), Ids::GLASS_PANE)->properties($commonProperties->horizontalConnectionProperties));
 		$reg->mapModel(Model::create(Blocks::HARDENED_GLASS_PANE(), Ids::HARD_GLASS_PANE)->properties($commonProperties->horizontalConnectionProperties));
 		$reg->mapModel(Model::create(Blocks::IRON_BARS(), Ids::IRON_BARS)->properties($commonProperties->horizontalConnectionProperties));
+
 		//A
 		$reg->mapModel(Model::create(Blocks::ACTIVATOR_RAIL(), Ids::ACTIVATOR_RAIL)->properties([
 			new BoolProperty(StateNames::RAIL_DATA_BIT, fn(ActivatorRail $b) => $b->isPowered(), fn(ActivatorRail $b, bool $v) => $b->setPowered($v)),
@@ -1498,16 +1512,6 @@ final class VanillaBlockMappings{
 			new IntProperty(StateNames::GROWTH, 0, 7, fn(PinkPetals $b) => $b->getCount(), fn(PinkPetals $b, int $v) => $b->setCount(min($v, PinkPetals::MAX_COUNT)), offset: 1),
 			$commonProperties->horizontalFacingCardinal
 		]));
-		$reg->mapModel(Model::create(Blocks::POINTED_DRIPSTONE(), Ids::POINTED_DRIPSTONE)->properties([
-			new BoolProperty(StateNames::HANGING, fn(PointedDripstone $b) => $b->isHanging(), fn(PointedDripstone $b, bool $v) => $b->setHanging($v)),
-			new ValueFromStringProperty(StateNames::DRIPSTONE_THICKNESS, EnumFromRawStateMap::string(DripstoneThickness::class, fn(DripstoneThickness $case) => match ($case) {
-				DripstoneThickness::BASE => StringValues::DRIPSTONE_THICKNESS_BASE,
-				DripstoneThickness::FRUSTUM => StringValues::DRIPSTONE_THICKNESS_FRUSTUM,
-				DripstoneThickness::MERGE => StringValues::DRIPSTONE_THICKNESS_MERGE,
-				DripstoneThickness::MIDDLE => StringValues::DRIPSTONE_THICKNESS_MIDDLE,
-				DripstoneThickness::TIP => StringValues::DRIPSTONE_THICKNESS_TIP,
-			}), fn(PointedDripstone $b) => $b->getThickness(), fn(PointedDripstone $b, DripstoneThickness $v) => $b->setThickness($v)),
-		]));
 		$reg->mapModel(Model::create(Blocks::POWERED_RAIL(), Ids::GOLDEN_RAIL)->properties([
 			new BoolProperty(StateNames::RAIL_DATA_BIT, fn(PoweredRail $b) => $b->isPowered(), fn(PoweredRail $b, bool $v) => $b->setPowered($v)), //TODO: shared with ActivatorRail
 			new IntProperty(StateNames::RAIL_DIRECTION, 0, 5, fn(StraightOnlyRail $b) => $b->getShape(), fn(StraightOnlyRail $b, int $v) => $b->setShape($v)) //TODO: shared with ActivatorRail
@@ -1549,14 +1553,6 @@ final class VanillaBlockMappings{
 		]));
 
 		//S
-		$reg->mapModel(Model::create(Blocks::SCULK_SENSOR(), Ids::SCULK_SENSOR)->properties([
-			new IntProperty(StateNames::SCULK_SENSOR_PHASE, 0, 2, fn(SculkSensor $b) => $b->getPhase(), fn(SculkSensor $b, int $v) => $b->setPhase($v))
-		]));
-		$reg->mapModel(Model::create(Blocks::SCULK_SHRIEKER(), Ids::SCULK_SHRIEKER)->properties([
-			new BoolProperty(StateNames::ACTIVE, fn(SculkShrieker $b) => $b->isActive(), fn(SculkShrieker $b, bool $v) => $b->setActive($v)),
-			new BoolProperty(StateNames::CAN_SUMMON, fn(SculkShrieker $b) => $b->canSummon(), fn(SculkShrieker $b, bool $v) => $b->setCanSummon($v))
-		]));
-		$reg->mapModel(Model::create(Blocks::SCULK_VEIN(), Ids::SCULK_VEIN)->properties([$commonProperties->multiFacingFlags]));
 		$reg->mapModel(Model::create(Blocks::SHELF_MUSHROOM(), Ids::SHELF_MUSHROOM)->properties([
 			new IntProperty(StateNames::GROWTH, 0, ShelfMushroom::MAX_AGE, fn(ShelfMushroom $b) => $b->getAge(), fn(ShelfMushroom $b, int $v) => $b->setAge($v)),
 			$commonProperties->horizontalFacingCardinal
@@ -1601,10 +1597,10 @@ final class VanillaBlockMappings{
 			new BoolProperty(StateNames::DISARMED_BIT, fn(Tripwire $b) => $b->isDisarmed(), fn(Tripwire $b, bool $v) => $b->setDisarmed($v)),
 			new BoolProperty(StateNames::SUSPENDED_BIT, fn(Tripwire $b) => $b->isSuspended(), fn(Tripwire $b, bool $v) => $b->setSuspended($v)),
 			new BoolProperty(StateNames::POWERED_BIT, fn(Tripwire $b) => $b->isTriggered(), fn(Tripwire $b, bool $v) => $b->setTriggered($v)),
-			new BoolProperty(StateNames::MC_CONNECTION_NORTH, fn(Tripwire $b) => $b->isConnectedTo(Facing::NORTH), fn(Tripwire $b, bool $v) => $b->setConnection(Facing::NORTH, $v), missingDefault: false),
-			new BoolProperty(StateNames::MC_CONNECTION_SOUTH, fn(Tripwire $b) => $b->isConnectedTo(Facing::SOUTH), fn(Tripwire $b, bool $v) => $b->setConnection(Facing::SOUTH, $v), missingDefault: false),
-			new BoolProperty(StateNames::MC_CONNECTION_WEST, fn(Tripwire $b) => $b->isConnectedTo(Facing::WEST), fn(Tripwire $b, bool $v) => $b->setConnection(Facing::WEST, $v), missingDefault: false),
-			new BoolProperty(StateNames::MC_CONNECTION_EAST, fn(Tripwire $b) => $b->isConnectedTo(Facing::EAST), fn(Tripwire $b, bool $v) => $b->setConnection(Facing::EAST, $v), missingDefault: false),
+			new BoolProperty(StateNames::MC_CONNECTION_NORTH, fn(Tripwire $b) => $b->isConnectedTo(Facing::NORTH), fn(Tripwire $b, bool $v) => $b->setConnection(Facing::NORTH, $v)),
+			new BoolProperty(StateNames::MC_CONNECTION_SOUTH, fn(Tripwire $b) => $b->isConnectedTo(Facing::SOUTH), fn(Tripwire $b, bool $v) => $b->setConnection(Facing::SOUTH, $v)),
+			new BoolProperty(StateNames::MC_CONNECTION_WEST, fn(Tripwire $b) => $b->isConnectedTo(Facing::WEST), fn(Tripwire $b, bool $v) => $b->setConnection(Facing::WEST, $v)),
+			new BoolProperty(StateNames::MC_CONNECTION_EAST, fn(Tripwire $b) => $b->isConnectedTo(Facing::EAST), fn(Tripwire $b, bool $v) => $b->setConnection(Facing::EAST, $v)),
 		]));
 		$reg->mapModel(Model::create(Blocks::TRIPWIRE_HOOK(), Ids::TRIPWIRE_HOOK)->properties([
 			new BoolProperty(StateNames::ATTACHED_BIT, fn(TripwireHook $b) => $b->isConnected(), fn(TripwireHook $b, bool $v) => $b->setConnected($v)),

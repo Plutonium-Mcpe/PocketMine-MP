@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -86,6 +88,7 @@ final class CraftingDataCache{
 		$recipesWithTypeIds = [];
 
 		$noUnlockingRequirement = new RecipeUnlockingRequirement(RecipeUnlockingRequirement::CONTEXT_ALWAYS_UNLOCKED, null);
+		$recipeNetId = self::RECIPE_ID_OFFSET;
 		foreach($manager->getCraftingRecipeIndex() as $index => $recipe){
 			//the client doesn't like recipes with an ID of 0, so we need to offset them
 			$recipeNetId = $index + self::RECIPE_ID_OFFSET;
@@ -140,8 +143,9 @@ final class CraftingDataCache{
 				FurnaceType::CAMPFIRE => FurnaceRecipeBlockName::CAMPFIRE,
 				FurnaceType::SOUL_CAMPFIRE => FurnaceRecipeBlockName::SOUL_CAMPFIRE
 			};
+
 			foreach($manager->getFurnaceRecipeManager($furnaceType)->getAll() as $recipe){
-				$recipeNetId = ($recipeNetId ?? self::RECIPE_ID_OFFSET) + 1;
+				$recipeNetId++;
 				$recipesWithTypeIds[] = new ProtocolShapelessRecipe(
 					CraftingDataPacket::ENTRY_SHAPELESS,
 					BE::packUnsignedInt($recipeNetId), //TODO: this should probably be changed to something human-readable
@@ -151,7 +155,7 @@ final class CraftingDataCache{
 					$typeTag,
 					50,
 					$noUnlockingRequirement,
-					$recipeNetId
+					$recipeNetId //not used, but we need to fill them with something unique regardless
 				);
 			}
 		}
