@@ -484,6 +484,8 @@ final class CraftingManagerFromDataHelper{
 			));
 		}
 
+		$result = AnvilCraftingManagerDataFiller::fillData($result);
+
 		return $result;
 	}
 }
