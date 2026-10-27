@@ -2035,6 +2035,12 @@ class World implements ChunkManager{
 		$block = clone $block;
 
 		$block->position($this, $x, $y, $z);
+		//a block arriving in the world has no idea what it touches: its neighbours get onNearbyBlockChange(),
+		//it does not. Since 1.26 the connection states travel in the blockstate instead of being worked out by
+		//the client, so without this a freshly placed fence or wall reaches the player with no connections at all.
+		if($update && $block instanceof StateDeriving){
+			$block->deriveStateFromWorld();
+		}
 		$block->writeStateToWorld();
 		$pos = new Vector3($x, $y, $z);
 
