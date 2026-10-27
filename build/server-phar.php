@@ -27,6 +27,7 @@ namespace pocketmine\build\server_phar;
 
 use pocketmine\utils\Filesystem;
 use pocketmine\utils\Git;
+use pocketmine\VersionInfo;
 use Symfony\Component\Filesystem\Path;
 use function array_map;
 use function count;
@@ -159,7 +160,7 @@ function main() : void{
 		}
 		$pharPath = $opts["out"];
 	}else{
-		$pharPath = getcwd() . DIRECTORY_SEPARATOR . "Altay.phar";
+		$pharPath = getcwd() . DIRECTORY_SEPARATOR . VersionInfo::NAME . ".phar";
 	}
 	foreach(buildPhar(
 		$pharPath,
