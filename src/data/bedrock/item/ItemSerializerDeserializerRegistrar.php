@@ -27,11 +27,10 @@ namespace pocketmine\data\bedrock\item;
 
 use pocketmine\block\Bed;
 use pocketmine\block\Block;
-use pocketmine\block\CopperDoor;
 use pocketmine\block\tile\Banner as TileBanner;
-use pocketmine\block\utils\CopperOxidation;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks as Blocks;
+use pocketmine\data\bedrock\block\BlockTypeNames as BlockIds;
 use pocketmine\data\bedrock\CompoundTypeIds;
 use pocketmine\data\bedrock\DyeColorIdMap;
 use pocketmine\data\bedrock\GoatHornTypeIdMap;
@@ -65,7 +64,6 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->register1to1BlockWithMetaMappings();
 		$this->register1to1ItemWithMetaMappings();
 		$this->register1ToNItemMappings();
-		$this->registerMiscBlockMappings();
 		$this->registerMiscItemMappings();
 	}
 
@@ -140,13 +138,11 @@ final class ItemSerializerDeserializerRegistrar{
 	 */
 	private function register1to1BlockMappings() : void{
 		$this->map1to1Block(Ids::ACACIA_DOOR, Blocks::ACACIA_DOOR());
-		$this->map1to1Block(Ids::BAMBOO_DOOR, Blocks::BAMBOO_DOOR());
 		$this->map1to1Block(Ids::BIRCH_DOOR, Blocks::BIRCH_DOOR());
 		$this->map1to1Block(Ids::BREWING_STAND, Blocks::BREWING_STAND());
 		$this->map1to1Block(Ids::CAKE, Blocks::CAKE());
 		$this->map1to1Block(Ids::CAMPFIRE, Blocks::CAMPFIRE());
 		$this->map1to1Block(Ids::CAULDRON, Blocks::CAULDRON());
-		$this->map1to1Block(Ids::CHERRY_DOOR, Blocks::CHERRY_DOOR());
 		$this->map1to1Block(Ids::COMPARATOR, Blocks::REDSTONE_COMPARATOR());
 		$this->map1to1Block(Ids::CRIMSON_DOOR, Blocks::CRIMSON_DOOR());
 		$this->map1to1Block(Ids::DARK_OAK_DOOR, Blocks::DARK_OAK_DOOR());
@@ -159,8 +155,6 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1Block(Ids::MANGROVE_DOOR, Blocks::MANGROVE_DOOR());
 		$this->map1to1Block(Ids::NETHER_SPROUTS, Blocks::NETHER_SPROUTS());
 		$this->map1to1Block(Ids::NETHER_WART, Blocks::NETHER_WART());
-		$this->map1to1Block(Ids::PALE_OAK_DOOR, Blocks::PALE_OAK_DOOR());
-		$this->map1to1Block(Ids::POPLAR_DOOR, Blocks::POPLAR_DOOR());
 		$this->map1to1Block(Ids::RED_SHRUB, Blocks::RED_SHRUB());
 		$this->map1to1Block(Ids::REPEATER, Blocks::REDSTONE_REPEATER());
 		$this->map1to1Block(Ids::SHELF_MUSHROOM, Blocks::SHELF_MUSHROOM());
@@ -177,19 +171,29 @@ final class ItemSerializerDeserializerRegistrar{
 	 */
 	private function register1to1ItemMappings() : void{
 		$this->map1to1Item(Ids::ACACIA_BOAT, Items::ACACIA_BOAT());
-		$this->map1to1Item(Ids::ACACIA_HANGING_SIGN, Items::ACACIA_HANGING_SIGN());
+		$this->map1to1Item(BlockIds::ACACIA_HANGING_SIGN, Items::ACACIA_HANGING_SIGN());
+		$this->map1to1Item(BlockIds::BAMBOO_HANGING_SIGN, Items::BAMBOO_HANGING_SIGN());
+		$this->map1to1Item(BlockIds::BIRCH_HANGING_SIGN, Items::BIRCH_HANGING_SIGN());
+		$this->map1to1Item(BlockIds::CHERRY_HANGING_SIGN, Items::CHERRY_HANGING_SIGN());
+		$this->map1to1Item(BlockIds::CRIMSON_HANGING_SIGN, Items::CRIMSON_HANGING_SIGN());
+		$this->map1to1Item(BlockIds::DARK_OAK_HANGING_SIGN, Items::DARK_OAK_HANGING_SIGN());
+		$this->map1to1Item(BlockIds::JUNGLE_HANGING_SIGN, Items::JUNGLE_HANGING_SIGN());
+		$this->map1to1Item(BlockIds::MANGROVE_HANGING_SIGN, Items::MANGROVE_HANGING_SIGN());
+		$this->map1to1Item(BlockIds::OAK_HANGING_SIGN, Items::OAK_HANGING_SIGN());
+		$this->map1to1Item(BlockIds::PALE_OAK_HANGING_SIGN, Items::PALE_OAK_HANGING_SIGN());
+		$this->map1to1Item(BlockIds::POPLAR_HANGING_SIGN, Items::POPLAR_HANGING_SIGN());
+		$this->map1to1Item(BlockIds::SPRUCE_HANGING_SIGN, Items::SPRUCE_HANGING_SIGN());
+		$this->map1to1Item(BlockIds::WARPED_HANGING_SIGN, Items::WARPED_HANGING_SIGN());
 		$this->map1to1Item(Ids::ACACIA_SIGN, Items::ACACIA_SIGN());
 		$this->map1to1Item(Ids::AMETHYST_SHARD, Items::AMETHYST_SHARD());
 		$this->map1to1Item(Ids::APPLE, Items::APPLE());
 		$this->map1to1Item(Ids::BAKED_POTATO, Items::BAKED_POTATO());
-		$this->map1to1Item(Ids::BAMBOO_HANGING_SIGN, Items::BAMBOO_HANGING_SIGN());
 		$this->map1to1Item(Ids::BAMBOO_SIGN, Items::BAMBOO_SIGN());
 		$this->map1to1Item(Ids::BEEF, Items::RAW_BEEF());
 		$this->map1to1Item(Ids::BEETROOT, Items::BEETROOT());
 		$this->map1to1Item(Ids::BEETROOT_SEEDS, Items::BEETROOT_SEEDS());
 		$this->map1to1Item(Ids::BEETROOT_SOUP, Items::BEETROOT_SOUP());
 		$this->map1to1Item(Ids::BIRCH_BOAT, Items::BIRCH_BOAT());
-		$this->map1to1Item(Ids::BIRCH_HANGING_SIGN, Items::BIRCH_HANGING_SIGN());
 		$this->map1to1Item(Ids::BIRCH_SIGN, Items::BIRCH_SIGN());
 		$this->map1to1Item(Ids::BLAZE_POWDER, Items::BLAZE_POWDER());
 		$this->map1to1Item(Ids::BLAZE_ROD, Items::BLAZE_ROD());
@@ -208,7 +212,6 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1Item(Ids::CHAINMAIL_HELMET, Items::CHAINMAIL_HELMET());
 		$this->map1to1Item(Ids::CHAINMAIL_LEGGINGS, Items::CHAINMAIL_LEGGINGS());
 		$this->map1to1Item(Ids::CHARCOAL, Items::CHARCOAL());
-		$this->map1to1Item(Ids::CHERRY_HANGING_SIGN, Items::CHERRY_HANGING_SIGN());
 		$this->map1to1Item(Ids::CHERRY_SIGN, Items::CHERRY_SIGN());
 		$this->map1to1Item(Ids::CHICKEN, Items::RAW_CHICKEN());
 		$this->map1to1Item(Ids::CHORUS_FRUIT, Items::CHORUS_FRUIT());
@@ -238,10 +241,8 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1Item(Ids::COPPER_PICKAXE, Items::COPPER_PICKAXE());
 		$this->map1to1Item(Ids::COPPER_SHOVEL, Items::COPPER_SHOVEL());
 		$this->map1to1Item(Ids::COPPER_SWORD, Items::COPPER_SWORD());
-		$this->map1to1Item(Ids::CRIMSON_HANGING_SIGN, Items::CRIMSON_HANGING_SIGN());
 		$this->map1to1Item(Ids::CRIMSON_SIGN, Items::CRIMSON_SIGN());
 		$this->map1to1Item(Ids::DARK_OAK_BOAT, Items::DARK_OAK_BOAT());
-		$this->map1to1Item(Ids::DARK_OAK_HANGING_SIGN, Items::DARK_OAK_HANGING_SIGN());
 		$this->map1to1Item(Ids::DARK_OAK_SIGN, Items::DARK_OAK_SIGN());
 		$this->map1to1Item(Ids::DIAMOND, Items::DIAMOND());
 		$this->map1to1Item(Ids::DIAMOND_AXE, Items::DIAMOND_AXE());
@@ -311,7 +312,6 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1Item(Ids::IRON_SHOVEL, Items::IRON_SHOVEL());
 		$this->map1to1Item(Ids::IRON_SWORD, Items::IRON_SWORD());
 		$this->map1to1Item(Ids::JUNGLE_BOAT, Items::JUNGLE_BOAT());
-		$this->map1to1Item(Ids::JUNGLE_HANGING_SIGN, Items::JUNGLE_HANGING_SIGN());
 		$this->map1to1Item(Ids::JUNGLE_SIGN, Items::JUNGLE_SIGN());
 		$this->map1to1Item(Ids::LAPIS_LAZULI, Items::LAPIS_LAZULI());
 		$this->map1to1Item(Ids::LAVA_BUCKET, Items::LAVA_BUCKET());
@@ -322,7 +322,6 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1Item(Ids::LEATHER_LEGGINGS, Items::LEATHER_PANTS());
 		$this->map1to1Item(Ids::MAGMA_CREAM, Items::MAGMA_CREAM());
 		$this->map1to1Item(Ids::MANGROVE_BOAT, Items::MANGROVE_BOAT());
-		$this->map1to1Item(Ids::MANGROVE_HANGING_SIGN, Items::MANGROVE_HANGING_SIGN());
 		$this->map1to1Item(Ids::MANGROVE_SIGN, Items::MANGROVE_SIGN());
 		$this->map1to1Item(Ids::MELON_SEEDS, Items::MELON_SEEDS());
 		$this->map1to1Item(Ids::MELON_SLICE, Items::MELON());
@@ -368,13 +367,10 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1Item(Ids::NETHERITE_SWORD, Items::NETHERITE_SWORD());
 		$this->map1to1Item(Ids::NETHERITE_UPGRADE_SMITHING_TEMPLATE, Items::NETHERITE_UPGRADE_SMITHING_TEMPLATE());
 		$this->map1to1Item(Ids::OAK_BOAT, Items::OAK_BOAT());
-		$this->map1to1Item(Ids::OAK_HANGING_SIGN, Items::OAK_HANGING_SIGN());
 		$this->map1to1Item(Ids::OAK_SIGN, Items::OAK_SIGN());
 		$this->map1to1Item(Ids::PAINTING, Items::PAINTING());
-		$this->map1to1Item(Ids::PALE_OAK_HANGING_SIGN, Items::PALE_OAK_HANGING_SIGN());
 		$this->map1to1Item(Ids::PALE_OAK_SIGN, Items::PALE_OAK_SIGN());
 		$this->map1to1Item(Ids::POPLAR_BOAT, Items::POPLAR_BOAT());
-		$this->map1to1Item(Ids::POPLAR_HANGING_SIGN, Items::POPLAR_HANGING_SIGN());
 		$this->map1to1Item(Ids::POPLAR_SIGN, Items::POPLAR_SIGN());
 		$this->map1to1Item(Ids::PAPER, Items::PAPER());
 		$this->map1to1Item(Ids::PHANTOM_MEMBRANE, Items::PHANTOM_MEMBRANE());
@@ -415,7 +411,6 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1Item(Ids::SPIDER_EYE, Items::SPIDER_EYE());
 		$this->map1to1Item(Ids::SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE, Items::SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE());
 		$this->map1to1Item(Ids::SPRUCE_BOAT, Items::SPRUCE_BOAT());
-		$this->map1to1Item(Ids::SPRUCE_HANGING_SIGN, Items::SPRUCE_HANGING_SIGN());
 		$this->map1to1Item(Ids::SPRUCE_SIGN, Items::SPRUCE_SIGN());
 		$this->map1to1Item(Ids::SPYGLASS, Items::SPYGLASS());
 		$this->map1to1Item(Ids::SQUID_SPAWN_EGG, Items::SQUID_SPAWN_EGG());
@@ -437,7 +432,6 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1Item(Ids::VEX_ARMOR_TRIM_SMITHING_TEMPLATE, Items::VEX_ARMOR_TRIM_SMITHING_TEMPLATE());
 		$this->map1to1Item(Ids::VILLAGER_SPAWN_EGG, Items::VILLAGER_SPAWN_EGG());
 		$this->map1to1Item(Ids::WARD_ARMOR_TRIM_SMITHING_TEMPLATE, Items::WARD_ARMOR_TRIM_SMITHING_TEMPLATE());
-		$this->map1to1Item(Ids::WARPED_HANGING_SIGN, Items::WARPED_HANGING_SIGN());
 		$this->map1to1Item(Ids::WARPED_SIGN, Items::WARPED_SIGN());
 		$this->map1to1Item(Ids::WATER_BUCKET, Items::WATER_BUCKET());
 		$this->map1to1Item(Ids::WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE, Items::WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE());
@@ -624,28 +618,4 @@ final class ItemSerializerDeserializerRegistrar{
 		});
 	}
 
-	/**
-	 * Registers serializers and deserializers for PocketMine-MP blockitems that don't fit any other pattern.
-	 * Ideally we want to get rid of this completely, if possible.
-	 *
-	 * Most of these are single PocketMine-MP blocks which map to multiple IDs depending on their properties, which is
-	 * complex to implement in a generic way.
-	 */
-	private function registerMiscBlockMappings() : void{
-		$copperDoorStateIdMap = [];
-		foreach ([
-			[Ids::COPPER_DOOR, CopperOxidation::NONE, false],
-			[Ids::EXPOSED_COPPER_DOOR, CopperOxidation::EXPOSED, false],
-			[Ids::WEATHERED_COPPER_DOOR, CopperOxidation::WEATHERED, false],
-			[Ids::OXIDIZED_COPPER_DOOR, CopperOxidation::OXIDIZED, false],
-			[Ids::WAXED_COPPER_DOOR, CopperOxidation::NONE, true],
-			[Ids::WAXED_EXPOSED_COPPER_DOOR, CopperOxidation::EXPOSED, true],
-			[Ids::WAXED_WEATHERED_COPPER_DOOR, CopperOxidation::WEATHERED, true],
-			[Ids::WAXED_OXIDIZED_COPPER_DOOR, CopperOxidation::OXIDIZED, true]
-		] as [$id, $oxidation, $waxed]) {
-			$copperDoorStateIdMap[$oxidation->value][$waxed ? 1 : 0] = $id;
-			$this->deserializer?->mapBlock($id, fn() => Blocks::COPPER_DOOR()->setOxidation($oxidation)->setWaxed($waxed));
-		}
-		$this->serializer?->mapBlock(Blocks::COPPER_DOOR(), fn(CopperDoor $block) => new Data($copperDoorStateIdMap[$block->getOxidation()->value][$block->isWaxed() ? 1 : 0]));
-	}
 }
