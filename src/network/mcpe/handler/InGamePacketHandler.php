@@ -157,8 +157,6 @@ class InGamePacketHandler extends PacketHandler{
 	protected float $lastRightClickTime = 0.0;
 	protected ?UseItemTransactionData $lastRightClickData = null;
 
-	private int $lastEarlyConsumableReleaseTick = -1000;
-
 	private int $lastTransactionRightClickItemUseTick = -1000;
 
 	protected ?Vector3 $lastPlayerAuthInputPosition = null;
@@ -651,11 +649,11 @@ class InGamePacketHandler extends PacketHandler{
 				if($target === $this->player){
 					return $this->handleRightClickItemUse();
 				}
-				if($target instanceof Living){
-					$this->player->attackEntity($target);
-					return true;
-				}
-				$this->player->interactEntity($target, $data->getClickPosition());
+				//Bedrock 1.26.30 clients send melee attacks on entities as ITEM_INTERACT (2) instead of the legacy
+				//ATTACK (1). Right-click interactions still arrive as INTERACT (0), so this action type is an attack
+				//whatever the target is - routing non-Living entities to interactEntity() instead silently drops
+				//every hit on a custom entity that only reacts to being attacked.
+				$this->player->attackEntity($target);
 				return true;
 		}
 
@@ -724,9 +722,6 @@ class InGamePacketHandler extends PacketHandler{
 			if($this->player->isUsingItem() || $this->player->isAwaitingConsumableRelease()){
 				return true;
 			}
-			if($this->player->getServer()->getTick() - $this->lastEarlyConsumableReleaseTick < 10){
-				return true;
-			}
 			if($this->player->useHeldItem()){
 				$this->discardHeldItemUsePredictions();
 			}
@@ -759,7 +754,6 @@ class InGamePacketHandler extends PacketHandler{
 				return true;
 			}
 			$this->player->clearAwaitingConsumableRelease();
-			$this->lastEarlyConsumableReleaseTick = $this->player->getServer()->getTick();
 			$this->player->setUsingItem(false);
 			$this->discardHeldItemUsePredictions();
 			return true;
