@@ -44,6 +44,7 @@
         "pocketmine/errorhandler": "^0.7.0",
         "pocketmine/log": "^0.4.0",
         "pocketmine/math": "~1.0.0",
+        "pocketmine/raklib-ipc": "~1.0.0",
         "pocketmine/snooze": "^0.5.0",
         "ramsey/uuid": "~4.9.0",
         "react/http": "^1.11",

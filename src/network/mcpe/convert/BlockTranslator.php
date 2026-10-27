@@ -45,6 +45,13 @@ final class BlockTranslator{
 	private BlockStateData $fallbackStateData;
 	private int $fallbackStateId;
 
+	/**
+	 * Whether block runtime IDs sent to the client are identity hashes rather than palette indices.
+	 * The dictionary is keyed by hashed network runtime ID, so this is always true here; it is exposed
+	 * so plugins that build their own palette can tell which scheme the core advertises in StartGame.
+	 */
+	public static bool $blockNetworkIdsAreHashes = true;
+
 	public function __construct(
 		private BlockStateDictionary $blockStateDictionary,
 		private BlockStateSerializer $blockStateSerializer
