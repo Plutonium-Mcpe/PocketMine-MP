@@ -33,7 +33,7 @@ use function str_repeat;
 
 final class VersionInfo{
 	public const NAME = "PocketMine-MP";
-	public const BASE_VERSION = "5.118.20";
+	public const BASE_VERSION = "5.118.21";
 	public const IS_DEVELOPMENT_BUILD = false;
 	public const BUILD_CHANNEL = "stable";
 	public const GITHUB_URL = "https://github.com/pmmp/PocketMine-MP";
