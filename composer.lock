@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "668d2fa10c996a7b57541103b46cf53d",
+    "content-hash": "418fc749d86ffc64a9e43d4128141716",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -67,16 +67,16 @@
         },
         {
             "name": "altayofficial/bedrock-data",
-            "version": "6.9.0+bedrock-1.26.50",
+            "version": "6.10.0+bedrock-1.26.60",
             "source": {
                 "type": "git",
                 "url": "https://github.com/altayofficial/BedrockData.git",
-                "reference": "508b8791188868f2d92a55be8b2be2e771a6a171"
+                "reference": "41c9f2e622681a36fdd073f6b19fcf0bc6a8d9cc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/altayofficial/BedrockData/zipball/508b8791188868f2d92a55be8b2be2e771a6a171",
-                "reference": "508b8791188868f2d92a55be8b2be2e771a6a171",
+                "url": "https://api.github.com/repos/altayofficial/BedrockData/zipball/41c9f2e622681a36fdd073f6b19fcf0bc6a8d9cc",
+                "reference": "41c9f2e622681a36fdd073f6b19fcf0bc6a8d9cc",
                 "shasum": ""
             },
             "type": "library",
@@ -86,22 +86,22 @@
             ],
             "description": "Blobs of data generated from Minecraft: Bedrock Edition, used by Altayz",
             "support": {
-                "source": "https://github.com/altayofficial/BedrockData/tree/6.9.0+bedrock-1.26.50"
+                "source": "https://github.com/altayofficial/BedrockData/tree/6.10.0+bedrock-1.26.60"
             },
-            "time": "2026-09-19T12:56:44+00:00"
+            "time": "2026-10-27T15:45:01+00:00"
         },
         {
             "name": "altayofficial/bedrock-protocol",
-            "version": "60.0.0+bedrock-1.26.50",
+            "version": "61.0.0+bedrock-1.26.60",
             "source": {
                 "type": "git",
                 "url": "https://github.com/altayofficial/BedrockProtocol.git",
-                "reference": "669bf4ecf7c8db198bad694af5e7907a8317ce1d"
+                "reference": "3f074f2a0b02bffcfdb116b60c0159d7dd88950b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/altayofficial/BedrockProtocol/zipball/669bf4ecf7c8db198bad694af5e7907a8317ce1d",
-                "reference": "669bf4ecf7c8db198bad694af5e7907a8317ce1d",
+                "url": "https://api.github.com/repos/altayofficial/BedrockProtocol/zipball/3f074f2a0b02bffcfdb116b60c0159d7dd88950b",
+                "reference": "3f074f2a0b02bffcfdb116b60c0159d7dd88950b",
                 "shasum": ""
             },
             "require": {
@@ -134,9 +134,9 @@
             "description": "An implementation of the Minecraft: Bedrock Edition protocol in PHP",
             "support": {
                 "issues": "https://github.com/altayofficial/BedrockProtocol/issues",
-                "source": "https://github.com/altayofficial/BedrockProtocol/tree/60.0.0+bedrock-1.26.50"
+                "source": "https://github.com/altayofficial/BedrockProtocol/tree/61.0.0+bedrock-1.26.60"
             },
-            "time": "2026-09-15T16:14:17+00:00"
+            "time": "2026-10-27T14:32:29+00:00"
         },
         {
             "name": "altayofficial/dtls",
@@ -222,16 +222,16 @@
         },
         {
             "name": "altayofficial/network",
-            "version": "1.2.0",
+            "version": "1.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/altayofficial/Network.git",
-                "reference": "af4f91a6dbd241005b477d686210a5b572cd459e"
+                "reference": "0f34aa8624a7552039ecef1470e67b3b033b5a38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/altayofficial/Network/zipball/af4f91a6dbd241005b477d686210a5b572cd459e",
-                "reference": "af4f91a6dbd241005b477d686210a5b572cd459e",
+                "url": "https://api.github.com/repos/altayofficial/Network/zipball/0f34aa8624a7552039ecef1470e67b3b033b5a38",
+                "reference": "0f34aa8624a7552039ecef1470e67b3b033b5a38",
                 "shasum": ""
             },
             "require": {
@@ -267,22 +267,22 @@
             "description": "Central network library for Altay family written in PHP",
             "support": {
                 "issues": "https://github.com/altayofficial/Network/issues",
-                "source": "https://github.com/altayofficial/Network/tree/1.2.0"
+                "source": "https://github.com/altayofficial/Network/tree/1.4.0"
             },
-            "time": "2026-09-19T13:19:25+00:00"
+            "time": "2026-10-27T13:31:15+00:00"
         },
         {
             "name": "altayofficial/webrtc",
-            "version": "1.6.5",
+            "version": "1.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/altayofficial/webrtc.git",
-                "reference": "0f8557ee74d40c2d5c3cc34eac9c0f1d93155fa7"
+                "reference": "c1ed7c8fc6ca76dcf1078a73334e5806bcc82d14"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/altayofficial/webrtc/zipball/0f8557ee74d40c2d5c3cc34eac9c0f1d93155fa7",
-                "reference": "0f8557ee74d40c2d5c3cc34eac9c0f1d93155fa7",
+                "url": "https://api.github.com/repos/altayofficial/webrtc/zipball/c1ed7c8fc6ca76dcf1078a73334e5806bcc82d14",
+                "reference": "c1ed7c8fc6ca76dcf1078a73334e5806bcc82d14",
                 "shasum": ""
             },
             "require": {
@@ -345,22 +345,22 @@
             "description": "A WebRTC library designed special for Altay family",
             "support": {
                 "issues": "https://github.com/altayofficial/webrtc/issues",
-                "source": "https://github.com/altayofficial/webrtc/tree/1.6.5"
+                "source": "https://github.com/altayofficial/webrtc/tree/1.7.0"
             },
-            "time": "2026-09-15T15:58:48+00:00"
+            "time": "2026-10-27T13:33:34+00:00"
         },
         {
             "name": "altayofficial/worldupgraderschemas",
-            "version": "1.18.0+bedrock-1.26.50",
+            "version": "1.19.0+bedrock-1.26.60",
             "source": {
                 "type": "git",
                 "url": "https://github.com/altayofficial/WorldUpgraderSchemas.git",
-                "reference": "0811909ecb0089fd2839f3e5c9ca923f041fa804"
+                "reference": "1db36ebd9c90fbada1aae1393538a6056f4913c6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/altayofficial/WorldUpgraderSchemas/zipball/0811909ecb0089fd2839f3e5c9ca923f041fa804",
-                "reference": "0811909ecb0089fd2839f3e5c9ca923f041fa804",
+                "url": "https://api.github.com/repos/altayofficial/WorldUpgraderSchemas/zipball/1db36ebd9c90fbada1aae1393538a6056f4913c6",
+                "reference": "1db36ebd9c90fbada1aae1393538a6056f4913c6",
                 "shasum": ""
             },
             "type": "library",
@@ -371,9 +371,9 @@
             "description": "JSON schemas for upgrading worlds",
             "support": {
                 "issues": "https://github.com/altayofficial/WorldUpgraderSchemas/issues",
-                "source": "https://github.com/altayofficial/WorldUpgraderSchemas/tree/1.18.0+bedrock-1.26.50"
+                "source": "https://github.com/altayofficial/WorldUpgraderSchemas/tree/1.19.0+bedrock-1.26.60"
             },
-            "time": "2026-09-19T13:01:24+00:00"
+            "time": "2026-10-27T15:39:16+00:00"
         },
         {
             "name": "brick/math",
@@ -1844,16 +1844,16 @@
         },
         {
             "name": "symfony/filesystem",
-            "version": "v6.4.45",
+            "version": "v6.4.48",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "6dabf41c21957a2060f101bd7bf7e322989866bd"
+                "reference": "e3ff48b19ac71ee79f89021122211710b892ae0b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/6dabf41c21957a2060f101bd7bf7e322989866bd",
-                "reference": "6dabf41c21957a2060f101bd7bf7e322989866bd",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/e3ff48b19ac71ee79f89021122211710b892ae0b",
+                "reference": "e3ff48b19ac71ee79f89021122211710b892ae0b",
                 "shasum": ""
             },
             "require": {
@@ -1890,7 +1890,7 @@
             "description": "Provides basic utilities for the filesystem",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/filesystem/tree/v6.4.45"
+                "source": "https://github.com/symfony/filesystem/tree/v6.4.48"
             },
             "funding": [
                 {
@@ -1910,20 +1910,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-08-23T07:59:31+00:00"
+            "time": "2026-10-06T17:30:58+00:00"
         },
         {
             "name": "symfony/polyfill-php84",
-            "version": "v1.38.1",
+            "version": "v1.43.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php84.git",
-                "reference": "f4e1dfaee5b74aba5964fe1fd4dfc7ba5e3085fa"
+                "reference": "22c6548499cbe5c5bb072fc0c42312dff062a015"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php84/zipball/f4e1dfaee5b74aba5964fe1fd4dfc7ba5e3085fa",
-                "reference": "f4e1dfaee5b74aba5964fe1fd4dfc7ba5e3085fa",
+                "url": "https://api.github.com/repos/symfony/polyfill-php84/zipball/22c6548499cbe5c5bb072fc0c42312dff062a015",
+                "reference": "22c6548499cbe5c5bb072fc0c42312dff062a015",
                 "shasum": ""
             },
             "require": {
@@ -1970,7 +1970,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php84/tree/v1.38.1"
+                "source": "https://github.com/symfony/polyfill-php84/tree/v1.43.0"
             },
             "funding": [
                 {
@@ -1990,7 +1990,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-26T12:51:13+00:00"
+            "time": "2026-09-23T22:01:09+00:00"
         }
     ],
     "packages-dev": [
@@ -2712,16 +2712,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "10.5.64",
+            "version": "10.5.66",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "0e8c1d19cea35ad97d4887f363d07c78e30fbf06"
+                "reference": "747c9889613d0b3ffa08b74272e50ed3b8fa6d72"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/0e8c1d19cea35ad97d4887f363d07c78e30fbf06",
-                "reference": "0e8c1d19cea35ad97d4887f363d07c78e30fbf06",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/747c9889613d0b3ffa08b74272e50ed3b8fa6d72",
+                "reference": "747c9889613d0b3ffa08b74272e50ed3b8fa6d72",
                 "shasum": ""
             },
             "require": {
@@ -2731,7 +2731,7 @@
                 "ext-libxml": "*",
                 "ext-mbstring": "*",
                 "ext-xmlwriter": "*",
-                "myclabs/deep-copy": "^1.13.4",
+                "myclabs/deep-copy": "^1.14.0",
                 "phar-io/manifest": "^2.0.4",
                 "phar-io/version": "^3.2.1",
                 "php": ">=8.1",
@@ -2748,7 +2748,7 @@
                 "sebastian/exporter": "^5.1.4",
                 "sebastian/global-state": "^6.0.2",
                 "sebastian/object-enumerator": "^5.0.0",
-                "sebastian/recursion-context": "^5.0.1",
+                "sebastian/recursion-context": "^5.0.2",
                 "sebastian/type": "^4.0.0",
                 "sebastian/version": "^4.0.1"
             },
@@ -2793,7 +2793,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/10.5.64"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/10.5.66"
             },
             "funding": [
                 {
@@ -2801,7 +2801,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-07-06T14:50:35+00:00"
+            "time": "2026-10-05T05:46:26+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -3816,7 +3816,6 @@
         "php": "^8.1",
         "php-64bit": "*",
         "ext-chunkutils2": "^0.3.1",
-        "ext-crypto": "^0.3.1",
         "ext-ctype": "*",
         "ext-curl": "*",
         "ext-date": "*",

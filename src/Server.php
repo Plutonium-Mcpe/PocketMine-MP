@@ -58,7 +58,6 @@ use pocketmine\network\mcpe\compression\CompressBatchTask;
 use pocketmine\network\mcpe\compression\Compressor;
 use pocketmine\network\mcpe\compression\ZlibCompressor;
 use pocketmine\network\mcpe\convert\TypeConverter;
-use pocketmine\network\mcpe\encryption\EncryptionContext;
 use pocketmine\network\mcpe\EntityEventBroadcaster;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\PacketBroadcaster;
@@ -66,7 +65,6 @@ use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\network\mcpe\protocol\types\CompressionAlgorithm;
 use altay\network\nethernet\NetherNetTransport;
 use pocketmine\network\mcpe\transport\NetherNetTransportFactory;
-use pocketmine\network\mcpe\transport\RakNetTransportFactory;
 use pocketmine\network\mcpe\transport\ThreadedTransport;
 use pocketmine\network\mcpe\transport\TransportNetworkInterface;
 use pocketmine\network\mcpe\StandardEntityEventBroadcaster;
@@ -158,7 +156,6 @@ use function is_string;
 use function json_decode;
 use function max;
 use function microtime;
-use function mt_rand;
 use function min;
 use function mkdir;
 use function ob_end_flush;
@@ -950,8 +947,6 @@ class Server {
 				$netCompressionThreshold ?? self::DEFAULT_ASYNC_COMPRESSION_THRESHOLD
 			);
 
-			EncryptionContext::$ENABLED = $this->configGroup->getPropertyBool(Yml::NETWORK_ENABLE_ENCRYPTION, true);
-
 			$this->doTitleTick = $this->configGroup->getPropertyBool(Yml::CONSOLE_TITLE_TICK, true) && Terminal::hasFormattingCodes();
 
 			$this->operators = new Config(Path::join($this->dataPath, "ops.txt"), Config::ENUM);
@@ -1276,10 +1271,12 @@ class Server {
 	 * Whether a connection has to carry a signed identity assertion, for players found on the local
 	 * network and for players joining by address.
 	 *
-	 * A client that joins by address is signed in and signs its offer, and that signature is the only
-	 * thing tying the connection to the identity it then logs in with - so with xbox-auth on it is
-	 * required by default. A client that broadcasts on the local network does not sign, so requiring
-	 * it there is left to whoever knows their players.
+	 * NetherNet skips the encryption handshake that binds a login chain on RakNet, so the signature on
+	 * the offer is the only thing tying the connection to the identity it then logs in with. Without
+	 * it a chain captured elsewhere can be replayed, so with xbox-auth on it is required by default,
+	 * on the local network as much as by address. A client that does not sign its broadcast offer
+	 * cannot join such a server over the local network, so turning that off is left to whoever
+	 * knows their players.
 	 *
 	 * @return array{bool, bool}
 	 */
@@ -1291,7 +1288,7 @@ class Server {
 		if(!is_string($configured) || strtolower($configured) !== "auto"){
 			$this->logger->warning("Ignoring " . Yml::NETWORK_NETHERNET_REQUIRE_IDENTITY . ", expected true, false or auto");
 		}
-		return [false, $this->getOnlineMode()];
+		return [$this->getOnlineMode(), $this->getOnlineMode()];
 	}
 
 	/**
@@ -1355,6 +1352,26 @@ class Server {
 	}
 
 	/**
+	 * The one UDP port every player's media shares, or null to give each player their own.
+	 */
+	private function getNetherNetUdpPort(int $serverPort, bool $useQuery) : ?int{
+		$configured = $this->configGroup->getPropertyInt(Yml::NETWORK_NETHERNET_UDP_PORT, 0);
+		if($configured === 0){
+			return null;
+		}
+		if($configured < 1 || $configured > 65535){
+			$this->logger->warning("Ignoring " . Yml::NETWORK_NETHERNET_UDP_PORT . ", it must be between 1 and 65535");
+			return null;
+		}
+		if($configured === $serverPort && $useQuery){
+			//query owns the UDP side of the server port, and binding it twice would take the whole network down
+			$this->logger->warning("Ignoring " . Yml::NETWORK_NETHERNET_UDP_PORT . ", query already listens on udp/$serverPort. Pick another port or turn enable-query off");
+			return null;
+		}
+		return $configured;
+	}
+
+	/**
 	 * A certificate or key the endpoint serves HTTPS with, or null when the operator has none. A
 	 * client opens with a TLS handshake either way and falls back to plaintext when it is refused.
 	 */
@@ -1403,41 +1420,9 @@ class Server {
 		TypeConverter $typeConverter
 	) : bool{
 		$prettyIp = $ipV6 ? "[$ip]" : $ip;
-		$transportMode = strtolower($this->configGroup->getPropertyString(Yml::NETWORK_TRANSPORT, "raknet"));
-		if($transportMode !== "raknet" && $transportMode !== "nethernet"){
-			$this->logger->warning("Unknown network transport \"$transportMode\", defaulting to \"raknet\"");
-			$transportMode = "raknet";
-		}
-		$useRakNet = $transportMode === "raknet";
-		$useNetherNet = $transportMode === "nethernet" && !$ipV6; //nethernet discovery uses a single broadcast socket, a separate IPv6 bind is not needed
-		if($useRakNet && !$ipV6){ //only warn once, on the primary IPv4 pass
-			$this->logger->warning("----------------------------------------");
-			$this->logger->warning("The RakNet transport is deprecated and may be removed in a future release.");
-			$this->logger->warning("Consider switching \"network.transport\" to \"nethernet\" in pocketmine.yml.");
-			$this->logger->warning("----------------------------------------");
-		}
-		$rakNetRegistered = false;
 		try{
-			if($useRakNet){
-				$transport = new ThreadedTransport(
-					$this->logger,
-					new RakNetTransportFactory(
-						$ip,
-						$port,
-						$ipV6,
-						$this->configGroup->getPropertyInt(Yml::NETWORK_MAX_MTU_SIZE, 1492),
-						mt_rand(0, PHP_INT_MAX),
-						max(1, $this->configGroup->getPropertyInt(Yml::NETWORK_MAX_SPLIT_PACKET_PARTS, 192)),
-						max(1, $this->configGroup->getPropertyInt(Yml::NETWORK_MAX_CONCURRENT_SPLIT_PACKETS, 4))
-					),
-					$this->tickSleeper
-				);
-				$rakNetRegistered = $this->network->registerInterface(new TransportNetworkInterface($this, $transport, $packetBroadcaster, $entityEventBroadcaster, $typeConverter));
-				if($rakNetRegistered){
-					$this->logger->info($this->language->translate(KnownTranslationFactory::pocketmine_server_networkStart($prettyIp, (string) $port)));
-				}
-			}
-			if($useNetherNet){
+			//NetherNet discovery uses a single broadcast socket, so the IPv6 pass has no transport to start
+			if(!$ipV6){
 				[$requireIdentity, $requireEndpointIdentity] = $this->getNetherNetIdentityPolicy();
 				//the Servers tab asks for the MOTD and posts its offer over HTTP, and it does that on
 				//the server port unless the operator moved the endpoint somewhere else
@@ -1450,7 +1435,7 @@ class Server {
 					new NetherNetTransportFactory(
 						Binary::readLLong(substr(hash("sha256", $this->getServerUniqueId()->getBytes(), true), 0, 8)),
 						$this->getMotd(),
-						//the second line of the server card, kept on the same source as the RakNet pong
+						//the second line of the server card
 						$this->getName(),
 						$this->getMaxPlayers(),
 						$ip,
@@ -1472,7 +1457,9 @@ class Server {
 						$this->getNetherNetTlsPath(Yml::NETWORK_NETHERNET_TLS_KEY),
 						$this->getNetherNetLimit(Yml::NETWORK_NETHERNET_MAX_PENDING_NEGOTIATIONS, 64),
 						$this->getNetherNetLimit(Yml::NETWORK_NETHERNET_MAX_NEGOTIATIONS_PER_ADDRESS, 32),
-						$this->configGroup->getPropertyBool(Yml::NETWORK_NETHERNET_VERBOSE_LOGGING, false)
+						$this->configGroup->getPropertyBool(Yml::NETWORK_NETHERNET_VERBOSE_LOGGING, false),
+						$this->getNetherNetLimit(Yml::NETWORK_NETHERNET_HANDSHAKE_TIMEOUT, NetherNetTransport::DEFAULT_HANDSHAKE_TIMEOUT),
+						$this->getNetherNetUdpPort($port, $useQuery)
 					),
 					$this->tickSleeper
 				);
@@ -1489,11 +1476,7 @@ class Server {
 			return false;
 		}
 		if($useQuery){
-			if(!$rakNetRegistered){
-				//RakNet would normally handle the transport for Query packets on the server port
-				//if it's not registered we need to make sure Query still works
-				$this->network->registerInterface(new DedicatedQueryNetworkInterface($ip, $port, $ipV6, new \PrefixedLogger($this->logger, "Dedicated Query Interface")));
-			}
+			$this->network->registerInterface(new DedicatedQueryNetworkInterface($ip, $port, $ipV6, new \PrefixedLogger($this->logger, "Dedicated Query Interface")));
 			$this->logger->info($this->language->translate(KnownTranslationFactory::pocketmine_server_query_running($prettyIp, (string) $port)));
 		}
 		return true;
