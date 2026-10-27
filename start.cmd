@@ -22,10 +22,10 @@ if "%PHP_BINARY%"=="" (
 	exit 1
 )
 
-if exist Altay.phar (
-	set ALTAY_FILE=Altay.phar
+if exist PocketMine-MP.phar (
+	set ALTAY_FILE=PocketMine-MP.phar
 ) else (
-	echo Altay.phar not found
+	echo PocketMine-MP.phar not found
 	echo Downloads can be found at https://github.com/altayofficial/Altay/releases
 	pause
 	exit 1
