@@ -295,24 +295,6 @@ parameters:
 			path: ../../../src/block/Grass.php
 
 		-
-			message: '#^Parameter \#1 \$x of method pocketmine\\world\\World\:\:getHighestAdjacentBlockLight\(\) expects int, float\|int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../../../src/block/Ice.php
-
-		-
-			message: '#^Parameter \#2 \$y of method pocketmine\\world\\World\:\:getHighestAdjacentBlockLight\(\) expects int, float\|int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../../../src/block/Ice.php
-
-		-
-			message: '#^Parameter \#3 \$z of method pocketmine\\world\\World\:\:getHighestAdjacentBlockLight\(\) expects int, float\|int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: ../../../src/block/Ice.php
-
-		-
 			message: '#^Parameter \#1 \$x of static method pocketmine\\world\\World\:\:blockHash\(\) expects int, float\|int given\.$#'
 			identifier: argument.type
 			count: 1

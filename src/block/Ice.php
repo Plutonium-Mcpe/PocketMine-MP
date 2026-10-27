@@ -25,7 +25,6 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\block\utils\BlockEventHelper;
 use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\Item;
 use pocketmine\player\Player;
@@ -46,17 +45,6 @@ class Ice extends Transparent{
 			return true;
 		}
 		return parent::onBreak($item, $player, $returnedItems);
-	}
-
-	public function ticksRandomly() : bool{
-		return true;
-	}
-
-	public function onRandomTick() : void{
-		$world = $this->position->getWorld();
-		if($world->getHighestAdjacentBlockLight($this->position->x, $this->position->y, $this->position->z) >= 12){
-			BlockEventHelper::melt($this, VanillaBlocks::WATER());
-		}
 	}
 
 	public function getDropsForCompatibleTool(Item $item) : array{

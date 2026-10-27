@@ -47,13 +47,6 @@ final class YmlServerProperties{
 	public const AUTO_REPORT_SEND_PHPINFO = 'auto-report.send-phpinfo';
 	public const AUTO_REPORT_SEND_SETTINGS = 'auto-report.send-settings';
 	public const AUTO_REPORT_USE_HTTPS = 'auto-report.use-https';
-	public const AUTO_UPDATER = 'auto-updater';
-	public const AUTO_UPDATER_ENABLED = 'auto-updater.enabled';
-	public const AUTO_UPDATER_HOST = 'auto-updater.host';
-	public const AUTO_UPDATER_ON_UPDATE = 'auto-updater.on-update';
-	public const AUTO_UPDATER_ON_UPDATE_WARN_CONSOLE = 'auto-updater.on-update.warn-console';
-	public const AUTO_UPDATER_PREFERRED_CHANNEL = 'auto-updater.preferred-channel';
-	public const AUTO_UPDATER_SUGGEST_CHANNELS = 'auto-updater.suggest-channels';
 	public const CHUNK_GENERATION = 'chunk-generation';
 	public const CHUNK_GENERATION_POPULATION_QUEUE_SIZE = 'chunk-generation.population-queue-size';
 	public const CHUNK_SENDING = 'chunk-sending';

@@ -26,12 +26,14 @@ declare(strict_types=1);
 namespace pocketmine\network\mcpe\cache;
 
 use pmmp\encoding\BE;
+use pmmp\encoding\ByteBufferWriter;
 use pocketmine\crafting\CraftingManager;
 use pocketmine\crafting\FurnaceType;
 use pocketmine\crafting\ShapedRecipe;
 use pocketmine\crafting\ShapelessRecipe;
 use pocketmine\crafting\ShapelessRecipeType;
 use pocketmine\network\mcpe\convert\TypeConverter;
+use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\CraftingDataPacket;
 use pocketmine\network\mcpe\protocol\types\recipe\CraftingRecipeBlockName;
 use pocketmine\network\mcpe\protocol\types\recipe\FurnaceRecipeBlockName;
@@ -58,6 +60,12 @@ final class CraftingDataCache{
 	private array $caches = [];
 
 	/**
+	 * @var string[]
+	 * @phpstan-var array<int, string>
+	 */
+	private array $encodedCaches = [];
+
+	/**
 	 * The client doesn't like recipes with ID 0 (as of 1.21.100) and complains about them in the content log
 	 * This doesn't actually affect the function of the recipe, but it is annoying, so this offset fixes it
 	 */
@@ -67,14 +75,19 @@ final class CraftingDataCache{
 		$id = spl_object_id($manager);
 		if(!isset($this->caches[$id])){
 			$manager->getDestructorCallbacks()->add(function() use ($id) : void{
-				unset($this->caches[$id]);
+				unset($this->caches[$id], $this->encodedCaches[$id]);
 			});
 			$manager->getRecipeRegisteredCallbacks()->add(function() use ($id) : void{
-				unset($this->caches[$id]);
+				unset($this->caches[$id], $this->encodedCaches[$id]);
 			});
 			$this->caches[$id] = $this->buildCraftingDataCache($manager);
 		}
 		return $this->caches[$id];
+	}
+
+	public function getEncodedCache(CraftingManager $manager) : string{
+		$packet = $this->getCache($manager);
+		return $this->encodedCaches[spl_object_id($manager)] ??= NetworkSession::encodePacketTimed(new ByteBufferWriter(), $packet);
 	}
 
 	/**

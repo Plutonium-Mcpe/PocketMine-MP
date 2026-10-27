@@ -48,6 +48,12 @@ class FrostedIce extends Ice implements Ageable{
 		$world->scheduleDelayedBlockUpdate($this->position, mt_rand(20, 40));
 	}
 
+	public function ticksRandomly() : bool{
+		//Ice ne tick plus (la lumiere vaut 15 partout, elle fondait donc partout):
+		//la glace givree doit garder son random tick pour fondre.
+		return true;
+	}
+
 	public function onRandomTick() : void{
 		$world = $this->position->getWorld();
 		//Le tirage est evalue en premier: il vaut le meme resultat booleen mais
