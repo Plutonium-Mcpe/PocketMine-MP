@@ -383,9 +383,12 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 		$this->addDefaultWindows();
 
 		$this->inventory->getListeners()->add(new CallbackInventoryListener(
-			function(Inventory $unused, int $slot) : void{
+			function(Inventory $unused, int $slot, Item $oldItem) : void{
 				if($slot === $this->inventory->getHeldItemIndex()){
-					$this->setUsingItem(false);
+					//picking up more of the held item only changes its count - don't interrupt eating it
+					if(!$oldItem->canStackWith($this->inventory->getItem($slot))){
+						$this->setUsingItem(false);
+					}
 
 					$this->callDummyItemHeldEvent();
 				}
