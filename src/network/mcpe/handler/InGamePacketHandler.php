@@ -154,6 +154,13 @@ class InGamePacketHandler extends PacketHandler{
 
 	private const RIGHT_CLICK_ITEM_USE_DEDUP_TICKS = 2;
 
+	/**
+	 * How far behind the client's own use timer the server's may be and still honour a completed use.
+	 * The gap is the one-way delay on the packet that started the use, so this covers a round trip of
+	 * about half a second; past that the use is treated as genuinely too short.
+	 */
+	private const CONSUME_DURATION_TOLERANCE = 5;
+
 	protected float $lastRightClickTime = 0.0;
 	protected ?UseItemTransactionData $lastRightClickData = null;
 
@@ -664,10 +671,10 @@ class InGamePacketHandler extends PacketHandler{
 		$this->player->selectHotbarSlot($data->getHotbarSlot());
 
 		$result = match($data->getActionType()){
-			ReleaseItemTransactionData::ACTION_RELEASE,
-			ReleaseItemTransactionData::ACTION_CONSUME => $this->handleHeldItemReleaseOrConsume(),
+			ReleaseItemTransactionData::ACTION_RELEASE => $this->handleHeldItemReleaseOrConsume(false),
+			ReleaseItemTransactionData::ACTION_CONSUME => $this->handleHeldItemReleaseOrConsume(true),
 			default => $this->player->getInventory()->getItemInHand() instanceof Releasable
-				? $this->handleHeldItemReleaseOrConsume()
+				? $this->handleHeldItemReleaseOrConsume(false)
 				: false,
 		};
 
@@ -747,10 +754,24 @@ class InGamePacketHandler extends PacketHandler{
 		}
 	}
 
-	private function handleHeldItemReleaseOrConsume() : bool{
+	/**
+	 * @param bool $clientFinishedUsing whether the client reported the use as completed (ACTION_CONSUME)
+	 *                                  rather than interrupted (ACTION_RELEASE). A completed use whose
+	 *                                  server-side timer is still short of the minimum duration is a
+	 *                                  synchronisation artefact, not a cancellation.
+	 */
+	private function handleHeldItemReleaseOrConsume(bool $clientFinishedUsing = false) : bool{
 		$item = $this->player->getInventory()->getItemInHand();
 		if($item instanceof ConsumableItem){
 			if($this->player->consumeHeldItem()){
+				return true;
+			}
+			if(
+				$clientFinishedUsing &&
+				$this->player->isUsingItem() &&
+				$this->player->getItemUseDuration() >= $item->getMinUseDuration() - self::CONSUME_DURATION_TOLERANCE &&
+				$this->player->consumeHeldItem(true)
+			){
 				return true;
 			}
 			$this->player->clearAwaitingConsumableRelease();
