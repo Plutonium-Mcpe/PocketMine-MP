@@ -159,7 +159,6 @@ class InGamePacketHandler extends PacketHandler{
 	 * The gap is the one-way delay on the packet that started the use, so this covers a round trip of
 	 * about half a second; past that the use is treated as genuinely too short.
 	 */
-	private const CONSUME_DURATION_TOLERANCE = 5;
 
 	protected float $lastRightClickTime = 0.0;
 	protected ?UseItemTransactionData $lastRightClickData = null;
@@ -766,12 +765,13 @@ class InGamePacketHandler extends PacketHandler{
 			if($this->player->consumeHeldItem()){
 				return true;
 			}
-			if(
-				$clientFinishedUsing &&
-				$this->player->isUsingItem() &&
-				$this->player->getItemUseDuration() >= $item->getMinUseDuration() - self::CONSUME_DURATION_TOLERANCE &&
-				$this->player->consumeHeldItem(true)
-			){
+			if($clientFinishedUsing && $this->player->isUsingItem()){
+				//The client animates on real time while the server counts ticks, so a server
+				//running below 20 TPS is always behind: the client reports the apple eaten
+				//before consumeHeldItem() will accept it. Player::tick() consumes on its own
+				//as soon as the server's timer reaches the minimum, so there is nothing to do
+				//here but let it. Cancelling instead cleared startAction, which stopped that
+				//tick from ever coming: the apple was neither eaten nor given back.
 				return true;
 			}
 			$this->player->clearAwaitingConsumableRelease();

@@ -1814,15 +1814,10 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	 *
 	 * @return bool if the consumption succeeded.
 	 */
-	/**
-	 * @param bool $ignoreUseDuration skips the minimum-use-duration check. Reserved for the case where the
-	 *                                client reported the use as finished and only network delay separates it
-	 *                                from the server's own timer; callers must bound how far behind they allow.
-	 */
-	public function consumeHeldItem(bool $ignoreUseDuration = false) : bool{
+	public function consumeHeldItem() : bool{
 		$slot = $this->inventory->getItemInHand();
 		if($slot instanceof ConsumableItem){
-			if(!$ignoreUseDuration && $this->getItemUseDuration() < $slot->getMinUseDuration()){
+			if($this->getItemUseDuration() < $slot->getMinUseDuration()){
 				return false;
 			}
 
