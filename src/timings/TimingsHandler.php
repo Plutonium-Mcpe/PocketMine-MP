@@ -181,6 +181,9 @@ class TimingsHandler{
 	 */
 	public static function requestPrintTimings() : Promise{
 		$thisThreadRecords = self::printCurrentThreadRecords();
+		//sample time must end with this thread's records: other threads may take seconds to respond, and counting
+		//that wait would lower the TPS and the share of every timer
+		$footer = self::printFooter();
 
 		$otherThreadRecordPromises = [];
 		if(self::$collectCallbacks !== null){
@@ -193,8 +196,8 @@ class TimingsHandler{
 		/** @phpstan-var PromiseResolver<list<string>> $resolver */
 		$resolver = new PromiseResolver();
 		Promise::all($otherThreadRecordPromises)->onCompletion(
-			function(array $promisedRecords) use ($resolver, $thisThreadRecords) : void{
-				$resolver->resolve([...$thisThreadRecords, ...array_merge(...$promisedRecords), ...self::printFooter()]);
+			function(array $promisedRecords) use ($resolver, $thisThreadRecords, $footer) : void{
+				$resolver->resolve([...$thisThreadRecords, ...array_merge(...$promisedRecords), ...$footer]);
 			},
 			function() : void{
 				throw new \AssertionError("This promise is not expected to be rejected");
