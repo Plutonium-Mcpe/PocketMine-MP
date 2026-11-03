@@ -762,7 +762,7 @@ class InGamePacketHandler extends PacketHandler{
 	private function handleHeldItemReleaseOrConsume(bool $clientFinishedUsing = false) : bool{
 		$item = $this->player->getInventory()->getItemInHand();
 		if($item instanceof ConsumableItem){
-			if($this->player->consumeHeldItem()){
+			if($this->player->consumeHeldItem($clientFinishedUsing)){
 				return true;
 			}
 			if($clientFinishedUsing && $this->player->isUsingItem()){
