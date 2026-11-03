@@ -304,6 +304,14 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	protected string $locale = "en_US";
 
 	protected int $startAction = -1;
+	/**
+	 * Wall-clock time the current item use started at, mirroring $startAction.
+	 *
+	 * $startAction counts server ticks, which stop matching real time as soon as the server
+	 * falls behind 20 TPS. The client animates on real time, so only this can answer "has the
+	 * player really held the item for 1.6 seconds".
+	 */
+	protected float $startActionTime = 0.0;
 
 	private int $ignoreChargeableClickAirUntilTick = -1;
 	private bool $awaitingConsumableRelease = false;
@@ -761,6 +769,7 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 
 	public function setUsingItem(bool $value) : void{
 		$this->startAction = $value ? $this->server->getTick() : -1;
+		$this->startActionTime = $value ? microtime(true) : 0.0;
 		$this->networkPropertiesDirty = true;
 	}
 
@@ -770,6 +779,14 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	 */
 	public function getItemUseDuration() : int{
 		return $this->startAction === -1 ? -1 : ($this->server->getTick() - $this->startAction);
+	}
+
+	/**
+	 * Returns whether the held item has been in use for at least the given number of ticks,
+	 * measured on the wall clock rather than on the server's tick counter.
+	 */
+	public function hasUsedItemForRealTicks(int $ticks) : bool{
+		return $this->startAction !== -1 && (microtime(true) - $this->startActionTime) * 20 >= $ticks;
 	}
 
 	public function shouldIgnoreChargeableClickAir() : bool{
@@ -1814,10 +1831,18 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	 *
 	 * @return bool if the consumption succeeded.
 	 */
-	public function consumeHeldItem() : bool{
+	/**
+	 * @param bool $clientFinishedUsing set when the client reported the use as finished. The
+	 *                                  server's tick counter may still be short of the minimum
+	 *                                  simply because the server is running behind, so the
+	 *                                  elapsed real time decides instead.
+	 */
+	public function consumeHeldItem(bool $clientFinishedUsing = false) : bool{
 		$slot = $this->inventory->getItemInHand();
 		if($slot instanceof ConsumableItem){
-			if($this->getItemUseDuration() < $slot->getMinUseDuration()){
+			$longEnough = $this->getItemUseDuration() >= $slot->getMinUseDuration()
+				|| ($clientFinishedUsing && $this->hasUsedItemForRealTicks($slot->getMinUseDuration()));
+			if(!$longEnough){
 				return false;
 			}
 
