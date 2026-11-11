@@ -28,9 +28,23 @@ namespace pocketmine\block\utils;
 use pocketmine\crafting\AnvilCraftResult;
 use pocketmine\item\Item;
 use pocketmine\Server;
+use function mb_check_encoding;
+use function mb_strlen;
+use function preg_match;
 
 final class AnvilHelper{
 	private const COST_LIMIT = 39;
+	public const MAX_CUSTOM_NAME_LENGTH = 50;
+
+	/**
+	 * Returns whether a name typed in an anvil may be given to an item: valid UTF-8, no control characters, and no
+	 * longer than the client's own text box allows.
+	 */
+	public static function isValidCustomName(string $customName) : bool{
+		return mb_check_encoding($customName, "UTF-8") &&
+			mb_strlen($customName, "UTF-8") <= self::MAX_CUSTOM_NAME_LENGTH &&
+			preg_match('/[\x00-\x1F\x7F]/', $customName) !== 1;
+	}
 
 	/**
 	 * Attempts to calculate the result of an anvil operation.
