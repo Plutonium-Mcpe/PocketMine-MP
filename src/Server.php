@@ -87,6 +87,7 @@ use pocketmine\player\PlayerDataLoadException;
 use pocketmine\player\PlayerDataProvider;
 use pocketmine\player\PlayerDataSaveException;
 use pocketmine\player\PlayerInfo;
+use pocketmine\player\PlayerSaveSequence;
 use pocketmine\plugin\PharPluginLoader;
 use pocketmine\plugin\PluginEnableOrder;
 use pocketmine\plugin\PluginGraylist;
@@ -298,6 +299,7 @@ class Server {
 	private string $pluginPath;
 
 	private PlayerDataProvider $playerDataProvider;
+	private PlayerSaveSequence $playerSaveSequence;
 
 	private QueryInfo $queryInfo;
 
@@ -548,14 +550,19 @@ class Server {
 		}
 		/** @var PromiseResolver<null> $resolver */
 		$resolver = new PromiseResolver();
+		$sequence = $this->playerSaveSequence->next($name);
 
 		$ev->call()->onCompletion(
-			function (PlayerDataSaveAsyncEvent $event) use ($name, $resolver) : void{
+			function (PlayerDataSaveAsyncEvent $event) use ($name, $resolver, $sequence) : void{
 				if($event->isCancelled()){
 					$resolver->reject();
 					return;
 				}
-				$this->saveOfflinePlayerData($name, $event->getSaveData());
+				if($this->playerSaveSequence->isLatest($name, $sequence)){
+					$this->saveOfflinePlayerData($name, $event->getSaveData());
+				}else{
+					$this->logger->debug("Skipped an outdated save of player data for $name");
+				}
 				$resolver->resolve(null);
 			},
 			fn() => $this->logger->debug("Cancelled saving player data for $name")
@@ -573,6 +580,7 @@ class Server {
 		$ev->call();
 
 		if(!$ev->isCancelled()){
+			$this->playerSaveSequence->next($name);
 			Timings::$syncPlayerDataSave->time(function() use ($name, $ev) : void{
 				try{
 					$this->playerDataProvider->saveData($name, $ev->getSaveData());
@@ -1101,6 +1109,7 @@ class Server {
 			$this->queryInfo = new QueryInfo($this);
 
 			$this->playerDataProvider = new DatFilePlayerDataProvider(Path::join($this->dataPath, "players"));
+			$this->playerSaveSequence = new PlayerSaveSequence();
 
 			register_shutdown_function($this->crashDump(...));
 
