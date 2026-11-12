@@ -69,10 +69,13 @@ class CraftingTransactionContainerTest extends TestCase{
 	}
 
 	/**
-	 * @param Item[] $consumed
-	 * @param Item[] $created
+	 * @param Item[]      $consumed
+	 * @param Item[]      $created
+	 * @param Item[]|null $recipeResults
+	 *
+	 * @phpstan-param list<Item>|null $recipeResults
 	 */
-	private static function transaction(array $consumed, array $created, int $repetitions) : CraftingTransaction{
+	private static function transaction(array $consumed, array $created, int $repetitions, ?array $recipeResults = null) : CraftingTransaction{
 		$player = (new \ReflectionClass(Player::class))->newInstanceWithoutConstructor();
 		(new \ReflectionProperty(Player::class, "craftingGrid"))->setValue($player, new PlayerCraftingInventory($player));
 		(new \ReflectionProperty(Entity::class, "closed"))->setValue($player, true);
@@ -82,7 +85,7 @@ class CraftingTransactionContainerTest extends TestCase{
 
 		$recipe = new ShapelessRecipe(
 			[new ExactRecipeIngredient(self::shulker(DyeColor::LIME)), new ExactRecipeIngredient(VanillaItems::INK_SAC())],
-			[self::shulker(DyeColor::BLACK)],
+			$recipeResults ?? [self::shulker(DyeColor::BLACK)],
 			ShapelessRecipeType::CRAFTING
 		);
 
@@ -153,5 +156,46 @@ class CraftingTransactionContainerTest extends TestCase{
 
 		$this->expectException(TransactionValidationException::class);
 		$transaction->validate();
+	}
+
+	public function testRecipeYieldingTwoItemsCannotCopyFilledShulkerContents() : void{
+		$content = VanillaItems::DIAMOND()->setCount(64);
+		$transaction = self::transaction(
+			[self::shulker(DyeColor::LIME, $content), VanillaItems::INK_SAC()],
+			[self::dyed(self::shulker(DyeColor::LIME, $content)), self::dyed(self::shulker(DyeColor::LIME, $content))],
+			1,
+			[self::shulker(DyeColor::BLACK)->setCount(2)]
+		);
+
+		$this->expectException(TransactionValidationException::class);
+		$transaction->validate();
+	}
+
+	public function testRecipeWithTwoResultsCannotCopyFilledShulkerContents() : void{
+		$content = VanillaItems::DIAMOND()->setCount(64);
+		$source = self::shulker(DyeColor::LIME, $content);
+		$red = self::shulker(DyeColor::RED);
+		CraftingResultTransfer::transferContainerNamedTag([$source], [$red]);
+		$transaction = self::transaction(
+			[$source, VanillaItems::INK_SAC()],
+			[self::dyed($source), $red],
+			1,
+			[self::shulker(DyeColor::BLACK), self::shulker(DyeColor::RED)]
+		);
+
+		$this->expectException(TransactionValidationException::class);
+		$transaction->validate();
+	}
+
+	public function testRecipeYieldingTwoItemsStillWorksWithAnEmptyShulker() : void{
+		$transaction = self::transaction(
+			[self::shulker(DyeColor::LIME), VanillaItems::INK_SAC()],
+			[self::shulker(DyeColor::BLACK), self::shulker(DyeColor::BLACK)],
+			1,
+			[self::shulker(DyeColor::BLACK)->setCount(2)]
+		);
+
+		$transaction->validate();
+		$this->addToAssertionCount(1);
 	}
 }
