@@ -50,6 +50,14 @@ parameters:
 			path: ../../../src/network/mcpe/convert/BlockStateDictionary.php
 
 		-
+			message: '#^Property pocketmine\\network\\mcpe\\transport\\PthreadsChannelWriter\:\:\$buffer is never read, only written\.$#'
+			count: 1
+			path: ../../../src/network/mcpe/transport/PthreadsChannelWriter.php
+		-
+			message: '#^Property pocketmine\\network\\mcpe\\transport\\SnoozeAwarePthreadsChannelWriter\:\:\$buffer is never read, only written\.$#'
+			count: 1
+			path: ../../../src/network/mcpe/transport/SnoozeAwarePthreadsChannelWriter.php
+		-
 			message: '#^Property pocketmine\\network\\mcpe\\raklib\\PthreadsChannelWriter\:\:\$buffer is never read, only written\.$#'
 			identifier: property.onlyWritten
 			reportUnmatched: false

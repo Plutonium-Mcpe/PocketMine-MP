@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -302,6 +304,17 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	protected string $locale = "en_US";
 
 	protected int $startAction = -1;
+	/**
+	 * Wall-clock time the current item use started at, mirroring $startAction.
+	 *
+	 * $startAction counts server ticks, which stop matching real time as soon as the server
+	 * falls behind 20 TPS. The client animates on real time, so only this can answer "has the
+	 * player really held the item for 1.6 seconds".
+	 */
+	protected float $startActionTime = 0.0;
+
+	private int $ignoreChargeableClickAirUntilTick = -1;
+	private bool $awaitingConsumableRelease = false;
 
 	/**
 	 * @phpstan-var array<int|string, int>
@@ -378,9 +391,12 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 		$this->addDefaultWindows();
 
 		$this->inventory->getListeners()->add(new CallbackInventoryListener(
-			function(Inventory $unused, int $slot) : void{
+			function(Inventory $unused, int $slot, Item $oldItem) : void{
 				if($slot === $this->inventory->getHeldItemIndex()){
-					$this->setUsingItem(false);
+					//picking up more of the held item only changes its count - don't interrupt eating it
+					if(!$oldItem->canStackWith($this->inventory->getItem($slot))){
+						$this->setUsingItem(false);
+					}
 
 					$this->callDummyItemHeldEvent();
 				}
@@ -671,6 +687,17 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	}
 
 	/**
+	 * Same as checking isConnected() and then calling getNetworkSession(), in one call. Broadcasts do this for every
+	 * viewer of every moving entity on every tick, so the saved calls add up.
+	 *
+	 * @internal
+	 */
+	public function getConnectedNetworkSession() : ?NetworkSession{
+		$session = $this->networkSession;
+		return $session !== null && $session->isConnected() ? $session : null;
+	}
+
+	/**
 	 * Gets the username
 	 */
 	public function getName() : string{
@@ -742,6 +769,7 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 
 	public function setUsingItem(bool $value) : void{
 		$this->startAction = $value ? $this->server->getTick() : -1;
+		$this->startActionTime = $value ? microtime(true) : 0.0;
 		$this->networkPropertiesDirty = true;
 	}
 
@@ -751,6 +779,30 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	 */
 	public function getItemUseDuration() : int{
 		return $this->startAction === -1 ? -1 : ($this->server->getTick() - $this->startAction);
+	}
+
+	/**
+	 * Returns whether the held item has been in use for at least the given number of ticks,
+	 * measured on the wall clock rather than on the server's tick counter.
+	 */
+	public function hasUsedItemForRealTicks(int $ticks) : bool{
+		return $this->startAction !== -1 && (microtime(true) - $this->startActionTime) * 20 >= $ticks;
+	}
+
+	public function shouldIgnoreChargeableClickAir() : bool{
+		return $this->server->getTick() <= $this->ignoreChargeableClickAirUntilTick;
+	}
+
+	public function ignoreChargeableClickAirForTicks(int $ticks) : void{
+		$this->ignoreChargeableClickAirUntilTick = $this->server->getTick() + $ticks;
+	}
+
+	public function isAwaitingConsumableRelease() : bool{
+		return $this->awaitingConsumableRelease;
+	}
+
+	public function clearAwaitingConsumableRelease() : void{
+		$this->awaitingConsumableRelease = false;
 	}
 
 	/**
@@ -1558,6 +1610,13 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 				$this->fireTicks = 1;
 			}
 
+			$item = $this->getInventory()->getItemInHand();
+			if($item instanceof ConsumableItem && $this->isUsingItem()){
+				if($this->getItemUseDuration() >= $item->getMinUseDuration()){
+					$this->consumeHeldItem();
+				}
+			}
+
 			if(!$this->isSpectator() && $this->isAlive()){
 				Timings::$playerCheckNearEntities->startTiming();
 				$this->checkNearEntities();
@@ -1734,6 +1793,9 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	public function useHeldItem() : bool{
 		$directionVector = $this->getDirectionVector();
 		$item = $this->inventory->getItemInHand();
+		if($item instanceof ConsumableItem && $this->awaitingConsumableRelease){
+			return false;
+		}
 		$oldItem = clone $item;
 
 		$ev = new PlayerItemUseEvent($this, $item, $directionVector);
@@ -1756,7 +1818,10 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 		$this->resetItemCooldown($oldItem);
 		$this->returnItemsFromAction($oldItem, $item, $returnedItems);
 
-		$this->setUsingItem($item instanceof Releasable && $item->canStartUsingItem($this));
+		$this->setUsingItem(
+			$item instanceof Releasable &&
+			($result === ItemUseResult::NONE && $item->canStartUsingItem($this))
+		);
 
 		return true;
 	}
@@ -1766,9 +1831,21 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	 *
 	 * @return bool if the consumption succeeded.
 	 */
-	public function consumeHeldItem() : bool{
+	/**
+	 * @param bool $clientFinishedUsing set when the client reported the use as finished. The
+	 *                                  server's tick counter may still be short of the minimum
+	 *                                  simply because the server is running behind, so the
+	 *                                  elapsed real time decides instead.
+	 */
+	public function consumeHeldItem(bool $clientFinishedUsing = false) : bool{
 		$slot = $this->inventory->getItemInHand();
 		if($slot instanceof ConsumableItem){
+			$longEnough = $this->getItemUseDuration() >= $slot->getMinUseDuration()
+				|| ($clientFinishedUsing && $this->hasUsedItemForRealTicks($slot->getMinUseDuration()));
+			if(!$longEnough){
+				return false;
+			}
+
 			$oldItem = clone $slot;
 
 			$residue = $slot->getResidue();
@@ -1784,6 +1861,7 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 
 			$this->setUsingItem(false);
 			$this->resetItemCooldown($oldItem);
+			$this->awaitingConsumableRelease = true;
 
 			$slot->pop();
 			$this->returnItemsFromAction($oldItem, $slot, $ev->getResidue());
@@ -1803,6 +1881,10 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 		try{
 			$item = $this->inventory->getItemInHand();
 			if(!$this->isUsingItem() || $this->hasItemCooldown($item)){
+				return false;
+			}
+
+			if($item instanceof Releasable && $this->getItemUseDuration() < $item->getMinUseDuration()){
 				return false;
 			}
 

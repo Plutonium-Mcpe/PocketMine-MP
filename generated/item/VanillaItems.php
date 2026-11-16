@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -294,6 +296,7 @@ final class VanillaItems{
 	private static Record $_mRECORD_13;
 	private static Record $_mRECORD_5;
 	private static Record $_mRECORD_BLOCKS;
+	private static Record $_mRECORD_BOUNCE;
 	private static Record $_mRECORD_CAT;
 	private static Record $_mRECORD_CHIRP;
 	private static Record $_mRECORD_CREATOR;
@@ -656,6 +659,7 @@ final class VanillaItems{
 			"record_13" => fn(Record $v) => self::$_mRECORD_13 = $v,
 			"record_5" => fn(Record $v) => self::$_mRECORD_5 = $v,
 			"record_blocks" => fn(Record $v) => self::$_mRECORD_BLOCKS = $v,
+			"record_bounce" => fn(Record $v) => self::$_mRECORD_BOUNCE = $v,
 			"record_cat" => fn(Record $v) => self::$_mRECORD_CAT = $v,
 			"record_chirp" => fn(Record $v) => self::$_mRECORD_CHIRP = $v,
 			"record_creator" => fn(Record $v) => self::$_mRECORD_CREATOR = $v,
@@ -2044,6 +2048,11 @@ final class VanillaItems{
 	public static function RECORD_BLOCKS() : Record{
 		if(!isset(self::$_mRECORD_BLOCKS)){ self::init(); }
 		return clone self::$_mRECORD_BLOCKS;
+	}
+
+	public static function RECORD_BOUNCE() : Record{
+		if(!isset(self::$_mRECORD_BOUNCE)){ self::init(); }
+		return clone self::$_mRECORD_BOUNCE;
 	}
 
 	public static function RECORD_CAT() : Record{

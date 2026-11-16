@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -66,6 +68,9 @@ class StaticPacketCache{
 	}
 
 	/**
+	 * Loads biome definitions from a bedrock-network-data biome_definitions.nbt, which stores the definitions in the
+	 * same string-pooled layout as BiomeDefinitionListPacket.
+	 *
 	 * @return list<BiomeDefinitionEntry>
 	 */
 	private static function loadBiomeDefinitionModel(string $filePath) : array{
@@ -121,6 +126,10 @@ class StaticPacketCache{
 	}
 
 	/**
+	 * Loads the definitions of the blocks the game drives from data rather than implementing natively,
+	 * from a bedrock-network-data block_definitions.nbt. A client that never receives one of these
+	 * falls back to the raw identifier, draws no icon and refuses to place the block.
+	 *
 	 * @return list<BlockPaletteEntry>
 	 */
 	private static function loadBlockDefinitionsFromFile(string $filePath) : array{
@@ -143,6 +152,10 @@ class StaticPacketCache{
 	}
 
 	/**
+	 * The client keeps its own copy of the vanilla shapes, but it only finds one by the name the server
+	 * gives it, so the names have to travel with the shapes. A shape without a name is still sent,
+	 * because the ones that have a name are found by their position in the list.
+	 *
 	 * @return array{list<SerializableVoxelShape>, array<string, int>}
 	 */
 	private static function loadVoxelShapesFromFile(string $filePath) : array{
@@ -172,6 +185,7 @@ class StaticPacketCache{
 			}
 
 			if($boxes === []){
+				//an empty shape still carries one cutting plane per axis, the same as the game sends
 				$voxelShape = new SerializableVoxelShape(
 					new SerializableVoxelCells(0, 0, 0, []),
 					[0.0],
@@ -280,7 +294,7 @@ class StaticPacketCache{
 		return new self(
 			BiomeDefinitionListPacket::fromDefinitions(self::loadBiomeDefinitionModel(BedrockDataFiles::BIOME_DEFINITIONS_NBT)),
 			AvailableActorIdentifiersPacket::create(new CacheableNbt(self::loadCompoundFromFile(BedrockDataFiles::ENTITY_IDENTIFIERS_NBT))),
-			VoxelShapesPacket::create($voxelShapes, $voxelShapeNames, 0),
+			VoxelShapesPacket::create($voxelShapes, $voxelShapeNames, 0), //no custom shapes, only the vanilla ones
 			self::loadBlockDefinitionsFromFile(BedrockDataFiles::BLOCK_DEFINITIONS_NBT)
 		);
 	}
@@ -290,21 +304,21 @@ class StaticPacketCache{
 	 * @phpstan-param list<BlockPaletteEntry> $blockDefinitions
 	 */
 	public function __construct(
-		private BiomeDefinitionListPacket $biomeDefs,
+		private BiomeDefinitionListPacket $biomeDefinitionList,
 		private AvailableActorIdentifiersPacket $availableActorIdentifiers,
 		private VoxelShapesPacket $voxelShapesPacket,
 		private array $blockDefinitions
 	){}
 
-	public function getBiomeDefs() : BiomeDefinitionListPacket{
-		return $this->biomeDefs;
+	public function getBiomeDefinitionList() : BiomeDefinitionListPacket{
+		return $this->biomeDefinitionList;
 	}
 
 	public function getAvailableActorIdentifiers() : AvailableActorIdentifiersPacket{
 		return $this->availableActorIdentifiers;
 	}
 
-	public function getVoxelShapes() : VoxelShapesPacket{
+	public function getVoxelShapes() : VoxelShapesPacket {
 		return $this->voxelShapesPacket;
 	}
 

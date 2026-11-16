@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -51,13 +53,8 @@ use const SOCKET_EWOULDBLOCK;
 use const SOL_UDP;
 
 /**
- * This is a supplementary network interface to maintain Query functionality when the RakLibInterface is not registered.
- *
- * Normally, Query runs on the same port as RakLib does, so Query handles packets coming in on RakLib's socket instead
- * of using its own interface.
- *
- * However, it's necessary to have a separate interface for the cases where the RakLib interface is either not registered
- * or running on a different port than Query.
+ * Answers Query on the server port. Query used to ride on RakNet's socket, but NetherNet does not
+ * listen there, so Query always gets a socket of its own.
  */
 final class DedicatedQueryNetworkInterface implements AdvancedNetworkInterface{
 	private \Socket $socket;
@@ -95,7 +92,7 @@ final class DedicatedQueryNetworkInterface implements AdvancedNetworkInterface{
 			throw new \RuntimeException("Failed to bind to $this->ip $this->port: " . trim(socket_strerror($error)), $error);
 		}
 		socket_set_nonblock($this->socket);
-		$this->logger->info("Running on $this->ip $this->port");
+		$this->logger->info("Running on $this->ip:$this->port");
 	}
 
 	public function setName(string $name) : void{

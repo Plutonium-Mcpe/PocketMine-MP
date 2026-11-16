@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -128,6 +130,10 @@ class TimingsHandler{
 			}
 		}
 
+		if(TimingsTimeline::hasData()){
+			$result = [...$result, ...TimingsTimeline::printSection()];
+		}
+
 		return $result;
 	}
 
@@ -175,6 +181,9 @@ class TimingsHandler{
 	 */
 	public static function requestPrintTimings() : Promise{
 		$thisThreadRecords = self::printCurrentThreadRecords();
+		//sample time must end with this thread's records: other threads may take seconds to respond, and counting
+		//that wait would lower the TPS and the share of every timer
+		$footer = self::printFooter();
 
 		$otherThreadRecordPromises = [];
 		if(self::$collectCallbacks !== null){
@@ -187,8 +196,8 @@ class TimingsHandler{
 		/** @phpstan-var PromiseResolver<list<string>> $resolver */
 		$resolver = new PromiseResolver();
 		Promise::all($otherThreadRecordPromises)->onCompletion(
-			function(array $promisedRecords) use ($resolver, $thisThreadRecords) : void{
-				$resolver->resolve([...$thisThreadRecords, ...array_merge(...$promisedRecords), ...self::printFooter()]);
+			function(array $promisedRecords) use ($resolver, $thisThreadRecords, $footer) : void{
+				$resolver->resolve([...$thisThreadRecords, ...array_merge(...$promisedRecords), ...$footer]);
 			},
 			function() : void{
 				throw new \AssertionError("This promise is not expected to be rejected");
@@ -221,6 +230,7 @@ class TimingsHandler{
 
 	private static function internalReload() : void{
 		TimingsRecord::reset();
+		TimingsTimeline::reset();
 		if(self::$enabled){
 			self::$timingStart = hrtime(true);
 		}

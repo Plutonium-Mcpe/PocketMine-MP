@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -249,6 +251,7 @@ final class ItemTypeNames{
 	public const FRAME = "minecraft:frame";
 	public const FRIEND_POTTERY_SHERD = "minecraft:friend_pottery_sherd";
 	public const FROG_SPAWN_EGG = "minecraft:frog_spawn_egg";
+	public const FROSTBITE_SPAWN_EGG = "minecraft:frostbite_spawn_egg";
 	public const GHAST_SPAWN_EGG = "minecraft:ghast_spawn_egg";
 	public const GHAST_TEAR = "minecraft:ghast_tear";
 	public const GLASS_BOTTLE = "minecraft:glass_bottle";
@@ -306,6 +309,8 @@ final class ItemTypeNames{
 	public const HOWL_POTTERY_SHERD = "minecraft:howl_pottery_sherd";
 	public const HUSK_SPAWN_EGG = "minecraft:husk_spawn_egg";
 	public const ICE_BOMB = "minecraft:ice_bomb";
+	public const ICE_CRYSTAL = "minecraft:ice_crystal";
+	public const ICICLE = "minecraft:icicle";
 	public const INK_SAC = "minecraft:ink_sac";
 	public const IRON_AXE = "minecraft:iron_axe";
 	public const IRON_BOOTS = "minecraft:iron_boots";

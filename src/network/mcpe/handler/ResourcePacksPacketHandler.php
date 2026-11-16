@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -69,7 +71,7 @@ class ResourcePacksPacketHandler extends PacketHandler{
 	 * correctly, unfortunately there doesn't seem to be a better way to do this
 	 */
 	private const CHEMISTRY_RESOURCE_PACKS = [
-		["d34cfa4b-2ad1-453d-a0db-668b429a3ea0", "1.26.40"],
+		["d34cfa4b-2ad1-453d-a0db-668b429a3ea0", "1.26.40"], // temp, pretty dumb stuff i struggled here
 		["b41c2785-c512-4a49-af56-3a87afd47c57", "1.21.30"],
 		["a4df0cb3-17be-4163-88d7-fcf7002b935d", "1.21.20"],
 		["d19adffe-a2e1-4b02-8436-ca4583368c89", "1.21.10"],

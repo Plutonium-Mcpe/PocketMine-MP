@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -27,7 +29,6 @@ use pocketmine\block\BlockBreakInfo as BreakInfo;
 use pocketmine\block\BlockIdentifier as BID;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\SingletonTrait;
-use pocketmine\world\light\LightUpdate;
 use function count;
 use function min;
 
@@ -125,6 +126,14 @@ class RuntimeBlockStateRegistry{
 	}
 
 	/**
+	 * Cache of {@link overridesBlockMethod()} results for calculateCollisionInfo(), which only depend on the block
+	 * class: without it, every state of every block paid for two closures and two reflections.
+	 * @var bool[]
+	 * @phpstan-var array<class-string<Block>, bool>
+	 */
+	private static array $collisionMayOverflowByClass = [];
+
+	/**
 	 * A big ugly hack to set up fast paths for handling collisions on blocks with common shapes.
 	 * The information returned here is stored in RuntimeBlockStateRegistry->collisionInfo, and is used during entity
 	 * collision box calculations to avoid complex logic and unnecessary block object allocations.
@@ -134,10 +143,10 @@ class RuntimeBlockStateRegistry{
 	 * major version. For now, this hack nets major performance wins.
 	 */
 	private static function calculateCollisionInfo(Block $block) : int{
-		if(
+		if(self::$collisionMayOverflowByClass[$block::class] ??= (
 			self::overridesBlockMethod($block->getModelPositionOffset(...)) ||
 			self::overridesBlockMethod($block->readStateFromWorld(...))
-		){
+		)){
 			//getModelPositionOffset() might cause AABBs to shift outside the cell
 			//readStateFromWorld() might cause overflow in ways we can't predict just by looking at known states
 			//TODO: excluding overriders of readStateFromWorld() also excludes blocks with tiles that don't do anything
@@ -185,7 +194,7 @@ class RuntimeBlockStateRegistry{
 			$this->fullList[$index] = $block;
 			$this->blastResistance[$index] = $block->getBreakInfo()->getBlastResistance();
 			$this->light[$index] = $block->getLightLevel();
-			$this->lightFilter[$index] = min(15, $block->getLightFilter() + LightUpdate::BASE_LIGHT_FILTER);
+			$this->lightFilter[$index] = min(15, $block->getLightFilter() + 1);
 			if($block->blocksDirectSkyLight()){
 				$this->blocksDirectSkyLight[$index] = true;
 			}

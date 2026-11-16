@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -24,12 +26,14 @@ declare(strict_types=1);
 namespace pocketmine\network\mcpe\cache;
 
 use pmmp\encoding\BE;
+use pmmp\encoding\ByteBufferWriter;
 use pocketmine\crafting\CraftingManager;
 use pocketmine\crafting\FurnaceType;
 use pocketmine\crafting\ShapedRecipe;
 use pocketmine\crafting\ShapelessRecipe;
 use pocketmine\crafting\ShapelessRecipeType;
 use pocketmine\network\mcpe\convert\TypeConverter;
+use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\CraftingDataPacket;
 use pocketmine\network\mcpe\protocol\types\recipe\CraftingRecipeBlockName;
 use pocketmine\network\mcpe\protocol\types\recipe\FurnaceRecipeBlockName;
@@ -56,6 +60,12 @@ final class CraftingDataCache{
 	private array $caches = [];
 
 	/**
+	 * @var string[]
+	 * @phpstan-var array<int, string>
+	 */
+	private array $encodedCaches = [];
+
+	/**
 	 * The client doesn't like recipes with ID 0 (as of 1.21.100) and complains about them in the content log
 	 * This doesn't actually affect the function of the recipe, but it is annoying, so this offset fixes it
 	 */
@@ -65,14 +75,19 @@ final class CraftingDataCache{
 		$id = spl_object_id($manager);
 		if(!isset($this->caches[$id])){
 			$manager->getDestructorCallbacks()->add(function() use ($id) : void{
-				unset($this->caches[$id]);
+				unset($this->caches[$id], $this->encodedCaches[$id]);
 			});
 			$manager->getRecipeRegisteredCallbacks()->add(function() use ($id) : void{
-				unset($this->caches[$id]);
+				unset($this->caches[$id], $this->encodedCaches[$id]);
 			});
 			$this->caches[$id] = $this->buildCraftingDataCache($manager);
 		}
 		return $this->caches[$id];
+	}
+
+	public function getEncodedCache(CraftingManager $manager) : string{
+		$packet = $this->getCache($manager);
+		return $this->encodedCaches[spl_object_id($manager)] ??= NetworkSession::encodePacketTimed(new ByteBufferWriter(), $packet);
 	}
 
 	/**
@@ -86,6 +101,7 @@ final class CraftingDataCache{
 		$recipesWithTypeIds = [];
 
 		$noUnlockingRequirement = new RecipeUnlockingRequirement(RecipeUnlockingRequirement::CONTEXT_ALWAYS_UNLOCKED, null);
+		$recipeNetId = self::RECIPE_ID_OFFSET;
 		foreach($manager->getCraftingRecipeIndex() as $index => $recipe){
 			//the client doesn't like recipes with an ID of 0, so we need to offset them
 			$recipeNetId = $index + self::RECIPE_ID_OFFSET;
@@ -140,8 +156,9 @@ final class CraftingDataCache{
 				FurnaceType::CAMPFIRE => FurnaceRecipeBlockName::CAMPFIRE,
 				FurnaceType::SOUL_CAMPFIRE => FurnaceRecipeBlockName::SOUL_CAMPFIRE
 			};
+
 			foreach($manager->getFurnaceRecipeManager($furnaceType)->getAll() as $recipe){
-				$recipeNetId = ($recipeNetId ?? self::RECIPE_ID_OFFSET) + 1;
+				$recipeNetId++;
 				$recipesWithTypeIds[] = new ProtocolShapelessRecipe(
 					CraftingDataPacket::ENTRY_SHAPELESS,
 					BE::packUnsignedInt($recipeNetId), //TODO: this should probably be changed to something human-readable
@@ -151,7 +168,7 @@ final class CraftingDataCache{
 					$typeTag,
 					50,
 					$noUnlockingRequirement,
-					$recipeNetId
+					$recipeNetId //not used, but we need to fill them with something unique regardless
 				);
 			}
 		}

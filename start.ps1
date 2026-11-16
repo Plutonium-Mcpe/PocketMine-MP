@@ -3,7 +3,7 @@ param (
 	[string]$php = "",
 	[switch]$Loop = $false,
 	[string]$file = "",
-	[string][Parameter(ValueFromRemainingArguments)]$extraPocketMineArgs
+	[string][Parameter(ValueFromRemainingArguments)]$extraAltayArgs
 )
 
 if($php -ne ""){
@@ -25,14 +25,14 @@ if($file -eq ""){
 	    $file = "PocketMine-MP.phar"
 	}else{
 	    echo "PocketMine-MP.phar not found"
-	    echo "Downloads can be found at https://github.com/pmmp/PocketMine-MP/releases"
+	    echo "Downloads can be found at https://github.com/altayofficial/Altay/releases"
 	    pause
 	    exit 1
 	}
 }
 
 function StartServer{
-	$command = "powershell -NoProfile " + $binary + " " + $file + " " + $extraPocketMineArgs
+	$command = "powershell -NoProfile " + $binary + " " + $file + " " + $extraAltayArgs
 	iex $command
 }
 

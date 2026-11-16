@@ -2,32 +2,37 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
 
 namespace pocketmine\inventory\transaction;
 
+use pocketmine\block\tile\Container;
 use pocketmine\crafting\CraftingManager;
 use pocketmine\crafting\CraftingRecipe;
+use pocketmine\crafting\CraftingResultTransfer;
 use pocketmine\crafting\RecipeIngredient;
 use pocketmine\event\inventory\CraftItemEvent;
 use pocketmine\item\Item;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\player\Player;
 use pocketmine\utils\Utils;
 use function array_fill_keys;
@@ -242,16 +247,59 @@ class CraftingTransaction extends InventoryTransaction{
 		return $iterations;
 	}
 
+	/**
+	 * @return Item[]
+	 * @phpstan-return list<Item>
+	 */
+	private function getExpectedResultsFor(CraftingRecipe $recipe) : array{
+		//grid may already be empty by validate() time - use transaction inputs as a fallback
+		$results = $recipe->getResultsFor($this->source->getCraftingGrid());
+		CraftingResultTransfer::transferContainerNamedTag($this->inputs, $results);
+		return $results;
+	}
+
 	private function validateRecipe(CraftingRecipe $recipe, ?int $expectedRepetitions) : int{
 		//compute number of times recipe was crafted
-		$repetitions = $this->matchOutputs($this->outputs, $recipe->getResultsFor($this->source->getCraftingGrid()));
+		$expectedResults = $this->getExpectedResultsFor($recipe);
+		$repetitions = $this->matchOutputs($this->outputs, $expectedResults);
 		if($expectedRepetitions !== null && $repetitions !== $expectedRepetitions){
 			throw new TransactionValidationException("Expected $expectedRepetitions repetitions, got $repetitions");
 		}
 		//assert that $repetitions x recipe ingredients should be consumed
 		self::matchIngredients($this->inputs, $recipe->getIngredientList(), $repetitions);
+		$this->validateContainerTransfer($expectedResults, $repetitions);
 
 		return $repetitions;
+	}
+
+	/**
+	 * Container contents are copied from one input onto every result, so they may only be carried over when exactly
+	 * one filled container is turned into exactly one result item. Anything else would duplicate the contents.
+	 *
+	 * @param Item[] $expectedResults
+	 * @phpstan-param list<Item> $expectedResults
+	 *
+	 * @throws TransactionValidationException
+	 */
+	private function validateContainerTransfer(array $expectedResults, int $repetitions) : void{
+		$filledContainers = 0;
+		foreach($this->inputs as $input){
+			$items = $input->getNamedTag()->getTag(Container::TAG_ITEMS);
+			if($items instanceof ListTag && $items->count() > 0){
+				$filledContainers += $input->getCount();
+			}
+		}
+		if($filledContainers === 0){
+			return;
+		}
+		$resultItems = 0;
+		foreach($expectedResults as $result){
+			$resultItems += $result->getCount();
+		}
+		$resultItems *= $repetitions;
+		if($filledContainers > 1 || $resultItems > 1){
+			throw new TransactionValidationException("Cannot carry the contents of $filledContainers container(s) over to $resultItems result item(s)");
+		}
 	}
 
 	public function validate() : void{
@@ -267,9 +315,11 @@ class CraftingTransaction extends InventoryTransaction{
 			foreach($this->craftingManager->matchRecipeByOutputs($this->outputs) as $recipe){
 				try{
 					//compute number of times recipe was crafted
-					$this->repetitions = $this->matchOutputs($this->outputs, $recipe->getResultsFor($this->source->getCraftingGrid()));
+					$expectedResults = $this->getExpectedResultsFor($recipe);
+					$this->repetitions = $repetitions = $this->matchOutputs($this->outputs, $expectedResults);
 					//assert that $repetitions x recipe ingredients should be consumed
 					self::matchIngredients($this->inputs, $recipe->getIngredientList(), $this->repetitions);
+					$this->validateContainerTransfer($expectedResults, $repetitions);
 
 					//Success!
 					$this->recipe = $recipe;

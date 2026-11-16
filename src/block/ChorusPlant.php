@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -24,6 +26,7 @@ declare(strict_types=1);
 namespace pocketmine\block;
 
 use pocketmine\block\utils\StaticSupportTrait;
+use pocketmine\data\runtime\RuntimeDataDescriber;
 use pocketmine\item\Item;
 use pocketmine\item\VanillaItems;
 use pocketmine\math\Axis;
@@ -31,14 +34,32 @@ use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Facing;
 use function mt_rand;
 
-final class ChorusPlant extends Flowable{
+final class ChorusPlant extends Flowable implements StateDeriving{
 	use StaticSupportTrait;
 
 	/**
-	 * @var true[]
-	 * @phpstan-var array<int, true>
+	 * @var int[]
+	 * @phpstan-var array<int, int>
 	 */
 	protected array $connections = [];
+
+	protected function describeBlockOnlyState(RuntimeDataDescriber $w) : void{
+		$w->facingFlags($this->connections);
+	}
+
+	public function isConnected(int $facing) : bool{
+		return isset($this->connections[$facing]);
+	}
+
+	/** @return $this */
+	public function setConnected(int $facing, bool $connected) : self{
+		if($connected){
+			$this->connections[$facing] = $facing;
+		}else{
+			unset($this->connections[$facing]);
+		}
+		return $this;
+	}
 
 	protected function recalculateCollisionBoxes() : array{
 		$bb = AxisAlignedBB::one();
@@ -56,19 +77,34 @@ final class ChorusPlant extends Flowable{
 
 		$this->collisionBoxes = null;
 
+		return $this;
+	}
+
+	public function onNearbyBlockChange() : void{
+		$world = $this->position->getWorld();
+		if(!$this->canBeSupportedAt($this)){
+			$world->useBreakOn($this->position);
+		}elseif($this->deriveStateFromWorld()){
+			$world->setBlock($this->position, $this);
+		}
+	}
+
+	public function deriveStateFromWorld() : bool{
+		$changed = false;
 		foreach(Facing::ALL as $facing){
-			$block = $this->getSide($facing);
-			if(match($block->getTypeId()){
+			$connected = match($this->getSide($facing)->getTypeId()){
 				BlockTypeIds::END_STONE, BlockTypeIds::CHORUS_FLOWER, $this->getTypeId() => true,
 				default => false
-			}){
-				$this->connections[$facing] = true;
-			}else{
-				unset($this->connections[$facing]);
+			};
+			if($connected !== isset($this->connections[$facing])){
+				$this->setConnected($facing, $connected);
+				$changed = true;
 			}
 		}
-
-		return $this;
+		if($changed){
+			$this->collisionBoxes = null;
+		}
+		return $changed;
 	}
 
 	private function canBeSupportedBy(Block $block) : bool{

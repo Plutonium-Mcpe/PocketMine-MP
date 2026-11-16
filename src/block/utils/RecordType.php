@@ -2,21 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *      _    _ _
+ *     / \  | | |_ __ _ _   _
+ *    / _ \ | | __/ _` | | | |
+ *   / ___ \| | || (_| | |_| |
+ *  /_/   \_\_|\__\__,_|\__, |
+ *                       |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * Original work by the PocketMine Team.
+ * https://www.pocketmine.net/
  *
- *
+ * @author Altay Team
+ * @link https://github.com/altayofficial
  */
 
 declare(strict_types=1);
@@ -37,6 +39,7 @@ use function spl_object_id;
  * @method static RecordType DISK_13()
  * @method static RecordType DISK_5()
  * @method static RecordType DISK_BLOCKS()
+ * @method static RecordType DISK_BOUNCE()
  * @method static RecordType DISK_CAT()
  * @method static RecordType DISK_CHIRP()
  * @method static RecordType DISK_FAR()
@@ -58,6 +61,7 @@ enum RecordType{
 	case DISK_5;
 	case DISK_CAT;
 	case DISK_BLOCKS;
+	case DISK_BOUNCE;
 	case DISK_CHIRP;
 	case DISK_CREATOR;
 	case DISK_CREATOR_MUSIC_BOX;
@@ -87,6 +91,7 @@ enum RecordType{
 			self::DISK_5 => ["Samuel Åberg - 5", LevelSoundEvent::RECORD_5, KnownTranslationFactory::item_record_5_desc()],
 			self::DISK_CAT => ["C418 - cat", LevelSoundEvent::RECORD_CAT, KnownTranslationFactory::item_record_cat_desc()],
 			self::DISK_BLOCKS => ["C418 - blocks", LevelSoundEvent::RECORD_BLOCKS, KnownTranslationFactory::item_record_blocks_desc()],
+			self::DISK_BOUNCE => ["fingerspit - Bounce", LevelSoundEvent::RECORD_BOUNCE, KnownTranslationFactory::item_record_bounce_desc()],
 			self::DISK_CHIRP => ["C418 - chirp", LevelSoundEvent::RECORD_CHIRP, KnownTranslationFactory::item_record_chirp_desc()],
 			self::DISK_CREATOR => ["Lena Raine - Creator", LevelSoundEvent::RECORD_CREATOR, KnownTranslationFactory::item_record_creator_desc()],
 			self::DISK_CREATOR_MUSIC_BOX => ["Lena Raine - Creator (Music Box)", LevelSoundEvent::RECORD_CREATOR_MUSIC_BOX, KnownTranslationFactory::item_record_creator_music_box_desc()],
