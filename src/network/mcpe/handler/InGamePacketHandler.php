@@ -266,8 +266,11 @@ class InGamePacketHandler extends PacketHandler{
 			}
 			if($inputFlags->get(PlayerAuthInputFlags::START_USING_ITEM)){
 				if(!$this->player->shouldIgnoreChargeableClickAir()){
+					$transactionRefusedByRelease = $this->player->isAwaitingConsumableRelease()
+						&& !$this->player->isUsingItem()
+						&& $this->player->getInventory()->getItemInHand() instanceof ConsumableItem;
 					$this->player->clearAwaitingConsumableRelease();
-					if(!$this->recentlyUsedItemViaTransaction()){
+					if(!$this->recentlyUsedItemViaTransaction() || $transactionRefusedByRelease){
 						$this->handleRightClickItemUse();
 					}
 				}
