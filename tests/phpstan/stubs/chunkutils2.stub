@@ -16,6 +16,8 @@ final class PalettedBlockArray{
     public function getPaletteBytes(): string {}
 }
 
+final class LightArray{}
+
 class SubChunk{
     public const COORD_BIT_SIZE = 4;
     public const COORD_MASK = 15;
