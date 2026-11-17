@@ -164,7 +164,7 @@ use const ZEND_DEBUG_BUILD;
 
 		$chunkutils2_version = phpversion("chunkutils2");
 		$wantedVersionLock = "0.4";
-		$wantedVersionMin = "$wantedVersionLock.0";
+		$wantedVersionMin = "$wantedVersionLock.2";
 		if($chunkutils2_version !== false && (
 			version_compare($chunkutils2_version, $wantedVersionMin) < 0 ||
 			preg_match("/^" . preg_quote($wantedVersionLock, "/") . "\.\d+(?:-dev)?$/", $chunkutils2_version) === 0 //lock in at ^0.2, optionally at a patch release
