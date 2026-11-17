@@ -1,8 +1,10 @@
 #PHP is built in a separate image from PM, so that we don't need to rebuild the entire Dockerfile whenever one src file changes
 FROM ubuntu:22.04 AS build-php
-ARG COMPILE_SH_ARGS="-t linux64 -f -g -P5"
+# PHP de Plutonium-Mcpe/php-build-scripts (sous-module build/php) : chunkutils2 0.4.2, exigé
+# par PocketMine 5.119. -z 8.4 : même version que l'image PHP de la prod (sinon 8.2 par défaut).
+ARG COMPILE_SH_ARGS="-t linux64 -g -P5 -z 8.4"
 
-RUN apt-get update && apt-get install --no-install-recommends -y curl ca-certificates build-essential m4 gzip bzip2 bison git cmake autoconf automake pkg-config libtool libtool-bin re2c
+RUN apt-get update && apt-get install --no-install-recommends -y curl ca-certificates build-essential m4 gzip bzip2 bison git cmake autoconf automake pkg-config libtool libtool-bin re2c libpsl-dev
 
 RUN mkdir /opt/pocketmine
 COPY --chmod=700 ./build/php/compile.sh /opt/pocketmine
