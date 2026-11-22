@@ -37,10 +37,10 @@ use pocketmine\thread\NonThreadSafeValue;
 use pocketmine\thread\Thread;
 use pocketmine\thread\ThreadCrashException;
 use pocketmine\timings\Timings;
+use React\EventLoop\Loop;
 use function hrtime;
 use function ini_set;
 use function intdiv;
-use function usleep;
 
 class TransportThread extends Thread{
 
@@ -123,7 +123,17 @@ class TransportThread extends Thread{
 			if(!$selfPacing){
 				$elapsedMicros = intdiv(hrtime(true) - $start, 1000);
 				if($elapsedMicros < self::TICK_INTERVAL_MICROS){
-					usleep(self::TICK_INTERVAL_MICROS - $elapsedMicros);
+					//wait inside the event loop instead of sleeping next to it
+					$wake = Loop::addTimer((self::TICK_INTERVAL_MICROS - $elapsedMicros) / 1_000_000, static function() : void{
+						Loop::stop();
+					});
+					try{
+						Loop::run();
+					}catch(\Throwable $e){
+						$this->logger->error("Error while waiting on the transport event loop: " . $e->getMessage());
+					}finally{
+						Loop::cancelTimer($wake);
+					}
 				}
 			}
 		}
