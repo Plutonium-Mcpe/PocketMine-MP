@@ -192,6 +192,7 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	private const MAX_REACH_DISTANCE_CREATIVE = 13;
 	private const MAX_REACH_DISTANCE_SURVIVAL = 7;
 	private const MAX_REACH_DISTANCE_ENTITY_INTERACTION = 8;
+	private const USE_END_REPORT_TOLERANCE_TICKS = 3;
 
 	public const DEFAULT_FLIGHT_SPEED_MULTIPLIER = 0.05;
 
@@ -787,6 +788,11 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	 */
 	public function hasUsedItemForRealTicks(int $ticks) : bool{
 		return $this->startAction !== -1 && (microtime(true) - $this->startActionTime) * 20 >= $ticks;
+	}
+
+	public function canAcceptReportedUseEnd(int $minDuration) : bool{
+		return $this->getItemUseDuration() >= $minDuration
+			|| $this->hasUsedItemForRealTicks($minDuration - self::USE_END_REPORT_TOLERANCE_TICKS);
 	}
 
 	public function shouldIgnoreChargeableClickAir() : bool{
@@ -1840,8 +1846,9 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	public function consumeHeldItem(bool $clientFinishedUsing = false) : bool{
 		$slot = $this->inventory->getItemInHand();
 		if($slot instanceof ConsumableItem){
-			$longEnough = $this->getItemUseDuration() >= $slot->getMinUseDuration()
-				|| ($clientFinishedUsing && $this->hasUsedItemForRealTicks($slot->getMinUseDuration()));
+			$longEnough = $clientFinishedUsing
+				? $this->canAcceptReportedUseEnd($slot->getMinUseDuration())
+				: $this->getItemUseDuration() >= $slot->getMinUseDuration();
 			if(!$longEnough){
 				return false;
 			}

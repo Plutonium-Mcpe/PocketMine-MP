@@ -692,13 +692,13 @@ class InGamePacketHandler extends PacketHandler{
 		if($this->player->isUsingItem()){
 			$held = $this->player->getInventory()->getItemInHand();
 			if($held instanceof ConsumableItem){
-				if($this->player->getItemUseDuration() < $held->getMinUseDuration()){
+				if(!$this->player->canAcceptReportedUseEnd($held->getMinUseDuration())){
 					//the client may send a duplicate click-air in the same tick it started using the item,
 					//or think it finished eating slightly before the server - don't cancel eating, let the
 					//per-tick check in Player consume the item when the duration is reached
 					return true;
 				}
-				if(!$this->player->consumeHeldItem()){
+				if(!$this->player->consumeHeldItem(true)){
 					$hungerAttr = $this->player->getAttributeMap()->get(Attribute::HUNGER) ?? throw new AssumptionFailedError();
 					$hungerAttr->markSynchronized(false);
 				}
