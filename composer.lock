@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "64b29a1b5f8056e65d97e2fc43f94b77",
+    "content-hash": "8ebfd6a204ad97e8f0d61acf529469f6",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -273,7 +273,7 @@
         },
         {
             "name": "altayofficial/netherlib",
-            "version": "dev-main",
+            "version": "1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Plutonium-Mcpe/NetherLib.git",
@@ -301,7 +301,6 @@
                 "phpstan/phpstan": "^2.0",
                 "phpunit/phpunit": "^10.5"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -3555,9 +3554,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "altayofficial/netherlib": 20
-    },
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
