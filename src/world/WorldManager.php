@@ -414,7 +414,7 @@ class WorldManager{
 					$promises[] = $player->saveAsync();
 				}
 			}
-			$world->save(false);
+			$world->queueAutoSave();
 		}
 
 		/** @var PromiseResolver<null> $resolver */
