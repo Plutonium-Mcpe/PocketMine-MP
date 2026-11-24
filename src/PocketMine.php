@@ -119,6 +119,7 @@ use const ZEND_DEBUG_BUILD;
 		$extensions = [
 			"chunkutils2" => "PocketMine ChunkUtils v2",
 			"curl" => "cURL",
+			"datachannel" => "DataChannel",
 			"ctype" => "ctype",
 			"date" => "Date",
 			"encoding" => "pmmp/ext-encoding",

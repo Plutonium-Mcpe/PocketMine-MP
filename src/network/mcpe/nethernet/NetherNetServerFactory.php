@@ -2,43 +2,40 @@
 
 /*
  *
- *      _    _ _
- *     / \  | | |_ __ _ _   _
- *    / _ \ | | __/ _` | | | |
- *   / ___ \| | || (_| | |_| |
- *  /_/   \_\_|\__\__,_|\__, |
- *                       |___/
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
+ * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Original work by the PocketMine Team.
- * https://www.pocketmine.net/
+ * @author PocketMine Team
+ * @link http://www.pocketmine.net/
  *
- * @author Altay Team
- * @link https://github.com/altayofficial
+ *
  */
 
 declare(strict_types=1);
 
-namespace pocketmine\network\mcpe\transport;
+namespace pocketmine\network\mcpe\nethernet;
 
-use altay\network\nethernet\auth\TokenTrust;
-use altay\network\nethernet\Credentials;
-use altay\network\nethernet\IceServer;
-use altay\network\nethernet\NetherNetTransport;
-use altay\network\nethernet\ServerData;
-use altay\network\transport\Transport;
+use altay\netherlib\auth\TokenTrust;
+use altay\netherlib\Credentials;
+use altay\netherlib\IceServer;
+use altay\netherlib\NetherNetServer;
+use altay\netherlib\ServerData;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 
-final class NetherNetTransportFactory implements TransportFactory{
+final class NetherNetServerFactory{
 
 	/**
-	 * @param string[]             $iceServers
-	 * @param string[]             $iceInterfaces
-	 * @param string[]             $advertisedAddresses
+	 * @param string[] $iceServers
+	 * @param string[] $iceInterfaces
+	 * @param string[] $advertisedAddresses
 	 * @param array{int, int}|null $udpPortRange
 	 */
 	public function __construct(
@@ -47,7 +44,7 @@ final class NetherNetTransportFactory implements TransportFactory{
 		private string $levelName,
 		private int $maxPlayerCount,
 		private string $bindAddress = "0.0.0.0",
-		private int $port = NetherNetTransport::DISCOVERY_PORT,
+		private int $port = NetherNetServer::DISCOVERY_PORT,
 		private bool $onlineMode = false,
 		private int $signallingPort = 19132,
 		private ?string $identityKeyPath = null,
@@ -66,13 +63,12 @@ final class NetherNetTransportFactory implements TransportFactory{
 		private int $maxPendingNegotiations = 64,
 		private int $maxNegotiationsPerAddress = 32,
 		private bool $verboseLogging = false,
-		private int $handshakeTimeout = NetherNetTransport::DEFAULT_HANDSHAKE_TIMEOUT,
-		private ?int $udpPort = null
+		private int $handshakeTimeout = NetherNetServer::DEFAULT_HANDSHAKE_TIMEOUT,
+		private ?int $udpPort = null,
+		private bool $udpPortRequired = true,
+		private ?string $ipv6EndpointAddress = null
 	){}
 
-	public function getName() : string{
-		return "nethernet";
-	}
 
 	public function getNetworkId() : int{
 		return $this->networkId;
@@ -89,8 +85,8 @@ final class NetherNetTransportFactory implements TransportFactory{
 		)]);
 	}
 
-	public function make(\Logger $logger) : Transport{
-		$transport = new NetherNetTransport(
+	public function make(\Logger $logger) : NetherNetServer{
+		$server = new NetherNetServer(
 			$logger,
 			$this->networkId,
 			new ServerData(
@@ -129,9 +125,12 @@ final class NetherNetTransportFactory implements TransportFactory{
 			endpointTokenTrust: $this->requireEndpointIdentity ? TokenTrust::MINECRAFT_AUTH : TokenTrust::ANY,
 			verboseLogging: $this->verboseLogging
 		);
-		$transport->setNegotiationLimits($this->maxPendingNegotiations, $this->maxNegotiationsPerAddress);
-		$transport->setHandshakeTimeout($this->handshakeTimeout);
-		$transport->setUdpPort($this->udpPort);
-		return $transport;
+		$server->setNegotiationLimits($this->maxPendingNegotiations, $this->maxNegotiationsPerAddress);
+		$server->setHandshakeTimeout($this->handshakeTimeout);
+		$server->setUdpPort($this->udpPort, $this->udpPortRequired);
+		if($this->ipv6EndpointAddress !== null){
+			$server->addEndpointAddress($this->ipv6EndpointAddress);
+		}
+		return $server;
 	}
 }
