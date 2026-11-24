@@ -130,6 +130,7 @@ use const ZEND_DEBUG_BUILD;
 			"leveldb" => "LevelDB",
 			"mbstring" => "Multibyte String",
 			"morton" => "morton",
+			"netqueue" => "netqueue",
 			"openssl" => "OpenSSL",
 			"pcre" => "PCRE",
 			"phar" => "Phar",
